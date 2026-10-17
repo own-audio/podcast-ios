@@ -61,3 +61,6 @@ All notable changes to own.audio Podcasts. The format follows
   sign-in (Check Now), signing in again, its kind, version and name, Sync Now for a gPodder
   account, and its addresses — the one it was added with, those an own.audio server names, and
   any added by hand — used automatically (the fastest that answers on each network) or fixed.
+- Server logos, as in the music app: the source switch on New Episodes lists each source with its
+  logo and name, and Settings and each server's page show them too (own.audio's and podfetch's
+  own logos; symbols for Audiobookshelf and other gPodder servers, whose logos are GPL artwork).

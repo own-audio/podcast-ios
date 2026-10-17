@@ -14,7 +14,7 @@ struct SettingsView: View {
         case .unreachable?: .orange
         default: Theme.Colors.muted
         }
-        return Circle().fill(color).frame(width: 8, height: 8).accessibilityHidden(true)
+        return Circle().fill(color).frame(width: 10, height: 10).overlay(Circle().stroke(Theme.Colors.background, lineWidth: 2)).accessibilityHidden(true)
     }
 
     var body: some View {
@@ -27,7 +27,8 @@ struct SettingsView: View {
                             ServerDetailView(serverId: server.id)
                         } label: {
                             HStack(spacing: Theme.Spacing.md) {
-                                connectionDot(server)
+                                ServerIcon(brand: ServerBrand(server), size: 32)
+                                    .overlay(alignment: .bottomTrailing) { connectionDot(server).offset(x: 3, y: 3) }
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(server.displayName).foregroundStyle(Theme.Colors.foreground)
                                     Text("\(server.kind.name) · \(server.username)").font(.caption).foregroundStyle(Theme.Colors.muted)

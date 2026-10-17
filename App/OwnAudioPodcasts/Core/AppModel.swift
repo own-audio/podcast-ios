@@ -179,10 +179,10 @@ final class AppModel {
         return shows.filter { $0.source == activeSource }
     }
 
-    func sourceIcon(_ ref: SourceRef) -> String {
+    func brand(_ ref: SourceRef) -> ServerBrand {
         switch ref {
-        case .phone: "iphone"
-        case .server(let id): server(id)?.kind == .ownAudio ? "person.3" : "server.rack"
+        case .phone: .phone
+        case .server(let id): server(id).map(ServerBrand.init) ?? .gpodder
         }
     }
 
@@ -557,7 +557,8 @@ final class AppModel {
                     let client = GPodderClient(host: host, username: username, password: password, session: Self.session)
                     try await client.login()
                     try await client.registerDevice(id: Self.gpodderDevice, caption: UIDevice.current.name)
-                    record = ServerRecord(displayName: Self.displayName(host), kind: .gpodder, host: host, username: username, password: password)
+                    record = ServerRecord(displayName: Self.displayName(host), kind: .gpodder, host: host, username: username, password: password,
+                                          software: await Self.isPodfetch(host) ? "podfetch" : nil)
                 }
                 try await save(record)
                 return
@@ -750,11 +751,22 @@ final class AppModel {
                   let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return }
             serverVersions[record.id] = json["serverVersion"] as? String
         case .gpodder:
-            if let (data, _) = try? await Self.probeSession.data(from: url.appending(path: "api/v1/sys/config")),
-               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any], json["rssFeed"] != nil {
+            if await Self.isPodfetch(url) {
                 serverVersions[record.id] = "podfetch"
+                if record.software != "podfetch" {
+                    var updated = record
+                    updated.software = "podfetch"
+                    try? await update(updated, rebuild: false)
+                }
             }
         }
+    }
+
+    /// podfetch answers its own configuration endpoint; other gPodder servers don't.
+    nonisolated static func isPodfetch(_ host: URL) async -> Bool {
+        guard let (data, _) = try? await probeSession.data(from: host.appending(path: "api/v1/sys/config")),
+              let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return false }
+        return json["rssFeed"] != nil && json["basicAuth"] != nil
     }
 
     /// Saves a changed record (a new name, address or sign-in) and rebuilds what uses it.

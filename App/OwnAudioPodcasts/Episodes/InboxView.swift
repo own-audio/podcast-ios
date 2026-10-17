@@ -143,6 +143,7 @@ struct EpisodeView: View {
 /// servers on Home.
 struct SourceMenu: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         @Bindable var model = model
@@ -150,13 +151,17 @@ struct SourceMenu: View {
             Picker("Source", selection: $model.activeSource) {
                 Label("All Sources", systemImage: "square.stack.3d.up").tag(SourceRef?.none)
                 ForEach(model.switchableSources, id: \.self) { ref in
-                    Label(model.sourceName(ref), systemImage: model.sourceIcon(ref)).tag(SourceRef?.some(ref))
+                    Label {
+                        Text(model.sourceName(ref))
+                    } icon: {
+                        model.brand(ref).menuIcon(dark: colorScheme == .dark)
+                    }
+                    .tag(SourceRef?.some(ref))
                 }
             }
         } label: {
-            Label(model.activeSource.map { model.sourceName($0) } ?? String(localized: "All Sources"),
-                  systemImage: model.activeSource.map { model.sourceIcon($0) } ?? "square.stack.3d.up")
-                .labelStyle(.titleAndIcon)
+            // As in the music app: the server symbol, the name read out.
+            Label(model.activeSource.map { model.sourceName($0) } ?? String(localized: "All Sources"), systemImage: "server.rack")
         }
         .accessibilityIdentifier("home.serverMenu")
     }
