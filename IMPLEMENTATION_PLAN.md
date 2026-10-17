@@ -83,6 +83,40 @@ self-contained and can be built from one checkout. Written 2026-10-17.
     of that app's server API (feed rules, inbox merging, the translation flow's shape). Nothing
     branded, nothing tied to v1.
 
+## Lessons from the other apps
+
+What the music and books apps learned the hard way, held here so no phase repeats it. Each
+phase's review checks this list.
+
+- **Streaming**: a long file is never decoded or fetched whole. The player keeps a few minutes
+  ahead (`forwardBufferSecs`), shows "buffering" while the network catches up instead of
+  playing gaps, and keeps what it streams on Wi-Fi in a capped listening cache that the engine
+  asks first (`partLocator`). Copied with `SpokenEngine`; episodes use it as-is.
+- **Positions**: written to disk before they are sent, merged per episode, sent oldest first
+  when a server is back; the newer of phone and server wins; another device's newer position
+  is asked about before playing ("Continue from …?"), never applied silently.
+- **Stop lets go everywhere**: the model, the mini player, the widget and the Live Activity
+  all release the episode, not only the engine.
+- **The Live Activity's cover** travels in its updatable state, filled in when it has loaded;
+  never fixed in the attributes at start.
+- **Idempotent requests** send byte-identical bodies on retry: JSON keys sorted
+  (`JSONEncoder.ownAudio`), the idempotency key kept with the queued request.
+- **Tokens**: rotating refresh tokens refreshed single-flight; Audiobookshelf media links carry
+  `?token=` and an item that answers 401 is recreated at the same position with a fresh one.
+- **Feeds and servers send bad text**: Mojibake repaired at display, HTML stripped, durations
+  read from the file when the source has none.
+- **Downloads** have a file extension AVPlayer can read (from the bytes, not the URL), run on a
+  background `URLSession` that survives a kill, and are kept apart from the listening cache.
+- **Discovery is asked again** whenever clients are rebuilt — a server added or re-addressed
+  after launch shows its modules (narration then, translation here) without a relaunch.
+- **UI tests**: dismiss iOS's late "Save Password?" sheet before tapping; reach tabs through the
+  hittable button (iOS 26 duplicates labels, iPad puts tabs on top); no endless animations under
+  `-uiTestReset`; only one simulator run at a time; a simulator whose audio stops answering
+  (`AQME … timed out`) needs CoreAudio restarted, not a code fix.
+- **Czech with every string**, plurals as variations, the shared glossary's words; the check
+  that every key has Czech runs before each commit.
+- **Commits** carry no AI attribution lines.
+
 ## Layout
 
 - `App/OwnAudioPodcasts/` — the app (bundle `audio.own.podcastplayer`, home screen
@@ -171,14 +205,19 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   Done with synthetic fixtures for every form (iTunes RSS, Podcasting 2.0, Atom, a messy feed,
   non-feeds) and a live test over six real feeds — a Czech one, 3 000 episodes, the Podcasting 2.0
   feed's chapter documents — all parsing. A bare `&` is repaired and the feed read again.
-- [ ] **P2: PodcastLibrary core.** Models in episode-time milliseconds: `Show`, `Episode`,
+- [x] **P2: PodcastLibrary core** (2026-10-17). Models in episode-time milliseconds: `Show`, `Episode`,
   `Chapter`, `ListeningProgress` (position, played, updated), `PodcastSource` protocol with
   `Capabilities` (`search`, `addByURL`, `serverDownloads`, `familySharing`, `liveUpdates`,
   `changeFeed`, `translation`). The **feeds source**: a store on disk (JSON per show, episodes
   indexed, artwork cached), background refresh (`BGAppRefreshTask`, conditional, batched),
   the inbox query (unplayed, newest first, per-show opt-out), the queue (ordered episode ids,
   persisted), local progress. Unit tests for the inbox and queue rules; a live test fetching a
-  real feed.
+  real feed. Done as `FeedLibrary` (an actor; every change on disk before it returns). The inbox
+  rule: unplayed, not dismissed, from shows that want it, and first seen after the follow — plus
+  the one episode that was newest at the follow. A refresh keeps first-seen times, follows moved
+  feeds, and keeps an episode the feed dropped only while it is half heard or queued. The newer
+  position always wins; the last 30 s (or 2%) count as heard. Background refresh scheduling
+  (`BGAppRefreshTask`) is the app's, in P6.
 - [ ] **P3: Audiobookshelf podcasts.** Verify on a live 2.37 first: podcast libraries, items
   and `media.episodes` (ino, audio file, duration, publishedAt), per-episode progress
   (`/api/me/progress/{li}/{ep}`), sessions per episode, the file link with `?token=`,

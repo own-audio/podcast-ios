@@ -18,3 +18,9 @@ All notable changes to own.audio Podcasts. The format follows
   show and episodes, enclosures, durations and dates in the forms found in the wild, HTML notes
   as text, inline (Podlove) and linked (JSON) chapters, transcripts, people, funding; mis-decoded
   text repaired, bare ampersands tolerated; conditional fetching with ETag and Last-Modified.
+- PodcastLibrary (P2): shows, episodes, positions and the source protocol; the phone's own feed
+  library — follow by URL, refresh four feeds at a time and conditionally, New Episodes, a queue
+  with play next / play later that falls back to the inbox, auto-queue per show, positions where
+  the newer wins and the end counts as heard — all kept on disk as it changes.
+- The plan's "Lessons from the other apps": what the music and books apps learned, checked in
+  every phase.
