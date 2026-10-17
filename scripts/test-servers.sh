@@ -3,6 +3,9 @@
 # tests on a simulator. Variables come from the gitignored test-servers.local.env:
 #
 #   FEED_URLS="https://… https://…"     # real feeds FeedKit's live test fetches and parses
+#   AUDIOBOOKSHELF_HOST=http://…:13378   # an Audiobookshelf with a podcast library, and a
+#   AUDIOBOOKSHELF_USERNAME=…            # throwaway user: the tests play episodes and write
+#   AUDIOBOOKSHELF_PASSWORD=…            # positions, then put them back
 #
 # The servers' variables join as their phases arrive.
 #

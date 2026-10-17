@@ -48,4 +48,32 @@ public protocol PodcastSource: Sendable {
     func allProgress() async throws -> [EpisodeKey: ListeningProgress]
     /// What the source holds afterwards: a newer position from another device wins.
     func saveProgress(_ progress: ListeningProgress, for key: EpisodeKey) async throws -> ListeningProgress
+    func markPlayed(_ key: EpisodeKey, _ played: Bool) async throws
+
+    /// New Episodes, newest first.
+    func inbox(limit: Int) async throws -> [Episode]
+    func dismissFromInbox(_ keys: [EpisodeKey]) async throws
+    func queue() async -> [EpisodeKey]
+    func playNext(_ key: EpisodeKey) async throws
+    func playLater(_ key: EpisodeKey) async throws
+    func removeFromQueue(_ key: EpisodeKey) async throws
+    func moveInQueue(from source: IndexSet, to destination: Int) async throws
+    /// What plays after `current`: the queue's next, else the newest in New Episodes.
+    func takeNext(after current: EpisodeKey?) async throws -> Episode?
+
+    /// Where to play an episode from right now.
+    func playback(_ key: EpisodeKey) async throws -> Playback
+}
+
+/// How to play one episode: a URL the player can open (a file on the source, or the
+/// publisher's enclosure), and whether the source wants play sessions reported.
+public struct Playback: Sendable, Equatable {
+    public var url: URL
+    /// The server's own copy rather than the publisher's.
+    public var isServerFile: Bool
+
+    public init(url: URL, isServerFile: Bool) {
+        self.url = url
+        self.isServerFile = isServerFile
+    }
 }

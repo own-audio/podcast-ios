@@ -207,6 +207,13 @@ public struct Library: Decodable, Sendable, Equatable, Identifiable {
     public let mediaType: String
     public let displayOrder: Int?
     public let icon: String?
+    /// The folders a new item can go into (subscribing to a podcast names one).
+    public let folders: [Folder]?
+
+    public struct Folder: Decodable, Sendable, Equatable, Identifiable {
+        public let id: String
+        public let fullPath: String
+    }
 }
 
 struct LibrariesAnswer: Decodable {

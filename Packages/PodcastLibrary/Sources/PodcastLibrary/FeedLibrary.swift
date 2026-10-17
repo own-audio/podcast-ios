@@ -290,6 +290,11 @@ public actor FeedLibrary: PodcastSource {
         try saveState()
     }
 
+    public func playback(_ key: EpisodeKey) throws -> Playback {
+        guard let url = try episode(key).audioURL else { throw SourceError.notFound }
+        return Playback(url: url, isServerFile: false)
+    }
+
     // MARK: - Disk
 
     private func file(_ showId: String) -> URL {

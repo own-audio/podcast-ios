@@ -218,12 +218,19 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   feeds, and keeps an episode the feed dropped only while it is half heard or queued. The newer
   position always wins; the last 30 s (or 2%) count as heard. Background refresh scheduling
   (`BGAppRefreshTask`) is the app's, in P6.
-- [ ] **P3: Audiobookshelf podcasts.** Verify on a live 2.37 first: podcast libraries, items
+- [x] **P3: Audiobookshelf podcasts** (2026-10-17). Verify on a live 2.37 first: podcast libraries, items
   and `media.episodes` (ino, audio file, duration, publishedAt), per-episode progress
   (`/api/me/progress/{li}/{ep}`), sessions per episode, the file link with `?token=`,
   `POST /api/podcasts` (subscribe by feed URL, folder choice), `/api/search/podcast`,
   `checknew`, auto-download settings, and how deleted episodes look. Then the adapter, the
   live tests, and the books app's token refresh and Mojibake handling.
+  Verified on 2.37.1: a show lists only the episodes the server holds (feed-backed shows can
+  have none), so the adapter adds the feed's other episodes — matched by GUID, enclosure, title —
+  played from the publisher with positions kept on the phone; New Episodes comes from each
+  library's `recent-episodes`; episode play sessions and progress work as for books; an account
+  without `upload` cannot subscribe and nobody removes shows from a player (both hidden).
+  `ListeningStore` keeps first sightings, the inbox's dismissals, the queue, show settings and
+  positions on the phone for server sources, by the same rules as `FeedLibrary`.
 - [ ] **P4: own.audio v2.** The catalogue (`podcasts`, `episodes`), episode progress and the
   offline batch, playback-info for an episode file, the change feed with `podcast`,
   `episode`, `progress.episode` kinds and the catalogue on the phone, sign-in with password,

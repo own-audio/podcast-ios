@@ -22,5 +22,9 @@ All notable changes to own.audio Podcasts. The format follows
   library — follow by URL, refresh four feeds at a time and conditionally, New Episodes, a queue
   with play next / play later that falls back to the inbox, auto-queue per show, positions where
   the newer wins and the end counts as heard — all kept on disk as it changes.
+- Audiobookshelf podcast libraries (P3): shows, their episodes on the server plus the feed's
+  others, New Episodes from the server's recent episodes, the server's files with a token,
+  positions where the newer of phone and server wins, search through the server, and
+  subscribing for accounts that may upload.
 - The plan's "Lessons from the other apps": what the music and books apps learned, checked in
   every phase.

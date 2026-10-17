@@ -356,3 +356,24 @@ struct AudiobookshelfClientTests {
         #expect(ServerVersion("2.26.0") == ServerVersion("2.26"))
     }
 }
+
+@Suite("Podcasts")
+struct PodcastDecodingTests {
+    @Test("a podcast item decodes: show metadata, episodes with files, enclosures and odd numbers")
+    func decodes() throws {
+        let json = #"""
+        {"id":"li1","libraryId":"lib1","addedAt":1,"updatedAt":2,"isMissing":false,"mediaType":"podcast",
+         "media":{"metadata":{"title":"PÅ\u0099Ã­bÄ\u009bh","author":"Host","feedUrl":"https://f.example/rss","imageUrl":"https://f.example/a.jpg","explicit":false,"type":"serial","genres":["News"]},
+          "coverPath":"/c.jpg","tags":[],"autoDownloadEpisodes":true,"maxEpisodesToKeep":5,
+          "episodes":[{"id":"ep1","libraryItemId":"li1","title":"One","publishedAt":1767225600000,"duration":1683.5,"size":26963473,"guid":"g1","season":"","episode":625,"episodeType":"full",
+            "enclosure":{"url":"https://f.example/1.mp3","type":"audio/mpeg","length":"26963473"},
+            "audioFile":{"ino":18003,"mimeType":"audio/mpeg","duration":1683.5,"metadata":{"filename":"1.mp3","ext":".mp3","size":26963473}},"chapters":[]}]}}
+        """#
+        let item = try JSONDecoder().decode(PodcastItem.self, from: Data(json.utf8))
+        #expect(item.media.metadata.title == "Příběh", "mis-decoded titles repaired")
+        #expect(item.media.metadata.type == "serial" && item.media.autoDownloadEpisodes && item.media.maxEpisodesToKeep == 5)
+        let episode = try #require(item.media.episodes?.first)
+        #expect(episode.episode == "625" && episode.guid == "g1" && episode.enclosure?.url == "https://f.example/1.mp3")
+        #expect(episode.audioFile?.ino == "18003" && episode.duration == 1683.5)
+    }
+}
