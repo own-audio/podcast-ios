@@ -104,6 +104,29 @@ struct LiveServerTests {
         await client.signOut()
     }
 
+    @Test("podcasts and their episodes decode; an episode's position round-trips; its stream is signed")
+    func podcasts() async throws {
+        let client = try await signedIn()
+        let shows = try await client.all { try await client.podcasts(cursor: $0) }
+        guard let show = shows.first else { return }
+        #expect(!show.title.isEmpty)
+        let page = try await client.episodes(podcastId: show.id, limit: 5)
+        let episode = try #require(page.items.first)
+        #expect(episode.podcastId == show.id && !episode.title.isEmpty)
+        #expect(try await client.episode(id: episode.id).id == episode.id)
+        let before = try await client.progress(.episode, id: episode.id)
+        let saved = try await client.saveProgress(.episode, id: episode.id, positionMs: 61_000)
+        #expect(saved.progress.positionMs == 61_000)
+        if let before {
+            _ = try await client.saveProgress(.episode, id: episode.id, positionMs: before.positionMs, finished: before.finished)
+        } else {
+            try await client.deleteProgress(.episode, id: episode.id)
+        }
+        let info = try await client.playbackInfo(kind: "episode", id: episode.id, capabilities: .init())
+        #expect(info.url.absoluteString.contains("stream"))
+        await client.signOut()
+    }
+
     @Test("playback info hands out a signed link that plays")
     func playback() async throws {
         let client = try await signedIn()

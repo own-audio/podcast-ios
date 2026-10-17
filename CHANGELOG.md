@@ -26,5 +26,8 @@ All notable changes to own.audio Podcasts. The format follows
   others, New Episodes from the server's recent episodes, the server's files with a token,
   positions where the newer of phone and server wins, search through the server, and
   subscribing for accounts that may upload.
+- own.audio servers (P4): the household's podcasts and episodes through `/api/v2`, New
+  Episodes, positions that follow you between devices (the newer wins on the server too), and
+  the server's signed streams.
 - The plan's "Lessons from the other apps": what the music and books apps learned, checked in
   every phase.

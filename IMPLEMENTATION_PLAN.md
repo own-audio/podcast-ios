@@ -233,11 +233,18 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   without `upload` cannot subscribe and nobody removes shows from a player (both hidden).
   `ListeningStore` keeps first sightings, the inbox's dismissals, the queue, show settings and
   positions on the phone for server sources, by the same rules as `FeedLibrary`.
-- [ ] **P4: own.audio v2.** The catalogue (`podcasts`, `episodes`), episode progress and the
+- [x] **P4: own.audio v2** (2026-10-17). The catalogue (`podcasts`, `episodes`), episode progress and the
   offline batch, playback-info for an episode file, the change feed with `podcast`,
   `episode`, `progress.episode` kinds and the catalogue on the phone, sign-in with password,
   Apple and Google and two-factor (copied). Follow / add / refresh / inbox as the server grows
   them — each hidden until discovery says it is there; the server list above becomes issues.
+  Done: `OwnAudioKit` podcasts and episodes, `OwnAudioPodcastSource` with shows, episodes, New
+  Episodes from each show's newest page (first-sighting rules from `ListeningStore`), positions
+  sent with the time they happened so the server keeps the newer, and streams from
+  `playback-info`. Verified on the demo server. v2 episodes often have no `duration_ms` (the
+  player reads it from the file). Following and refreshing stay hidden until v2 has them; the
+  sign-in screens (password, Apple, Google, two-factor) and the server store come with the app
+  in P6, for every source at once.
 - [ ] **P5: gPodder sync.** `GPodderKit`: `POST /api/2/auth/{user}/login.json`, devices,
   `GET/POST /api/2/subscriptions/{user}/{device}.json` with `since`, `GET/POST
   /api/2/episodes/{user}.json` (actions `download`, `play` with `position`/`started`/`total`,

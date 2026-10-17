@@ -6,6 +6,9 @@
 #   AUDIOBOOKSHELF_HOST=http://…:13378   # an Audiobookshelf with a podcast library, and a
 #   AUDIOBOOKSHELF_USERNAME=…            # throwaway user: the tests play episodes and write
 #   AUDIOBOOKSHELF_PASSWORD=…            # positions, then put them back
+#   OWNAUDIO_HOST=https://…              # an own.audio server with podcasts (the public demo
+#   OWNAUDIO_EMAIL=…                     # has some); positions are written and put back
+#   OWNAUDIO_ACCOUNT_PASSWORD=…
 #
 # The servers' variables join as their phases arrive.
 #

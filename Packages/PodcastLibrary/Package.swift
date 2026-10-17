@@ -11,11 +11,12 @@ let package = Package(
     dependencies: [
         .package(path: "../FeedKit"),
         .package(path: "../AudiobookshelfKit"),
+        .package(path: "../OwnAudioKit"),
     ],
     targets: [
         // The app's model of shows and episodes, the sources behind it, and the logic of the
         // inbox and the queue. No UI.
-        .target(name: "PodcastLibrary", dependencies: ["FeedKit", "AudiobookshelfKit"]),
+        .target(name: "PodcastLibrary", dependencies: ["FeedKit", "AudiobookshelfKit", "OwnAudioKit"]),
         .testTarget(name: "PodcastLibraryTests", dependencies: ["PodcastLibrary"]),
     ]
 )
