@@ -17,20 +17,42 @@ final class ServerFlowTests: XCTestCase {
         try run(kind: "ownAudio", prefix: "OWNAUDIO", userKey: "OWNAUDIO_EMAIL", passwordKey: "OWNAUDIO_ACCOUNT_PASSWORD")
     }
 
-    /// A show followed on the phone reaches the gPodder account.
-    func testGPodderSubscriptionGoesUp() throws {
+    /// A show followed on the phone reaches the gPodder account: signed in with the account,
+    /// the app syncs, and the account (asked as another device) lists the show.
+    func testGPodderSubscriptionGoesUp() async throws {
         let env = ProcessInfo.processInfo.environment
         guard let host = env["GPODDER_HOST"], let user = env["GPODDER_USERNAME"], let password = env["GPODDER_PASSWORD"] else {
             throw XCTSkip("GPODDER_HOST is not set")
         }
-        let app = XCUIApplication()
-        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
-                               "-debugFeedURL", "https://feeds.podcastindex.org/pc20.xml",
-                               "-debugServerKind", "gpodder", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
-        XCTAssertTrue(app.buttons["home.settings"].waitForExistence(timeout: 30))
-        app.buttons["home.settings"].tap()
-        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'settings.server.'")).firstMatch.waitForExistence(timeout: 10), "the account is listed")
+        let feed = "https://feeds.podcastindex.org/pc20.xml"
+        let app = await XCUIApplication()
+        await MainActor.run {
+            app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                                   "-debugFeedURL", feed,
+                                   "-debugServerKind", "gpodder", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+            app.launch()
+        }
+        let settings = await app.buttons["home.settings"]
+        let appeared = await MainActor.run { settings.waitForExistence(timeout: 30) }
+        XCTAssertTrue(appeared)
+
+        var request = URLRequest(url: URL(string: host)!.appending(path: "api/2/subscriptions/\(user)/ui-test-check.json"))
+        request.setValue("Basic " + Data("\(user):\(password)".utf8).base64EncodedString(), forHTTPHeaderField: "Authorization")
+        var listed = false
+        for _ in 0..<20 where !listed {
+            if let (data, _) = try? await URLSession.shared.data(for: request),
+               let answer = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let add = answer["add"] as? [String] {
+                listed = add.contains(feed)
+            }
+            if !listed { try await Task.sleep(for: .seconds(1)) }
+        }
+        XCTAssertTrue(listed, "the show followed on the phone is on the account")
+
+        await MainActor.run { settings.tap() }
+        let row = await app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'settings.server.'")).firstMatch
+        let rowShown = await MainActor.run { row.waitForExistence(timeout: 10) }
+        XCTAssertTrue(rowShown, "the account is listed in Settings")
     }
 
     private func run(kind: String, prefix: String, userKey: String? = nil, passwordKey: String) throws {

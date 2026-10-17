@@ -43,3 +43,6 @@ All notable changes to own.audio Podcasts. The format follows
   `application/octet-stream`, so the player now tells AVPlayer the episode's type.
 - The misuse suite and the large-text pass; at accessibility text sizes episode rows stack
   their words under the picture and the player's picture shrinks so the controls stay on screen.
+- gPodder sync tested against the open-source own.audio server's new gPodder API: a show
+  unfollowed on the phone stays unfollowed when a server repeats its earlier "add", and live tests
+  cover subscriptions and positions both ways and the app's own sync end to end.

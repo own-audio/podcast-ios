@@ -255,8 +255,9 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   *Done:* `GPodderKit` (basic auth on every call, the API's zone-less UTC timestamps) and
   `GPodderSync` over the feed library — the first sync merges and removes nothing, later ones
   carry removals both ways; actions from this device are skipped when they come back; what came
-  from the account is not sent back. Mock tests cover both directions; the live test runs when
-  `GPODDER_*` is set (no account yet). The UI test waits for P6's screens.
+  from the account is not sent back. Mock tests cover both directions; live tests (the kit, the sync, and a UI test that a
+  show followed on the phone reaches the account) pass against the open-source own.audio
+  server's gPodder API (2026-10-17).
 - [x] **P6: The app.** Onboarding (add a feed, search a show, import OPML — or add a server),
   tabs New Episodes / Shows / Downloads / Search, a show's page (episodes, rules, settings), the episode
   page (notes with links, chapters, transcript where there is one), the player (the books
@@ -270,8 +271,7 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   file's own length when the feed gives none, and the episode's type for a stream with no
   extension (own.audio serves `application/octet-stream`). UI tests pass for feeds,
   Audiobookshelf and own.audio, plus the misuse suite and the large-text pass (rows stack at
-  accessibility sizes). Left over: the gPodder UI test runs once a `GPODDER_*` account exists;
-  OPML import moved to P9.
+  accessibility sizes). OPML import moved to P9.
 - [ ] **P7: Downloads and offline.** Per-episode downloads on the books app's background
   `URLSession`, the per-show rules of decision 7, delete-when-played, the storage cap and
   eviction, Offline Mode and the offline banner, the listening cache, the server's own

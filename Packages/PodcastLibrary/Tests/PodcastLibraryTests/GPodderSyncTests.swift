@@ -13,6 +13,9 @@ private final class FakeAccount: @unchecked Sendable {
     private var actions: [(json: [String: Any], at: Int64)] = []
     var uploadedActions: [[String: Any]] { lock.withLock { actions.map(\.json) } }
 
+    /// Seconds' worth of log rows handed out again: a server answering with an overlap.
+    var overlap: Int64 = 0
+
     func serverAdds(_ feed: String) { lock.withLock { clock += 1; subscriptions.append((feed, true, clock)) } }
     func serverRemoves(_ feed: String) { lock.withLock { clock += 1; subscriptions.append((feed, false, clock)) } }
     func serverPlays(_ action: [String: Any]) { lock.withLock { clock += 1; actions.append((action, clock)) } }
@@ -41,7 +44,7 @@ private final class FakeAccount: @unchecked Sendable {
             let reply = { (object: Any) in MockURLProtocol.StubbedResponse(statusCode: 200, body: try! JSONSerialization.data(withJSONObject: object)) }
             switch (request.httpMethod!, url.path) {
             case ("GET", "/api/2/subscriptions/jo/phone.json"):
-                let recent = subscriptions.filter { $0.at > since }
+                let recent = subscriptions.filter { $0.at > since - overlap }
                 var last: [String: Bool] = [:]
                 for change in recent { last[change.feed] = change.added }
                 return reply(["add": last.filter { $0.value }.keys.sorted(), "remove": last.filter { !$0.value }.keys.sorted(), "timestamp": clock])
@@ -107,6 +110,21 @@ struct GPodderSyncTests {
         #expect(second.unfollowed == 1 && second.followed == 1)
         #expect(await library.shows().compactMap { $0.feedURL?.absoluteString } == [feed("c")])
         #expect(account.feeds == [feed("c")])
+    }
+
+    @Test("a show unfollowed on the phone stays unfollowed when the server repeats its add")
+    func overlappingServer() async throws {
+        let account = FakeAccount()
+        account.overlap = 10
+        let (sync, library, _) = await makeSync(account)
+        _ = try await library.follow(feedURL: URL(string: feed("a"))!)
+        try await sync.sync()
+        #expect(account.feeds == [feed("a")])
+        try await library.unfollow(showId: await library.shows()[0].id)
+        let report = try await sync.sync()
+        #expect(report.followed == 0, "the repeated add does not bring it back")
+        #expect(await library.shows().isEmpty)
+        #expect(account.feeds.isEmpty, "and the removal reaches the account")
     }
 
     @Test("positions: the newer side wins, and what came from the account is not sent back")

@@ -57,15 +57,21 @@ public actor GPodderSync {
 
     private func syncSubscriptions(_ report: inout Report) async throws {
         let firstSync = state.subscriptionsSince == 0
+        // What the listener did on the phone since the last sync, worked out before the
+        // account's changes are applied: it is newer than anything the account can say, and
+        // a server that repeats a recent "add" must not bring back a show just unfollowed.
+        let before = Set(await library.shows().compactMap { $0.feedURL?.absoluteString })
+        let removedHere = firstSync ? [] : state.syncedFeeds.subtracting(before)
+        let addedHere = before.subtracting(state.syncedFeeds)
         let changes = try await client.subscriptionChanges(device: device, since: state.subscriptionsSince)
 
-        for feed in changes.remove {
+        for feed in changes.remove where !addedHere.contains(feed) {
+            state.syncedFeeds.remove(feed)
             guard let show = await show(feed: feed) else { continue }
             try await library.unfollow(showId: show.id)
-            state.syncedFeeds.remove(feed)
             report.unfollowed += 1
         }
-        for feed in changes.add where !changes.remove.contains(feed) {
+        for feed in changes.add where !changes.remove.contains(feed) && !removedHere.contains(feed) {
             state.syncedFeeds.insert(feed)
             guard await show(feed: feed) == nil, let url = URL(string: feed) else { continue }
             // One feed that is gone must not stop the rest; it stays on the account.
@@ -74,8 +80,7 @@ public actor GPodderSync {
 
         let local = Set(await library.shows().compactMap { $0.feedURL?.absoluteString })
         let add = local.subtracting(state.syncedFeeds).sorted()
-        // On the first sync nothing was agreed yet, so nothing missing on the phone is a removal.
-        let remove = firstSync ? [] : state.syncedFeeds.subtracting(local).subtracting(changes.add).sorted()
+        let remove = removedHere.subtracting(local).sorted()
         var since = changes.timestamp
         if !add.isEmpty || !remove.isEmpty {
             let answer = try await client.uploadSubscriptionChanges(device: device, add: add, remove: remove)
@@ -84,7 +89,7 @@ public actor GPodderSync {
             state.syncedFeeds.formUnion(add)
             state.syncedFeeds.subtract(remove)
             for pair in answer.updateUrls where pair.count == 2 && state.syncedFeeds.remove(pair[0]) != nil {
-                state.syncedFeeds.insert(pair[1])
+                if !pair[1].isEmpty { state.syncedFeeds.insert(pair[1]) }
             }
         }
         state.subscriptionsSince = since
