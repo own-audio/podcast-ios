@@ -55,8 +55,9 @@ self-contained and can be built from one checkout. Written 2026-10-17.
    downloads kept server-side, a family.
 4. **Opens on New Episodes**: unplayed episodes across all shows, newest first, with each show
    able to opt out ("don't show in the inbox") or in ("auto-add to the queue"). Tabs: New
-   Episodes, Shows, **Downloads** (what is on the phone, from every source — the books and music
-   apps got the same tab on 2026-10-17), Search. An Offline Mode switch on the first tab beside the Settings gear, as in both other apps. Settings behind a gear, as in the books app.
+   Episodes, Shows, **Downloads** (what is on the phone, from every source, each row saying
+   which source it came from — the books and music apps got the same tab on 2026-10-17),
+   Search. An Offline Mode switch on the first tab beside the Settings gear, as in both other apps. Settings behind a gear, as in the books app.
 5. **A queue, kept on the phone.** Play next / play later from any episode row; the inbox plays
    on when the queue is empty, newest first; the queue survives a relaunch. No server has a
    podcast queue, so none syncs it (the gPodder API has no notion of one).
