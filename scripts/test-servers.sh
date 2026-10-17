@@ -9,6 +9,9 @@
 #   OWNAUDIO_HOST=https://…              # an own.audio server with podcasts (the public demo
 #   OWNAUDIO_EMAIL=…                     # has some); positions are written and put back
 #   OWNAUDIO_ACCOUNT_PASSWORD=…
+#   GPODDER_HOST=http://…                # a gPodder API server (podfetch, Nextcloud's gPodder
+#   GPODDER_USERNAME=…                   # Sync); the tests use a device of their own and remove
+#   GPODDER_PASSWORD=…                   # the feed they add
 #
 # The servers' variables join as their phases arrive.
 #

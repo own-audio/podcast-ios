@@ -245,13 +245,18 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   player reads it from the file). Following and refreshing stay hidden until v2 has them; the
   sign-in screens (password, Apple, Google, two-factor) and the server store come with the app
   in P6, for every source at once.
-- [ ] **P5: gPodder sync.** `GPodderKit`: `POST /api/2/auth/{user}/login.json`, devices,
+- [x] **P5: gPodder sync.** `GPodderKit`: `POST /api/2/auth/{user}/login.json`, devices,
   `GET/POST /api/2/subscriptions/{user}/{device}.json` with `since`, `GET/POST
   /api/2/episodes/{user}.json` (actions `download`, `play` with `position`/`started`/`total`,
   `delete`, `new`), the timestamps kept per device. The sync layer applies subscriptions to the
   feeds source both ways and sends positions and played marks as actions; conflicts resolved by
   time. Live tests against podfetch; a UI test that a show added on the phone shows up on the
   server and one added on the server on the phone.
+  *Done:* `GPodderKit` (basic auth on every call, the API's zone-less UTC timestamps) and
+  `GPodderSync` over the feed library — the first sync merges and removes nothing, later ones
+  carry removals both ways; actions from this device are skipped when they come back; what came
+  from the account is not sent back. Mock tests cover both directions; the live test runs when
+  `GPODDER_*` is set (no account yet). The UI test waits for P6's screens.
 - [ ] **P6: The app.** Onboarding (add a feed, search a show, import OPML — or add a server),
   tabs New Episodes / Shows / Downloads / Search, a show's page (episodes, rules, settings), the episode
   page (notes with links, chapters, transcript where there is one), the player (the books

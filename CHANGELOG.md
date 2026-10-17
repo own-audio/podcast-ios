@@ -31,3 +31,6 @@ All notable changes to own.audio Podcasts. The format follows
   the server's signed streams.
 - The plan's "Lessons from the other apps": what the music and books apps learned, checked in
   every phase.
+- gPodder sync (P5): a client for the gPodder API as podfetch and Nextcloud's gPodder Sync
+  serve it, and a sync that keeps the phone's feeds and the account's subscriptions in step both
+  ways and exchanges positions and played marks as episode actions, the newer one winning.
