@@ -77,4 +77,4 @@ AppStore/screenshots/
 AppStore/marketing/
 
 # sharp for scripts/render-icons.mjs (a symlink or an install, never committed)
-node_modules/
+node_modules

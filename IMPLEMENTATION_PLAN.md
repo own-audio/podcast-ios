@@ -152,12 +152,15 @@ Nothing here names a host; the addresses and accounts live in the gitignored
 Each phase ends green: unit tests, the live tests against every source it touches, the UI
 tests, a build of the app, `CHANGELOG.md`, then one commit and push.
 
-- [ ] **P0: Skeleton.** The repository as the books app has it: `project.yml` (XcodeGen, Swift
-  6, iOS 18, the app, the widget extension, the UI tests), `Packages/ServerSupport`,
+- [x] **P0: Skeleton** (2026-10-17). The repository as the books app has it: `project.yml`
+  (XcodeGen, Swift 6, iOS 18, the app, the UI tests; the widget extension and its App Group
+  wait for P11, since they need the group registered with Apple), `Packages/ServerSupport`,
   `OwnAudioKit`, `PlayerEngine` (`SpokenEngine` + `PlayerCore`) copied, `AudiobookshelfKit`
   copied, the design tokens and brand (`OwnAudioMark`, wordmark, hero), the icon from the same
   construction with the podcast colour and a microphone, the Czech catalog pipeline, the
-  scripts, `PRIVACY.md`. Builds and launches to a placeholder first screen; the launch test.
+  scripts, `PRIVACY.md`. Builds and launches to a placeholder first screen; the launch test
+  in English and Czech. The book-only parts of `OwnAudioKit` (uploads, narration) were left
+  behind; `test-servers.sh` starts small and grows with the live tests.
 - [ ] **P1: FeedKit.** `XMLParser`-based parsing of RSS 2.0 and Atom into `FeedDocument`
   (show + episodes), with `itunes:` (author, image, duration in every form, explicit, season,
   episode, type), `podcast:` (chapters, transcript, person, funding, guid), enclosure, GUID,

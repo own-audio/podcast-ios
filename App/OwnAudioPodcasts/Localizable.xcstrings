@@ -1,0 +1,36 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Adding shows comes next.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidávání pořadů přijde vzápětí."
+          }
+        }
+      }
+    },
+    "Free and open source · MPL-2.0": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Svobodný software s otevřeným kódem · MPL-2.0"
+          }
+        }
+      }
+    },
+    "Your podcasts. No account, no server needed.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaše podcasty. Bez účtu, bez serveru."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
