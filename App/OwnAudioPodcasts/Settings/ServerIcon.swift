@@ -1,9 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Which picture marks a server: its own logo where the project's licence lets this app carry
-/// it (own.audio, podfetch), a symbol otherwise. Audiobookshelf's and gPodder's logos are part
-/// of their GPL code, with no separate licence for the artwork, so they are not copied here.
+/// Which picture marks a server. own.audio's mark ships with the app. Other servers show the
+/// icon they serve themselves, loaded from the listener's own server at run time (as a browser
+/// shows a site's icon): Audiobookshelf's and gPodder's artwork is GPL-licensed and podfetch's
+/// Apache-licensed, and the app carries none of it. A symbol stands in until it has loaded.
 enum ServerBrand {
     case ownAudio, podfetch, audiobookshelf, gpodder, phone
 
@@ -18,7 +19,6 @@ enum ServerBrand {
     var assetName: String? {
         switch self {
         case .ownAudio: "ServerLogo"
-        case .podfetch: "PodfetchLogo"
         default: nil
         }
     }
@@ -36,11 +36,15 @@ enum ServerBrand {
 /// A server's picture in a list, on a rounded tile.
 struct ServerIcon: View {
     let brand: ServerBrand
+    /// The server's own icon, when it has loaded.
+    var image: UIImage?
     var size: CGFloat = 28
 
     var body: some View {
         Group {
-            if let name = brand.assetName {
+            if let image {
+                Image(uiImage: image).resizable().scaledToFit()
+            } else if let name = brand.assetName {
                 Image(name).resizable().scaledToFit()
             } else {
                 ZStack {
@@ -61,9 +65,8 @@ extension ServerBrand {
     /// The same for a menu row, as the music app draws it: menus show a custom picture at its own
     /// size, so the logo is drawn here at the size of a menu's symbols.
     @MainActor
-    func menuIcon(dark: Bool, side: CGFloat = 22) -> Image {
-        guard let name = assetName,
-              let source = UIImage(named: name, in: nil, compatibleWith: UITraitCollection(userInterfaceStyle: dark ? .dark : .light)) else {
+    func menuIcon(dark: Bool, image: UIImage? = nil, side: CGFloat = 22) -> Image {
+        guard let source = image ?? assetName.flatMap({ UIImage(named: $0, in: nil, compatibleWith: UITraitCollection(userInterfaceStyle: dark ? .dark : .light)) }) else {
             return Image(systemName: symbol)
         }
         let scale = min(side / source.size.width, side / source.size.height)

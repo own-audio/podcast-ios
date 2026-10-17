@@ -281,6 +281,18 @@ public final class SpokenEngine {
         statusObservation = item.observe(\.status, options: [.new]) { [weak self] item, _ in
             let status = item.status
             let message = item.error?.localizedDescription
+            if status == .failed {
+                // What the server answered, for the log: the status and the address without its
+                // query (which can carry a token).
+                let event = item.errorLog()?.events.last
+                let address = (item.asset as? AVURLAsset).map { url -> String in
+                    var parts = URLComponents(url: url.url, resolvingAgainstBaseURL: false)
+                    parts?.query = nil
+                    return parts?.string ?? ""
+                } ?? ""
+                let underlying = (item.error as NSError?)?.userInfo[NSUnderlyingErrorKey].map { "\($0)" } ?? "-"
+                Logger(subsystem: "audio.own.player", category: "spoken").error("open failed: \(address, privacy: .public) http=\(event?.errorStatusCode ?? 0, privacy: .public) \(event?.errorComment ?? "", privacy: .public) underlying=\(underlying, privacy: .public)")
+            }
             Task { @MainActor [weak self] in
                 guard let self, self.player.currentItem === item else { return }
                 switch status {

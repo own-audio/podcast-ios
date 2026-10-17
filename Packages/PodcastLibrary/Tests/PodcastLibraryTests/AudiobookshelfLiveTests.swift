@@ -38,4 +38,27 @@ struct AudiobookshelfLiveTests {
         }
         await client.signOut()
     }
+
+    @Test("a file the phone can't play (WebM, Ogg) comes as the server's transcoded HLS stream")
+    func transcoded() async throws {
+        let env = ProcessInfo.processInfo.environment
+        let hostURL = try #require(URL(string: env["AUDIOBOOKSHELF_HOST"]!))
+        let signIn = try await AudiobookshelfClient.signIn(host: hostURL, username: env["AUDIOBOOKSHELF_USERNAME"]!, password: env["AUDIOBOOKSHELF_PASSWORD"]!)
+        let client = AudiobookshelfClient(host: hostURL, tokens: TokenSession(signIn.tokens))
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("abs-live-\(UUID().uuidString)", isDirectory: true)
+        let abs = AudiobookshelfPodcastSource(client: client, store: ListeningStore(directory: directory), canAddShows: false)
+        var found: Episode?
+        for show in try await abs.shows() where found == nil {
+            found = try await abs.episodes(showId: show.id).first { !$0.id.hasPrefix("feed:") && !PlayableAudio.isPlayable($0.audioType) }
+        }
+        guard let episode = found else {
+            print("no episode in a format the phone can't play on this server; nothing to check")
+            return
+        }
+        let playback = try await abs.playback(episode.key)
+        #expect(playback.isHLS, "\(episode.audioType ?? "?") goes through the server's transcoder")
+        let (data, response) = try await URLSession.shared.data(from: playback.url)
+        #expect((response as? HTTPURLResponse)?.statusCode == 200)
+        #expect(String(decoding: data.prefix(7), as: UTF8.self) == "#EXTM3U", "an HLS playlist")
+    }
 }

@@ -48,7 +48,7 @@ struct ServerDetailView: View {
                 Section {
                     LabeledContent("Kind") {
                         HStack(spacing: Theme.Spacing.sm) {
-                            ServerIcon(brand: ServerBrand(server), size: 22)
+                            ServerIcon(brand: ServerBrand(server), image: model.serverIcons[server.id], size: 22)
                             Text(server.software == "podfetch" ? "podfetch" : server.kind.name)
                         }
                     }

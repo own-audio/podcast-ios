@@ -71,9 +71,27 @@ public struct Playback: Sendable, Equatable {
     public var url: URL
     /// The server's own copy rather than the publisher's.
     public var isServerFile: Bool
+    /// An HLS playlist the server transcodes as it goes (a file the phone can't play as it is).
+    public var isHLS: Bool
 
-    public init(url: URL, isServerFile: Bool) {
+    public init(url: URL, isServerFile: Bool, isHLS: Bool = false) {
         self.url = url
         self.isServerFile = isServerFile
+        self.isHLS = isHLS
+    }
+}
+
+/// What AVPlayer plays as a file. Anything else (WebM, Ogg, Opus) needs a server to transcode it.
+public enum PlayableAudio {
+    public static let mimeTypes: Set<String> = [
+        "audio/mpeg", "audio/mp3", "audio/mpeg3", "audio/x-mpeg", "audio/mp4", "audio/x-m4a", "audio/m4a", "audio/m4b", "audio/x-m4b",
+        "audio/aac", "audio/x-aac", "audio/aacp", "audio/flac", "audio/x-flac", "audio/wav", "audio/x-wav", "audio/wave", "audio/aiff", "audio/x-aiff",
+        "audio/x-caf", "video/mp4", "video/quicktime",
+    ]
+
+    /// nil (unknown) counts as playable: most feeds that say nothing send MP3.
+    public static func isPlayable(_ mimeType: String?) -> Bool {
+        guard let type = mimeType?.lowercased().split(separator: ";").first.map({ $0.trimmingCharacters(in: .whitespaces) }), !type.isEmpty else { return true }
+        return mimeTypes.contains(type)
     }
 }

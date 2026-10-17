@@ -154,7 +154,7 @@ struct SourceMenu: View {
                     Label {
                         Text(model.sourceName(ref))
                     } icon: {
-                        model.brand(ref).menuIcon(dark: colorScheme == .dark)
+                        model.brand(ref).menuIcon(dark: colorScheme == .dark, image: model.icon(ref))
                     }
                     .tag(SourceRef?.some(ref))
                 }

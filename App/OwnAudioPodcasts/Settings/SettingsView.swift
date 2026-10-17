@@ -22,12 +22,12 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
-                    ForEach(model.servers) { server in
+                    ForEach(model.serversInOrder) { server in
                         NavigationLink {
                             ServerDetailView(serverId: server.id)
                         } label: {
                             HStack(spacing: Theme.Spacing.md) {
-                                ServerIcon(brand: ServerBrand(server), size: 32)
+                                ServerIcon(brand: ServerBrand(server), image: model.serverIcons[server.id], size: 32)
                                     .overlay(alignment: .bottomTrailing) { connectionDot(server).offset(x: 3, y: 3) }
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(server.displayName).foregroundStyle(Theme.Colors.foreground)

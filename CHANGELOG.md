@@ -62,5 +62,11 @@ All notable changes to own.audio Podcasts. The format follows
   account, and its addresses — the one it was added with, those an own.audio server names, and
   any added by hand — used automatically (the fastest that answers on each network) or fixed.
 - Server logos, as in the music app: the source switch on New Episodes lists each source with its
-  logo and name, and Settings and each server's page show them too (own.audio's and podfetch's
-  own logos; symbols for Audiobookshelf and other gPodder servers, whose logos are GPL artwork).
+  logo and name, and Settings and each server's page show them too. own.audio's mark (the violet
+  core with the family) ships with the app; every other server shows the icon it serves itself,
+  loaded from the listener's own server and kept for offline use, so the app carries no other
+  project's artwork (Audiobookshelf's and gPodder's are GPL, podfetch's Apache).
+- own.audio servers come first, in the switch, in Settings and in Shows.
+- Audiobookshelf episodes in a format the phone can't play (WebM/Opus from YouTube downloads,
+  Ogg) play through the server's transcoder (an HLS play session) instead of failing with
+  "Cannot Open"; a failed open logs what the server answered.

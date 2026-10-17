@@ -75,7 +75,9 @@ struct ShowsView: View {
             if bySource[show.source] == nil { order.append(show.source) }
             bySource[show.source, default: []].append(show)
         }
-        return order.sorted { $0 == .phone && $1 != .phone }.map { ($0, bySource[$0] ?? []) }
+        // In the switch's order: own.audio first, then this iPhone, then the other servers.
+        let rank = Dictionary(uniqueKeysWithValues: model.switchableSources.enumerated().map { ($1, $0) })
+        return order.sorted { (rank[$0] ?? .max) < (rank[$1] ?? .max) }.map { ($0, bySource[$0] ?? []) }
     }
 }
 

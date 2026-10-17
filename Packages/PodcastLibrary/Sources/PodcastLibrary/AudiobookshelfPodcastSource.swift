@@ -33,7 +33,13 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
     /// Feed-only episodes carry this before the feed's own id, so a key says which kind it is.
     static let feedPrefix = "feed:"
 
-    public init(client: AudiobookshelfClient, store: ListeningStore, fetcher: FeedFetcher = FeedFetcher(), canAddShows: Bool, now: @escaping @Sendable () -> Date = { Date() }) {
+    /// This phone, as play sessions name it.
+    private let device: DeviceInfo
+
+    public init(client: AudiobookshelfClient, store: ListeningStore, fetcher: FeedFetcher = FeedFetcher(), canAddShows: Bool,
+                device: DeviceInfo = DeviceInfo(deviceId: "own-audio-podcasts", clientName: "own.audio Podcasts", clientVersion: "1"),
+                now: @escaping @Sendable () -> Date = { Date() }) {
+        self.device = device
         self.client = client
         self.store = store
         self.fetcher = fetcher
@@ -230,8 +236,16 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
         }
         let item: PodcastItem
         if let known = items[key.showId], known.media.episodes != nil { item = known } else { item = try await translating { try await client.podcast(id: key.showId) } }
-        guard let ino = item.media.episodes?.first(where: { $0.id == key.episodeId })?.audioFile?.ino else { throw SourceError.notFound }
+        guard let file = item.media.episodes?.first(where: { $0.id == key.episodeId })?.audioFile else { throw SourceError.notFound }
         let token = try await translating { try await client.freshToken() }
+        guard PlayableAudio.isPlayable(file.mimeType) else {
+            // WebM, Ogg, Opus: the server transcodes them into HLS for a play session that says
+            // what this phone plays.
+            let session = try await translating { try await client.playEpisode(itemId: key.showId, episodeId: key.episodeId, device: device) }
+            guard let track = session.audioTracks.first else { throw SourceError.notFound }
+            return Playback(url: client.mediaURL(contentUrl: track.contentUrl, token: token), isServerFile: true, isHLS: session.isHLS)
+        }
+        guard let ino = file.ino else { throw SourceError.notFound }
         return Playback(url: client.fileURL(itemId: key.showId, ino: ino, token: token), isServerFile: true)
     }
 

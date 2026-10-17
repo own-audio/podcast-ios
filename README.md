@@ -34,10 +34,7 @@ open OwnAudioPodcasts.xcodeproj
 
 [MPL-2.0](LICENSE). own.audio's name and logo are own.audio's; a fork uses its own.
 
-The podfetch logo (`App/OwnAudioPodcasts/Assets.xcassets/PodfetchLogo.imageset`) marks podfetch
-servers in Settings and the source switch. It comes from
-[PodFetch](https://github.com/SamTV12345/PodFetch) (`mobile/assets/images/logo.svg`), © its
-contributors under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), used to
-show that the app works with podfetch, not as this app's logo. Audiobookshelf's and gPodder's logos
-are part of their GPL-licensed code with no separate licence for the artwork, so those servers are
-marked with system symbols instead.
+Other servers are marked with the icon each one serves itself, loaded from the listener's own
+server while the app runs, as a browser shows a site's icon; the app ships no other project's
+artwork. Audiobookshelf's and gPodder's logos are GPL-licensed and podfetch's Apache-licensed,
+and their names are their projects' own.

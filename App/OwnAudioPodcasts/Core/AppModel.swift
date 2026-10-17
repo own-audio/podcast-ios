@@ -164,9 +164,26 @@ final class AppModel {
     /// own.audio and Audiobookshelf server. A gPodder account syncs this iPhone's shows and is
     /// not one.
     var switchableSources: [SourceRef] {
-        [.phone] + servers.filter { $0.kind != .gpodder }
-            .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
-            .map { .server($0.id) }
+        let mine = serversInOrder.filter { $0.kind != .gpodder }
+        // own.audio first, always; then this iPhone, then the other servers.
+        return mine.filter { $0.kind == .ownAudio }.map { .server($0.id) } + [.phone]
+            + mine.filter { $0.kind != .ownAudio }.map { .server($0.id) }
+    }
+
+    /// Servers as every list shows them: own.audio first, then Audiobookshelf, then gPodder
+    /// accounts, each by name.
+    var serversInOrder: [ServerRecord] {
+        func rank(_ kind: ServerKind) -> Int {
+            switch kind {
+            case .ownAudio: 0
+            case .audiobookshelf: 1
+            case .gpodder: 2
+            }
+        }
+        return servers.sorted {
+            rank($0.kind) != rank($1.kind) ? rank($0.kind) < rank($1.kind)
+                : $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending
+        }
     }
 
     var visibleInbox: [SourcedEpisode] {
@@ -225,6 +242,7 @@ final class AppModel {
         await reloadLists()
         hasLoaded = true
         await chooseAddresses()
+        await loadServerIcons()
         await refresh()
     }
 
@@ -428,7 +446,7 @@ final class AppModel {
             let chapters = await chapters(for: item.episode, durationMs: duration)
             let spoken = SpokenBook(
                 id: item.id, title: item.episode.title, author: show?.title,
-                parts: [SpokenPart(id: "audio", url: playback.url, durationMs: duration, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))], chapters: chapters
+                parts: [SpokenPart(id: "audio", url: playback.url, durationMs: duration, isHLS: playback.isHLS, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))], chapters: chapters
             )
             nowPlaying = item
             nowPlayingShow = show
@@ -598,6 +616,7 @@ final class AppModel {
 
     func removeServer(_ id: UUID) async {
         if activeSource == .server(id) { activeSource = nil }
+        serverIcons[id] = nil
         if case .server(id)? = nowPlaying?.source { stopPlayback() }
         try? await store.remove(id: id)
         servers.removeAll { $0.id == id }
@@ -610,6 +629,7 @@ final class AppModel {
         try await store.add(record)
         servers.append(record)
         rebuildSources()
+        Task { await loadServerIcons() }
         if record.kind == .gpodder, let sync = syncs[record.id] {
             _ = try? await sync.sync()
         }
@@ -633,6 +653,45 @@ final class AppModel {
     private(set) var serverVersions: [UUID: String] = [:]
     private(set) var lastSyncs: [UUID: Date] = [:]
     @ObservationIgnored private var chosenAddresses: [UUID: URL] = [:]
+
+    /// Each server's own icon, as the server itself serves it (Audiobookshelf's, podfetch's…),
+    /// loaded at run time and kept beside its data, so the app ships no one else's artwork.
+    private(set) var serverIcons: [UUID: UIImage] = [:]
+
+    func icon(_ ref: SourceRef) -> UIImage? {
+        if case .server(let id) = ref { serverIcons[id] } else { nil }
+    }
+
+    /// Where each kind of server keeps its icon, best first.
+    private static func iconPaths(_ record: ServerRecord) -> [String] {
+        switch record.kind {
+        case .ownAudio: []
+        case .audiobookshelf: ["icon192.png", "icon64.png", "favicon.ico"]
+        case .gpodder: record.software == "podfetch" ? ["ui/logo.png", "ui/favicon.ico"] : ["apple-touch-icon.png", "favicon.ico"]
+        }
+    }
+
+    /// From disk first; asked of the server when there is none yet (or `force`).
+    func loadServerIcons(force: Bool = false) async {
+        for record in servers where !Self.iconPaths(record).isEmpty {
+            let file = serverDirectory(record.id).appendingPathComponent("icon.png")
+            if !force, serverIcons[record.id] == nil, let data = try? Data(contentsOf: file), let image = UIImage(data: data) {
+                serverIcons[record.id] = image
+            }
+            guard force || serverIcons[record.id] == nil, !isOffline else { continue }
+            let host = address(for: record)
+            for path in Self.iconPaths(record) {
+                guard let (data, response) = try? await Self.probeSession.data(from: host.appending(path: path)),
+                      (response as? HTTPURLResponse)?.statusCode == 200,
+                      (response.mimeType ?? "").hasPrefix("image/"),
+                      let image = UIImage(data: data), image.size.width >= 16 else { continue }
+                serverIcons[record.id] = image
+                try? FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try? image.pngData()?.write(to: file, options: .atomic)
+                break
+            }
+        }
+    }
 
     /// The address requests go to: the one chosen on this network, else the fixed one, else the
     /// one the server was added with.
