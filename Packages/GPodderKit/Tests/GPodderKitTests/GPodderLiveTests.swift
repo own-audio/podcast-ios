@@ -3,7 +3,7 @@ import Testing
 
 @testable import GPodderKit
 
-/// Against a real gPodder server (podfetch, Nextcloud's gPodder Sync). Works on a device of its
+/// Against a real gPodder server (podfetch, own.audio). Works on a device of its
 /// own and removes the feed it adds; the episode action it sends stays in the account's history,
 /// as the API has no way to delete one.
 @Suite("gPodder, live", .serialized, .enabled(if: ProcessInfo.processInfo.environment["GPODDER_HOST"] != nil))

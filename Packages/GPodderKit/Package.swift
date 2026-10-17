@@ -9,8 +9,8 @@ let package = Package(
         .library(name: "GPodderKit", targets: ["GPodderKit"])
     ],
     targets: [
-        // A client for the gPodder API (gpodder.net's v2, as podfetch, Nextcloud's gPodder
-        // Sync and others serve it), Foundation only.
+        // A client for the gPodder API (gpodder.net's v2, as podfetch, own.audio and others
+        // serve it), Foundation only.
         .target(name: "GPodderKit"),
         .testTarget(name: "GPodderKitTests", dependencies: ["GPodderKit"]),
     ]

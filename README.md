@@ -2,7 +2,7 @@
 
 A native iPhone and iPad podcast player that needs no account and no server: add feeds and
 listen. When you do run a server — **own.audio**, **Audiobookshelf** or anything that speaks
-the **gPodder** API (podfetch, Nextcloud) — your shows, episodes and positions follow you
+the **gPodder** API (podfetch, gpodder.net, own.audio) — your shows, episodes and positions follow you
 between devices. Swift and SwiftUI, no web views, no third-party dependencies — a few
 megabytes.
 

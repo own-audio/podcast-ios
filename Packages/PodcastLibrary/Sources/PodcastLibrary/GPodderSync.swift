@@ -1,7 +1,7 @@
 import Foundation
 import GPodderKit
 
-/// Keeps the phone's feeds and a gPodder account (podfetch, Nextcloud's gPodder Sync,
+/// Keeps the phone's feeds and a gPodder account (podfetch, own.audio,
 /// gpodder.net) in step: subscriptions both ways, and positions and played marks as episode
 /// actions. The newer of two positions wins, so whichever device was listened to last decides.
 public actor GPodderSync {

@@ -3,7 +3,7 @@
 **own.audio Podcasts** — a native, open-source podcast player for iPhone and iPad. It is
 complete on its own: add feeds and listen, no account, no server. With a server it keeps shows,
 episodes and positions in step between devices: **own.audio**, **Audiobookshelf** podcast
-libraries, and any server that speaks the **gPodder** API (podfetch, Nextcloud gPodder). Swift
+libraries, and any server that speaks the **gPodder** API (podfetch, gpodder.net, own.audio). Swift
 6, SwiftUI, iOS 18+. MPL-2.0.
 
 It is the third app in a family that began with own.audio Music (`own-audio/music-ios`) and
