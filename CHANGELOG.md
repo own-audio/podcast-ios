@@ -53,3 +53,4 @@ All notable changes to own.audio Podcasts. The format follows
   keeps lists per device), a wrong password is refused even after a right one (no session cookie
   is kept), a position another app wrote into a row this phone created is taken, and a
   read-only account still syncs down.
+- Titles from Audiobookshelf and own.audio show HTML entities decoded ("I'm", not "I&#39;m").

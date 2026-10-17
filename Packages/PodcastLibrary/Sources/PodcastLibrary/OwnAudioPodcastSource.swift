@@ -165,7 +165,7 @@ public actor OwnAudioPodcastSource: PodcastSource {
 
     private func show(_ podcast: Podcast) async -> Show {
         Show(
-            id: podcast.id, title: podcast.title, author: nil,
+            id: podcast.id, title: HTMLText.decodeEntities(podcast.title), author: nil,
             description: podcast.description.map(HTMLText.plain).flatMap { $0.isEmpty ? nil : $0 },
             imageURL: FeedValues.url(podcast.image), feedURL: FeedValues.url(podcast.feedUrl), link: FeedValues.url(podcast.link),
             categories: podcast.categories ?? [],
@@ -176,7 +176,7 @@ public actor OwnAudioPodcastSource: PodcastSource {
 
     private func episode(_ episode: PodcastEpisode) -> Episode {
         Episode(
-            id: episode.id, showId: episode.podcastId, title: episode.title,
+            id: episode.id, showId: episode.podcastId, title: HTMLText.decodeEntities(episode.title),
             description: episode.description.map(HTMLText.plain).flatMap { $0.isEmpty ? nil : $0 },
             publishedAt: episode.publishedAt, durationMs: episode.durationMs, audioURL: FeedValues.url(episode.audioUrl),
             audioType: episode.contentType, audioBytes: episode.sizeBytes, imageURL: FeedValues.url(episode.image),

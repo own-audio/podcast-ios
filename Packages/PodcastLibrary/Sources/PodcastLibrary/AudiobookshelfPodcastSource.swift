@@ -242,7 +242,8 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
     private func show(_ item: PodcastItem) async -> Show {
         let metadata = item.media.metadata
         return Show(
-            id: item.id, title: metadata.title, author: metadata.author,
+            // Audiobookshelf passes on titles as the feed or YouTube wrote them, entities and all.
+            id: item.id, title: HTMLText.decodeEntities(metadata.title), author: metadata.author.map(HTMLText.decodeEntities),
             description: metadata.description.map(HTMLText.plain).flatMap { $0.isEmpty ? nil : $0 },
             imageURL: item.media.coverPath != nil ? client.coverURL(itemId: item.id, width: 600) : FeedValues.url(metadata.imageUrl),
             feedURL: FeedValues.url(metadata.feedUrl), link: FeedValues.url(metadata.itunesPageUrl), categories: metadata.genres,
@@ -254,7 +255,7 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
 
     private func episode(_ episode: PodcastEpisode, showId: String) -> Episode {
         Episode(
-            id: episode.id, showId: showId, title: episode.title,
+            id: episode.id, showId: showId, title: HTMLText.decodeEntities(episode.title),
             description: episode.description.map(HTMLText.plain).flatMap { $0.isEmpty ? nil : $0 },
             publishedAt: episode.publishedAt.map { Date(timeIntervalSince1970: Double($0) / 1000) },
             durationMs: episode.duration > 0 ? Int64(episode.duration * 1000) : nil,

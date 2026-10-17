@@ -31,7 +31,7 @@ private func server(progress: [String: (Double, Bool, Int64)] = [:]) async -> Mo
         case (_, "/feed.xml"): return .init(statusCode: 200, body: Data(feed.utf8))
         case ("GET", "/api/libraries"): return json(#"{"libraries":[{"id":"lib1","name":"Podcasts","mediaType":"podcast","folders":[{"id":"f1","fullPath":"/podcasts"}]},{"id":"lib2","name":"Books","mediaType":"book"}]}"#)
         case ("GET", "/api/libraries/lib1/items"):
-            return json(#"{"results":[{"id":"show1","libraryId":"lib1","addedAt":1,"updatedAt":1,"media":{"metadata":{"title":"Show","feedUrl":"https://abs.example.com/feed.xml","type":"episodic"},"coverPath":"/c.jpg","numEpisodes":2}}],"total":1,"limit":200,"page":0}"#)
+            return json(#"{"results":[{"id":"show1","libraryId":"lib1","addedAt":1,"updatedAt":1,"media":{"metadata":{"title":"Show &amp; I&#39;m","feedUrl":"https://abs.example.com/feed.xml","type":"episodic"},"coverPath":"/c.jpg","numEpisodes":2}}],"total":1,"limit":200,"page":0}"#)
         case ("GET", "/api/items/show1"):
             return json(#"{"id":"show1","libraryId":"lib1","addedAt":1,"updatedAt":1,"media":{"metadata":{"title":"Show","feedUrl":"https://abs.example.com/feed.xml"},"coverPath":"/c.jpg","episodes":\#(episodes)}}"#)
         case ("GET", "/api/libraries/lib1/recent-episodes"): return json(#"{"episodes":\#(episodes),"limit":100,"page":0}"#)
@@ -59,7 +59,8 @@ struct AudiobookshelfSourceTests {
     func feedMerge() async throws {
         let abs = source(await server())
         let shows = try await abs.shows()
-        #expect(shows.map(\.title) == ["Show"] && shows[0].imageURL?.path == "/api/items/show1/cover")
+        #expect(shows.map(\.title) == ["Show & I'm"], "HTML entities in the server's titles are decoded")
+        #expect(shows[0].imageURL?.path == "/api/items/show1/cover")
         let episodes = try await abs.episodes(showId: "show1")
         #expect(Set(episodes.map(\.id)) == ["ep1", "ep2", "feed:g3"], "g1 matches by GUID, two by title; only g3 is the feed's own")
         let one = try #require(episodes.first { $0.id == "ep1" })
