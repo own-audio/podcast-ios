@@ -49,35 +49,61 @@ struct EpisodeRow: View {
     let item: SourcedEpisode
     var showsShowTitle = true
     var inInbox = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private func words(episode: Episode, show: Show?, progress: ListeningProgress?, lineLimit: Int?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if showsShowTitle, let show {
+                Text(Mojibake.repair(show.title)).font(.caption).foregroundStyle(Theme.Colors.muted).lineLimit(lineLimit == nil ? 2 : 1)
+            }
+            Text(Mojibake.repair(episode.title))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(progress?.played == true ? Theme.Colors.muted : Theme.Colors.foreground)
+                .lineLimit(lineLimit)
+            Text(ProgressText.line(episode: episode, progress: progress))
+                .font(.caption)
+                .foregroundStyle(Theme.Colors.muted)
+                .lineLimit(lineLimit == nil ? nil : 1)
+        }
+    }
 
     var body: some View {
         let episode = item.episode
         let show = model.show(for: item)
         let progress = model.progress(of: item)
-        HStack(alignment: .top, spacing: Theme.Spacing.md) {
-            NavigationLink(value: item) {
-                HStack(alignment: .top, spacing: Theme.Spacing.md) {
-                    ArtworkView(url: episode.imageURL ?? show?.imageURL, size: 56)
-                    VStack(alignment: .leading, spacing: 2) {
-                        if showsShowTitle, let show {
-                            Text(Mojibake.repair(show.title)).font(.caption).foregroundStyle(Theme.Colors.muted).lineLimit(1)
-                        }
-                        Text(Mojibake.repair(episode.title))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(progress?.played == true ? Theme.Colors.muted : Theme.Colors.foreground)
-                            .lineLimit(2)
-                        Text(ProgressText.line(episode: episode, progress: progress))
-                            .font(.caption)
-                            .foregroundStyle(Theme.Colors.muted)
-                            .lineLimit(1)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // The largest text: the picture and play button on a row of their own, the words
+                // the whole width under them.
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    HStack {
+                        ArtworkView(url: episode.imageURL ?? show?.imageURL, size: 56)
+                        Spacer()
+                        PlayButton(item: item)
                     }
-                    Spacer(minLength: 0)
+                    NavigationLink(value: item) {
+                        words(episode: episode, show: show, progress: progress, lineLimit: nil)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("episode.\(episode.id)")
                 }
-                .contentShape(Rectangle())
+            } else {
+                HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                    NavigationLink(value: item) {
+                        HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                            ArtworkView(url: episode.imageURL ?? show?.imageURL, size: 56)
+                            words(episode: episode, show: show, progress: progress, lineLimit: 2)
+                            Spacer(minLength: 0)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("episode.\(episode.id)")
+                    PlayButton(item: item)
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("episode.\(episode.id)")
-            PlayButton(item: item)
         }
         .padding(.vertical, Theme.Spacing.xs)
         .swipeActions(edge: .leading) {

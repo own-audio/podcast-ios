@@ -9,6 +9,7 @@ struct PlayerView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var sheet: Sheet?
     @State private var scrubbing: Double?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private enum Sheet: Identifiable {
         case speed, sleep, chapters
@@ -54,7 +55,7 @@ struct PlayerView: View {
         let engine = model.engine
         return ScrollView {
             VStack(spacing: Theme.Spacing.xl) {
-                ArtworkView(url: item.episode.imageURL ?? model.nowPlayingShow?.imageURL, size: 280, radius: Theme.Radius.cover)
+                ArtworkView(url: item.episode.imageURL ?? model.nowPlayingShow?.imageURL, size: dynamicTypeSize.isAccessibilitySize ? 140 : 280, radius: Theme.Radius.cover)
                     .overlay(alignment: .topTrailing) {
                         if let remaining = engine.sleepTimer.remainingSecs {
                             Label(formatDuration(remaining), systemImage: "moon.zzz.fill")

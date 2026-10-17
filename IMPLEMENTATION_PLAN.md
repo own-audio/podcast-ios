@@ -257,20 +257,21 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   carry removals both ways; actions from this device are skipped when they come back; what came
   from the account is not sent back. Mock tests cover both directions; the live test runs when
   `GPODDER_*` is set (no account yet). The UI test waits for P6's screens.
-- [ ] **P6: The app.** Onboarding (add a feed, search a show, import OPML — or add a server),
+- [x] **P6: The app.** Onboarding (add a feed, search a show, import OPML — or add a server),
   tabs New Episodes / Shows / Downloads / Search, a show's page (episodes, rules, settings), the episode
   page (notes with links, chapters, transcript where there is one), the player (the books
   app's, with chapter and transcript sheets), the mini player, Now Playing, Settings
   (servers, downloads, playback, mobile data, about). Czech from the first screen. UI tests
   per source kind: add, play, seek, speed, chapters, sleep timer; the misuse suite and the
   large-text pass copied from the books app.
-  *In progress:* the four tabs, onboarding (search, feed address, server), the show and
-  episode pages, the player with speed, sleep timer and chapters, the mini player, Settings,
-  adding own.audio (with two-factor), Audiobookshelf and gPodder, Czech for every string. The
-  engine now takes the file's own length when the feed gives none or a wrong one. Verified: the
-  feed flow UI test (follow by address, play, skip, speed, sleep, stop) and Offline Mode beside
-  Settings. The Audiobookshelf and own.audio UI tests pass too. Open: the gPodder UI test (no account yet), OPML
-  import (moved to P9 with discovery), the misuse suite and the large-text pass.
+  *Done:* the four tabs, onboarding (search, feed address, server), the show and episode pages,
+  the player with speed, sleep timer and chapters, the mini player, Settings, own.audio (with
+  two-factor), Audiobookshelf and gPodder accounts, Czech for every string. The engine takes the
+  file's own length when the feed gives none, and the episode's type for a stream with no
+  extension (own.audio serves `application/octet-stream`). UI tests pass for feeds,
+  Audiobookshelf and own.audio, plus the misuse suite and the large-text pass (rows stack at
+  accessibility sizes). Left over: the gPodder UI test runs once a `GPODDER_*` account exists;
+  OPML import moved to P9.
 - [ ] **P7: Downloads and offline.** Per-episode downloads on the books app's background
   `URLSession`, the per-show rules of decision 7, delete-when-played, the storage cap and
   eviction, Offline Mode and the offline banner, the listening cache, the server's own

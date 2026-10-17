@@ -41,3 +41,5 @@ All notable changes to own.audio Podcasts. The format follows
   the feed has none.
 - own.audio episodes play: the server streams them from an address with no extension as
   `application/octet-stream`, so the player now tells AVPlayer the episode's type.
+- The misuse suite and the large-text pass; at accessibility text sizes episode rows stack
+  their words under the picture and the player's picture shrinks so the controls stay on screen.
