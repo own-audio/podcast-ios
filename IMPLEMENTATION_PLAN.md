@@ -54,8 +54,9 @@ self-contained and can be built from one checkout. Written 2026-10-17.
    Servers add what feeds cannot: a position that follows you, a played state across devices,
    downloads kept server-side, a family.
 4. **Opens on New Episodes**: unplayed episodes across all shows, newest first, with each show
-   able to opt out ("don't show in the inbox") or in ("auto-add to the queue"). Shows is the
-   second tab; Search the third. Settings behind a gear, as in the books app.
+   able to opt out ("don't show in the inbox") or in ("auto-add to the queue"). Tabs: New
+   Episodes, Shows, **Downloads** (what is on the phone, from every source — the books and music
+   apps got the same tab on 2026-10-17, with an Offline Mode switch in its toolbar), Search. Settings behind a gear, as in the books app.
 5. **A queue, kept on the phone.** Play next / play later from any episode row; the inbox plays
    on when the queue is empty, newest first; the queue survives a relaunch. No server has a
    podcast queue, so none syncs it (the gPodder API has no notion of one).
@@ -244,7 +245,7 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   time. Live tests against podfetch; a UI test that a show added on the phone shows up on the
   server and one added on the server on the phone.
 - [ ] **P6: The app.** Onboarding (add a feed, search a show, import OPML — or add a server),
-  tabs New Episodes / Shows / Search, a show's page (episodes, rules, settings), the episode
+  tabs New Episodes / Shows / Downloads / Search, a show's page (episodes, rules, settings), the episode
   page (notes with links, chapters, transcript where there is one), the player (the books
   app's, with chapter and transcript sheets), the mini player, Now Playing, Settings
   (servers, downloads, playback, mobile data, about). Czech from the first screen. UI tests
