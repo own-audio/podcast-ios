@@ -54,3 +54,10 @@ All notable changes to own.audio Podcasts. The format follows
   is kept), a position another app wrote into a row this phone created is taken, and a
   read-only account still syncs down.
 - Titles from Audiobookshelf and own.audio show HTML entities decoded ("I'm", not "I&#39;m").
+- A source switch on New Episodes, as the books and music apps switch servers on Home: all
+  sources together, this iPhone's shows, or one server's; Shows follows it, and new shows go to
+  the source on the switch when it takes them.
+- A page for each server in Settings, as in the music app: whether it answers and accepts the
+  sign-in (Check Now), signing in again, its kind, version and name, Sync Now for a gPodder
+  account, and its addresses — the one it was added with, those an own.audio server names, and
+  any added by hand — used automatically (the fastest that answers on each network) or fixed.

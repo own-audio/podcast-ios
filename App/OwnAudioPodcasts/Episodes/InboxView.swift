@@ -16,13 +16,13 @@ struct InboxView: View {
                     .foregroundStyle(Theme.Colors.muted)
                     .listRowSeparator(.hidden)
             }
-            ForEach(model.inbox) { item in
+            ForEach(model.visibleInbox) { item in
                 EpisodeRow(item: item, inInbox: true)
             }
         }
         .listStyle(.plain)
         .overlay {
-            if model.inbox.isEmpty {
+            if model.visibleInbox.isEmpty {
                 ContentUnavailableView {
                     Label("No New Episodes", systemImage: "tray")
                 } description: {
@@ -34,6 +34,9 @@ struct InboxView: View {
         .refreshable { await model.refresh() }
         .navigationTitle("New Episodes")
         .toolbar {
+            if model.switchableSources.count > 1 {
+                ToolbarItem(placement: .topBarLeading) { SourceMenu() }
+            }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 Toggle(isOn: Binding(get: { model.settings.offlineMode }, set: { model.setOfflineMode($0) })) {
                     Label("Offline Mode", systemImage: model.settings.offlineMode ? "wifi.slash" : "wifi")
@@ -132,5 +135,29 @@ struct EpisodeView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// With more than one source, which one New Episodes and Shows show is a tap away — all of them
+/// together, this iPhone's own shows, or one server's — as the books and music apps switch
+/// servers on Home.
+struct SourceMenu: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        Menu {
+            Picker("Source", selection: $model.activeSource) {
+                Label("All Sources", systemImage: "square.stack.3d.up").tag(SourceRef?.none)
+                ForEach(model.switchableSources, id: \.self) { ref in
+                    Label(model.sourceName(ref), systemImage: model.sourceIcon(ref)).tag(SourceRef?.some(ref))
+                }
+            }
+        } label: {
+            Label(model.activeSource.map { model.sourceName($0) } ?? String(localized: "All Sources"),
+                  systemImage: model.activeSource.map { model.sourceIcon($0) } ?? "square.stack.3d.up")
+                .labelStyle(.titleAndIcon)
+        }
+        .accessibilityIdentifier("home.serverMenu")
     }
 }

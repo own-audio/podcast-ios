@@ -47,7 +47,7 @@ struct ShowsView: View {
             .padding(Theme.Spacing.screenEdge)
         }
         .overlay {
-            if model.shows.isEmpty {
+            if model.visibleShows.isEmpty {
                 ContentUnavailableView {
                     Label("No Shows", systemImage: "square.stack")
                 } description: {
@@ -71,7 +71,7 @@ struct ShowsView: View {
     private var groups: [(source: SourceRef, shows: [SourcedShow])] {
         var order: [SourceRef] = []
         var bySource: [SourceRef: [SourcedShow]] = [:]
-        for show in model.shows {
+        for show in model.visibleShows {
             if bySource[show.source] == nil { order.append(show.source) }
             bySource[show.source, default: []].append(show)
         }
@@ -251,6 +251,8 @@ struct AddFeedView: View {
                 }
             }
             .navigationTitle("Add a Show")
+            // The source on the switch, when it takes new shows.
+            .onAppear { if let active = model.activeSource, model.followTargets.contains(active) { target = active } }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }

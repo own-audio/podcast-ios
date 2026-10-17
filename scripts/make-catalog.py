@@ -13,6 +13,43 @@ cs = {
  "%lld s": "%lld s",
  "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players.": "Účet synchronizace gPodder (podfetch, gpodder.net, server own.audio): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači.",
  "Automatic": "Automaticky",
+ "Account": "Účet",
+ "Add Address": "Přidat adresu",
+ "Add the server's address on your home network, a VPN such as Tailscale, or a second public name. On each network the app uses the fastest one that answers.": "Přidejte adresu serveru v domácí síti, ve VPN jako Tailscale nebo druhé veřejné jméno. V každé síti aplikace použije tu nejrychlejší, která odpovídá.",
+ "Addresses": "Adresy",
+ "Check Now": "Zkontrolovat",
+ "Checked at %@: no address of the server answers.": "Zkontrolováno v %@: žádná adresa serveru neodpovídá.",
+ "Checked at %@: the server answers and accepts the sign-in.": "Zkontrolováno v %@: server odpovídá a přihlášení přijímá.",
+ "Checked at %@: the server refuses the sign-in. Sign in again below.": "Zkontrolováno v %@: server přihlášení odmítá. Přihlaste se níže znovu.",
+ "Checking…": "Kontroluji…",
+ "Connected · %@": "Připojeno · %@",
+ "Connection": "Připojení",
+ "Home network": "Domácí síť",
+ "Internet": "Internet",
+ "Last Synced": "Naposledy synchronizováno",
+ "Name": "Název",
+ "No address answers right now": "Teď neodpovídá žádná adresa",
+ "Offline": "Offline",
+ "Remove Server": "Odebrat server",
+ "Rename": "Přejmenovat",
+ "Save": "Uložit",
+ "Server": "Server",
+ "Sign In": "Přihlásit",
+ "Sign In Again": "Přihlásit znovu",
+ "Signed in as %@.": "Přihlášeno jako %@.",
+ "Sync": "Synchronizace",
+ "Sync Now": "Synchronizovat",
+ "That doesn't look like a server address.": "Tohle nevypadá jako adresa serveru.",
+ "The server tells the app its other addresses. Add one it doesn't know, such as a VPN like Tailscale; on each network the app uses the fastest that answers as this server.": "Server aplikaci sdělí své další adresy. Přidejte takovou, kterou nezná, třeba VPN jako Tailscale; v každé síti aplikace použije nejrychlejší, která odpovídá jako tento server.",
+ "This iPhone's shows and positions are kept in step with the account, as every other app signed in to it does.": "Pořady a pozice v tomto iPhonu se udržují ve shodě s účtem, stejně jako v každé další aplikaci, která je k němu přihlášená.",
+ "Use": "Použít",
+ "VPN": "VPN",
+ "added by you": "přidaná vámi",
+ "added with": "zadaná při přidání",
+ "from the server": "od serveru",
+ "http://192.168.1.20:8080": "http://192.168.1.20:8080",
+ "All Sources": "Všechny zdroje",
+ "Source": "Zdroj",
  "Favourite": "Oblíbené",
  "Paused": "Pozastaveno",
  "Shared with family": "Sdíleno s rodinou",
@@ -153,7 +190,7 @@ def unit(v): return {"stringUnit": {"state": "translated", "value": v}}
 strings = {}
 for key, value in cs.items():
     strings[key] = {"localizations": {"cs": unit(value)}}
-    if key in ("own.audio", "Audiobookshelf", "", "123456", "https://example.com/feed.xml", "https://podcasts.example.com"): strings[key]["shouldTranslate"] = False
+    if key in ("own.audio", "Audiobookshelf", "", "123456", "https://example.com/feed.xml", "https://podcasts.example.com", "http://192.168.1.20:8080"): strings[key]["shouldTranslate"] = False
 for key, forms in plurals.items():
     strings[key] = {"localizations": {lang: {"variations": {"plural": {k: unit(v) for k, v in f.items()}}} for lang, f in forms.items()}}
 catalog = {"sourceLanguage": "en", "strings": dict(sorted(strings.items())), "version": "1.0"}

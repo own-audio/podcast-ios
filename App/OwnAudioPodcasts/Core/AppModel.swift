@@ -127,7 +127,11 @@ final class AppModel {
         engine.onPosition = { [weak self] position in self?.positionReported(position) }
         engine.artworkProvider = { [weak self] id in await self?.artwork(for: id) }
         network.onChange = { [weak self] connected in
-            if connected { Task { await self?.refresh() } }
+            guard connected else { return }
+            Task {
+                await self?.chooseAddresses()
+                await self?.refresh()
+            }
         }
     }
 
@@ -148,6 +152,39 @@ final class AppModel {
     var isEmpty: Bool { shows.isEmpty && servers.isEmpty }
 
     func server(_ id: UUID) -> ServerRecord? { servers.first { $0.id == id } }
+
+    // MARK: - The source switch
+
+    /// The source New Episodes and Shows show; nil for all of them together.
+    var activeSource: SourceRef? = SourceRef(id: UserDefaults.standard.string(forKey: "activeSource") ?? "") {
+        didSet { UserDefaults.standard.set(activeSource?.id, forKey: "activeSource") }
+    }
+
+    /// The sources that have a library of their own, for the switch: this iPhone and every
+    /// own.audio and Audiobookshelf server. A gPodder account syncs this iPhone's shows and is
+    /// not one.
+    var switchableSources: [SourceRef] {
+        [.phone] + servers.filter { $0.kind != .gpodder }
+            .sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+            .map { .server($0.id) }
+    }
+
+    var visibleInbox: [SourcedEpisode] {
+        guard let activeSource else { return inbox }
+        return inbox.filter { $0.source == activeSource }
+    }
+
+    var visibleShows: [SourcedShow] {
+        guard let activeSource else { return shows }
+        return shows.filter { $0.source == activeSource }
+    }
+
+    func sourceIcon(_ ref: SourceRef) -> String {
+        switch ref {
+        case .phone: "iphone"
+        case .server(let id): server(id)?.kind == .ownAudio ? "person.3" : "server.rack"
+        }
+    }
 
     func sourceName(_ ref: SourceRef) -> String {
         switch ref {
@@ -176,12 +213,18 @@ final class AppModel {
 
     func load() async {
         guard !hasLoaded else { return }
-        if UITestFlags.isUITesting { await store.clear() }
+        if UITestFlags.isUITesting {
+            await store.clear()
+            activeSource = nil
+        }
         servers = await store.loadAll()
+        // A source remembered from before that is gone now would filter everything away.
+        if let active = activeSource, !switchableSources.contains(active) { activeSource = nil }
         rebuildSources()
         await addFromLaunchArguments()
         await reloadLists()
         hasLoaded = true
+        await chooseAddresses()
         await refresh()
     }
 
@@ -211,15 +254,15 @@ final class AppModel {
             switch record.kind {
             case .ownAudio:
                 let tokens = OwnAudioKit.TokenSession(record.ownAudioTokens, keeper: OwnAudioTokenKeeper(store: store, serverId: record.id))
-                let client = OwnAudioClient(host: record.host, tokens: tokens, session: Self.session)
+                let client = OwnAudioClient(host: address(for: record), tokens: tokens, session: Self.session)
                 sources[record.id] = OwnAudioPodcastSource(client: client, store: ListeningStore(directory: serverDirectory(record.id)))
             case .audiobookshelf:
                 let tokens = AudiobookshelfKit.TokenSession(record.audiobookshelfTokens, keeper: AudiobookshelfTokenKeeper(store: store, serverId: record.id))
-                let client = AudiobookshelfClient(host: record.host, tokens: tokens, session: Self.session)
+                let client = AudiobookshelfClient(host: address(for: record), tokens: tokens, session: Self.session)
                 sources[record.id] = AudiobookshelfPodcastSource(client: client, store: ListeningStore(directory: serverDirectory(record.id)), fetcher: FeedFetcher(session: Self.session), canAddShows: record.canAddShows)
             case .gpodder:
                 guard let password = record.password else { continue }
-                let client = GPodderClient(host: record.host, username: record.username, password: password, session: Self.session)
+                let client = GPodderClient(host: address(for: record), username: record.username, password: password, session: Self.session)
                 syncs[record.id] = GPodderSync(client: client, library: phone, device: Self.gpodderDevice, directory: serverDirectory(record.id))
             }
         }
@@ -264,7 +307,7 @@ final class AppModel {
         guard !isOffline, !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
-        for sync in syncs.values { _ = try? await sync.sync() }
+        for (id, sync) in syncs where (try? await sync.sync()) != nil { lastSyncs[id] = Date() }
         _ = await phone.refresh(showId: nil)
         for source in sources.values { _ = try? await source.refresh(showId: nil) }
         await reloadLists()
@@ -473,6 +516,8 @@ final class AppModel {
         let host: URL
         let mfaToken: String
         let email: String
+        /// Signing in again to this server rather than adding one.
+        var replacing: UUID?
     }
 
     var pendingTwoFactor: PendingTwoFactor?
@@ -527,6 +572,12 @@ final class AppModel {
         guard let pending = pendingTwoFactor else { return }
         let tokens = try await OwnAudioClient.finishTwoFactor(host: pending.host, mfaToken: pending.mfaToken, code: code, session: Self.session)
         pendingTwoFactor = nil
+        if let id = pending.replacing, var record = server(id) {
+            record.ownAudioTokens = tokens
+            record.username = pending.email
+            try await update(record)
+            return
+        }
         try await save(ServerRecord(displayName: Self.displayName(pending.host), kind: .ownAudio, host: pending.host, username: pending.email, ownAudioTokens: tokens))
     }
 
@@ -545,6 +596,7 @@ final class AppModel {
     }
 
     func removeServer(_ id: UUID) async {
+        if activeSource == .server(id) { activeSource = nil }
         if case .server(id)? = nowPlaying?.source { stopPlayback() }
         try? await store.remove(id: id)
         servers.removeAll { $0.id == id }
@@ -560,6 +612,223 @@ final class AppModel {
         if record.kind == .gpodder, let sync = syncs[record.id] {
             _ = try? await sync.sync()
         }
+        await reloadLists()
+    }
+
+    // MARK: - Connections
+
+    enum ConnectionState: Equatable { case checking, connected(URL), unreachable }
+
+    struct ConnectionCheck {
+        enum Status { case ok, rejected, unreachable }
+        let status: Status
+        let at: Date
+    }
+
+    private(set) var connectionStates: [UUID: ConnectionState] = [:]
+    private(set) var connectionChecks: [UUID: ConnectionCheck] = [:]
+    private(set) var checkingConnections: Set<UUID> = []
+    /// What the server says it is: its version, for the server page.
+    private(set) var serverVersions: [UUID: String] = [:]
+    private(set) var lastSyncs: [UUID: Date] = [:]
+    @ObservationIgnored private var chosenAddresses: [UUID: URL] = [:]
+
+    /// The address requests go to: the one chosen on this network, else the fixed one, else the
+    /// one the server was added with.
+    func address(for record: ServerRecord) -> URL {
+        chosenAddresses[record.id] ?? record.fixedAddress ?? record.host
+    }
+
+    /// Short timeouts: an address on another network should fail fast, not hold the others up.
+    private static let probeSession: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 4
+        configuration.httpAdditionalHeaders = ["User-Agent": "own.audio Podcasts/\(appVersion) iOS"]
+        return URLSession(configuration: configuration)
+    }()
+
+    /// For every server, the address that answers fastest on this network (or the fixed one, if
+    /// it answers); the clients are rebuilt when one changes.
+    func chooseAddresses() async {
+        guard !settings.offlineMode else { return }
+        var changed = false
+        for record in servers {
+            if connectionStates[record.id] == nil { connectionStates[record.id] = .checking }
+            if let best = await bestAddress(record) {
+                if chosenAddresses[record.id] != best { chosenAddresses[record.id] = best; changed = true }
+                connectionStates[record.id] = .connected(best)
+            } else {
+                connectionStates[record.id] = .unreachable
+            }
+        }
+        if changed { rebuildSources() }
+    }
+
+    private func bestAddress(_ record: ServerRecord) async -> URL? {
+        if let fixed = record.fixedAddress { return await answers(record, at: fixed) ? fixed : nil }
+        let candidates = record.candidateAddresses.map(\.url)
+        return await withTaskGroup(of: URL?.self) { group in
+            for url in candidates {
+                group.addTask { await self.answers(record, at: url) ? url : nil }
+            }
+            for await found in group {
+                if let found {
+                    group.cancelAll()
+                    return found
+                }
+            }
+            return nil
+        }
+    }
+
+    /// Whether `url` answers as this server: own.audio with its identity, Audiobookshelf with its
+    /// status, a gPodder server with any answer from its API.
+    nonisolated private func answers(_ record: ServerRecord, at url: URL) async -> Bool {
+        switch record.kind {
+        case .ownAudio:
+            guard let (data, response) = try? await Self.probeSession.data(from: url.appending(path: "api/v1/server")),
+                  (response as? HTTPURLResponse)?.statusCode == 200,
+                  let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return false }
+            if let identity = record.serverIdentity { return json["id"] as? String == identity }
+            return true
+        case .audiobookshelf:
+            guard let (_, response) = try? await Self.probeSession.data(from: url.appending(path: "status")) else { return false }
+            return (response as? HTTPURLResponse)?.statusCode == 200
+        case .gpodder:
+            guard let (_, response) = try? await Self.probeSession.data(from: url.appending(path: "api/2/devices/own-audio-probe.json")),
+                  let status = (response as? HTTPURLResponse)?.statusCode else { return false }
+            return status < 500 && status != 404
+        }
+    }
+
+    /// The server page's button: the addresses again, then the sign-in, and what the server says
+    /// about itself (own.audio names its other addresses, which are learned).
+    func checkNow(id: UUID) async {
+        guard let record = server(id) else { return }
+        checkingConnections.insert(id)
+        defer { checkingConnections.remove(id) }
+        await chooseAddresses()
+        guard case .connected(let url)? = connectionStates[id] else {
+            connectionChecks[id] = ConnectionCheck(status: .unreachable, at: Date())
+            return
+        }
+        await learnAboutServer(record, at: url)
+        let status: ConnectionCheck.Status
+        do {
+            switch record.kind {
+            case .gpodder:
+                guard let password = record.password else { throw GPodderError.unauthorized }
+                try await GPodderClient(host: url, username: record.username, password: password, session: Self.session).login()
+            case .ownAudio, .audiobookshelf:
+                _ = try await source(.server(id))?.shows()
+            }
+            status = .ok
+        } catch let error where Self.isUnreachable(error) {
+            status = .unreachable
+        } catch {
+            status = .rejected
+        }
+        connectionChecks[id] = ConnectionCheck(status: status, at: Date())
+    }
+
+    private func learnAboutServer(_ record: ServerRecord, at url: URL) async {
+        switch record.kind {
+        case .ownAudio:
+            guard let (data, _) = try? await Self.probeSession.data(from: url.appending(path: "api/v1/server")),
+                  let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return }
+            serverVersions[record.id] = json["version"] as? String
+            var updated = record
+            if updated.serverIdentity == nil { updated.serverIdentity = json["id"] as? String }
+            let known = Set(updated.candidateAddresses.map { ServerAddress.normalized($0.url) })
+            for entry in json["addresses"] as? [[String: Any]] ?? [] {
+                guard let text = entry["url"] as? String, let named = URL(string: text), !known.contains(ServerAddress.normalized(named)) else { continue }
+                updated.addresses.append(ServerAddress(url: named, origin: .server))
+            }
+            if updated != record { try? await update(updated, rebuild: false) }
+        case .audiobookshelf:
+            guard let (data, _) = try? await Self.probeSession.data(from: url.appending(path: "status")),
+                  let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else { return }
+            serverVersions[record.id] = json["serverVersion"] as? String
+        case .gpodder:
+            if let (data, _) = try? await Self.probeSession.data(from: url.appending(path: "api/v1/sys/config")),
+               let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any], json["rssFeed"] != nil {
+                serverVersions[record.id] = "podfetch"
+            }
+        }
+    }
+
+    /// Saves a changed record (a new name, address or sign-in) and rebuilds what uses it.
+    func update(_ record: ServerRecord, rebuild: Bool = true) async throws {
+        try await store.update(record)
+        if let index = servers.firstIndex(where: { $0.id == record.id }) { servers[index] = record }
+        if rebuild {
+            chosenAddresses[record.id] = nil
+            rebuildSources()
+            await chooseAddresses()
+            await reloadLists()
+        }
+    }
+
+    func rename(id: UUID, to name: String) async {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard var record = server(id), !trimmed.isEmpty else { return }
+        record.displayName = trimmed
+        try? await update(record, rebuild: false)
+    }
+
+    func addAddress(_ text: String, to id: UUID) async throws {
+        guard var record = server(id) else { return }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let withScheme = trimmed.contains("://") ? trimmed : "http://\(trimmed)"
+        guard let url = URL(string: withScheme), url.host() != nil else { throw AddServerError.badAddress }
+        guard !record.candidateAddresses.contains(where: { ServerAddress.normalized($0.url) == ServerAddress.normalized(url) }) else { return }
+        record.addresses.append(ServerAddress(url: url, origin: .user))
+        try await update(record)
+    }
+
+    func removeAddress(_ url: URL, from id: UUID) async {
+        guard var record = server(id) else { return }
+        record.addresses.removeAll { $0.url == url }
+        if record.fixedAddress == url { record.fixedAddress = nil }
+        try? await update(record)
+    }
+
+    func setFixedAddress(_ url: URL?, for id: UUID) async {
+        guard var record = server(id) else { return }
+        record.fixedAddress = url
+        try? await update(record)
+    }
+
+    /// The same account, signed in again (a changed password, a refused refresh).
+    func signInAgain(id: UUID, username: String, password: String) async throws {
+        guard var record = server(id) else { return }
+        let host = address(for: record)
+        switch record.kind {
+        case .ownAudio:
+            do {
+                record.ownAudioTokens = try await OwnAudioClient.signIn(host: host, email: username, password: password, device: Self.ownAudioDevice, session: Self.session)
+            } catch OwnAudioError.twoFactorRequired(let mfaToken, _) {
+                pendingTwoFactor = PendingTwoFactor(host: host, mfaToken: mfaToken, email: username, replacing: id)
+                return
+            }
+        case .audiobookshelf:
+            let signIn = try await AudiobookshelfClient.signIn(host: host, username: username, password: password, session: Self.session)
+            record.audiobookshelfTokens = signIn.tokens
+            record.canAddShows = signIn.user.permissions.upload
+        case .gpodder:
+            try await GPodderClient(host: host, username: username, password: password, session: Self.session).login()
+            record.password = password
+        }
+        record.username = username
+        try await update(record)
+        connectionChecks[id] = nil
+    }
+
+    /// A gPodder account's sync, now.
+    func syncNow(id: UUID) async throws {
+        guard let sync = syncs[id] else { return }
+        try await sync.sync()
+        lastSyncs[id] = Date()
         await reloadLists()
     }
 
@@ -592,7 +861,7 @@ final class AppModel {
         }
     }
 
-    enum AddServerError: Error { case noPodcastLibrary, notRecognised }
+    enum AddServerError: Error { case noPodcastLibrary, notRecognised, badAddress }
 
     /// What the listener is told when something fails.
     static func message(for error: Error) -> String {
@@ -603,6 +872,8 @@ final class AppModel {
             String(localized: "The name or password is wrong.")
         case AudiobookshelfError.signedOut, OwnAudioError.signedOut:
             String(localized: "The server signed this iPhone out. Remove the server and add it again.")
+        case AddServerError.badAddress:
+            String(localized: "That doesn't look like a server address.")
         case AddServerError.notRecognised:
             String(localized: "No own.audio, Audiobookshelf or gPodder server answers at that address.")
         case GPodderError.http(409):

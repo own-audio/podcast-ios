@@ -122,6 +122,8 @@ struct SearchResultView: View {
             }
         }
         .navigationTitle(result.title)
+            // The source on the switch, when it takes new shows.
+            .onAppear { if let active = model.activeSource, model.followTargets.contains(active) { target = active } }
         .navigationBarTitleDisplayMode(.inline)
     }
 

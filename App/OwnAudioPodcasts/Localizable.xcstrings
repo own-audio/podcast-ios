@@ -123,6 +123,16 @@
         }
       }
     },
+    "Account": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Účet"
+          }
+        }
+      }
+    },
     "Add": {
       "localizations": {
         "cs": {
@@ -139,6 +149,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat 10 minut"
+          }
+        }
+      }
+    },
+    "Add Address": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidat adresu"
           }
         }
       }
@@ -169,6 +189,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat pořad"
+          }
+        }
+      }
+    },
+    "Add the server's address on your home network, a VPN such as Tailscale, or a second public name. On each network the app uses the fastest one that answers.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidejte adresu serveru v domácí síti, ve VPN jako Tailscale nebo druhé veřejné jméno. V každé síti aplikace použije tu nejrychlejší, která odpovídá."
+          }
+        }
+      }
+    },
+    "Addresses": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adresy"
+          }
+        }
+      }
+    },
+    "All Sources": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Všechny zdroje"
           }
         }
       }
@@ -243,12 +293,82 @@
         }
       }
     },
+    "Check Now": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zkontrolovat"
+          }
+        }
+      }
+    },
+    "Checked at %@: no address of the server answers.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zkontrolováno v %@: žádná adresa serveru neodpovídá."
+          }
+        }
+      }
+    },
+    "Checked at %@: the server answers and accepts the sign-in.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zkontrolováno v %@: server odpovídá a přihlášení přijímá."
+          }
+        }
+      }
+    },
+    "Checked at %@: the server refuses the sign-in. Sign in again below.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zkontrolováno v %@: server přihlášení odmítá. Přihlaste se níže znovu."
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontroluji…"
+          }
+        }
+      }
+    },
     "Close": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Zavřít"
+          }
+        }
+      }
+    },
+    "Connected · %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Připojeno · %@"
+          }
+        }
+      }
+    },
+    "Connection": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Připojení"
           }
         }
       }
@@ -493,6 +613,26 @@
         }
       }
     },
+    "Home network": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Domácí síť"
+          }
+        }
+      }
+    },
+    "Internet": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Internet"
+          }
+        }
+      }
+    },
     "Its episodes and positions on this source are removed.": {
       "localizations": {
         "cs": {
@@ -533,6 +673,16 @@
         }
       }
     },
+    "Last Synced": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naposledy synchronizováno"
+          }
+        }
+      }
+    },
     "Mark as Played": {
       "localizations": {
         "cs": {
@@ -559,6 +709,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Další"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Název"
           }
         }
       }
@@ -599,6 +759,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Žádné pořady"
+          }
+        }
+      }
+    },
+    "No address answers right now": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teď neodpovídá žádná adresa"
           }
         }
       }
@@ -659,6 +829,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vypnuto"
+          }
+        }
+      }
+    },
+    "Offline": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline"
           }
         }
       }
@@ -803,6 +983,16 @@
         }
       }
     },
+    "Remove Server": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebrat server"
+          }
+        }
+      }
+    },
     "Remove from New Episodes": {
       "localizations": {
         "cs": {
@@ -823,12 +1013,32 @@
         }
       }
     },
+    "Rename": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přejmenovat"
+          }
+        }
+      }
+    },
     "Resume": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Pokračovat"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uložit"
           }
         }
       }
@@ -869,6 +1079,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hledání potřebuje síť."
+          }
+        }
+      }
+    },
+    "Server": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server"
           }
         }
       }
@@ -963,6 +1183,36 @@
         }
       }
     },
+    "Sign In": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přihlásit"
+          }
+        }
+      }
+    },
+    "Sign In Again": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přihlásit znovu"
+          }
+        }
+      }
+    },
+    "Signed in as %@.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přihlášeno jako %@."
+          }
+        }
+      }
+    },
     "Skip Back": {
       "localizations": {
         "cs": {
@@ -1053,6 +1303,16 @@
         }
       }
     },
+    "Source": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdroj"
+          }
+        }
+      }
+    },
     "Source Code (MPL-2.0)": {
       "localizations": {
         "cs": {
@@ -1123,6 +1383,26 @@
         }
       }
     },
+    "Sync": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synchronizace"
+          }
+        }
+      }
+    },
+    "Sync Now": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synchronizovat"
+          }
+        }
+      }
+    },
     "That Didn't Work": {
       "localizations": {
         "cs": {
@@ -1139,6 +1419,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tato adresa není podcastový kanál."
+          }
+        }
+      }
+    },
+    "That doesn't look like a server address.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tohle nevypadá jako adresa serveru."
           }
         }
       }
@@ -1223,6 +1513,16 @@
         }
       }
     },
+    "The server tells the app its other addresses. Add one it doesn't know, such as a VPN like Tailscale; on each network the app uses the fastest that answers as this server.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server aplikaci sdělí své další adresy. Přidejte takovou, kterou nezná, třeba VPN jako Tailscale; v každé síti aplikace použije nejrychlejší, která odpovídá jako tento server."
+          }
+        }
+      }
+    },
     "This account has no podcast library on the server.": {
       "localizations": {
         "cs": {
@@ -1239,6 +1539,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tento iPhone"
+          }
+        }
+      }
+    },
+    "This iPhone's shows and positions are kept in step with the account, as every other app signed in to it does.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pořady a pozice v tomto iPhonu se udržují ve shodě s účtem, stejně jako v každé další aplikaci, která je k němu přihlášená."
           }
         }
       }
@@ -1303,12 +1613,32 @@
         }
       }
     },
+    "Use": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Použít"
+          }
+        }
+      }
+    },
     "User Name": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Uživatelské jméno"
+          }
+        }
+      }
+    },
+    "VPN": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "VPN"
           }
         }
       }
@@ -1363,6 +1693,36 @@
         }
       }
     },
+    "added by you": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "přidaná vámi"
+          }
+        }
+      }
+    },
+    "added with": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "zadaná při přidání"
+          }
+        }
+      }
+    },
+    "from the server": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "od serveru"
+          }
+        }
+      }
+    },
     "gPodder sync": {
       "localizations": {
         "cs": {
@@ -1372,6 +1732,17 @@
           }
         }
       }
+    },
+    "http://192.168.1.20:8080": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "http://192.168.1.20:8080"
+          }
+        }
+      },
+      "shouldTranslate": false
     },
     "https://example.com/feed.xml": {
       "localizations": {

@@ -31,8 +31,15 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
     var password: String?
     /// Audiobookshelf: whether this account may add shows (the `upload` permission).
     var canAddShows: Bool
+    /// Every other address the server is known by: named by the server (own.audio), or added by
+    /// hand (the home network, a VPN).
+    var addresses: [ServerAddress]
+    /// nil: the fastest address that answers, chosen again on each network.
+    var fixedAddress: URL?
+    /// own.audio's own identity: an address answering with another id is not this server.
+    var serverIdentity: String?
 
-    init(id: UUID = UUID(), displayName: String, kind: ServerKind, host: URL, username: String, audiobookshelfTokens: AudiobookshelfKit.Tokens? = nil, ownAudioTokens: OwnAudioKit.Tokens? = nil, password: String? = nil, canAddShows: Bool = false) {
+    init(id: UUID = UUID(), displayName: String, kind: ServerKind, host: URL, username: String, audiobookshelfTokens: AudiobookshelfKit.Tokens? = nil, ownAudioTokens: OwnAudioKit.Tokens? = nil, password: String? = nil, canAddShows: Bool = false, addresses: [ServerAddress] = [], fixedAddress: URL? = nil, serverIdentity: String? = nil) {
         self.id = id
         self.displayName = displayName
         self.kind = kind
@@ -42,6 +49,36 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
         self.ownAudioTokens = ownAudioTokens
         self.password = password
         self.canAddShows = canAddShows
+        self.addresses = addresses
+        self.fixedAddress = fixedAddress
+        self.serverIdentity = serverIdentity
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, displayName, kind, host, username, audiobookshelfTokens, ownAudioTokens, password, canAddShows, addresses, fixedAddress, serverIdentity
+    }
+
+    /// Records saved before addresses existed decode with none.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        displayName = try c.decode(String.self, forKey: .displayName)
+        kind = try c.decode(ServerKind.self, forKey: .kind)
+        host = try c.decode(URL.self, forKey: .host)
+        username = try c.decode(String.self, forKey: .username)
+        audiobookshelfTokens = try c.decodeIfPresent(AudiobookshelfKit.Tokens.self, forKey: .audiobookshelfTokens)
+        ownAudioTokens = try c.decodeIfPresent(OwnAudioKit.Tokens.self, forKey: .ownAudioTokens)
+        password = try c.decodeIfPresent(String.self, forKey: .password)
+        canAddShows = try c.decodeIfPresent(Bool.self, forKey: .canAddShows) ?? false
+        addresses = try c.decodeIfPresent([ServerAddress].self, forKey: .addresses) ?? []
+        fixedAddress = try c.decodeIfPresent(URL.self, forKey: .fixedAddress)
+        serverIdentity = try c.decodeIfPresent(String.self, forKey: .serverIdentity)
+    }
+
+    /// Every address to try, the one it was added with first, each once.
+    var candidateAddresses: [ServerAddress] {
+        var seen = Set<String>()
+        return ([ServerAddress(url: host, origin: .added)] + addresses).filter { seen.insert(ServerAddress.normalized($0.url)).inserted }
     }
 
     var isSignedIn: Bool {
@@ -49,6 +86,55 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
         case .ownAudio: ownAudioTokens != nil
         case .audiobookshelf: audiobookshelfTokens != nil
         case .gpodder: password != nil
+        }
+    }
+}
+
+/// One address of a server, and where the app learned it.
+struct ServerAddress: Codable, Sendable, Equatable, Identifiable, Hashable {
+    enum Origin: String, Codable, Sendable { case added, server, user }
+
+    var url: URL
+    var origin: Origin
+    var id: String { url.absoluteString }
+
+    /// Where it can be reached from, read off the address itself.
+    var scope: AddressScope { AddressScope.infer(url) }
+
+    static func normalized(_ url: URL) -> String {
+        var text = url.absoluteString.lowercased()
+        while text.hasSuffix("/") { text.removeLast() }
+        return text
+    }
+}
+
+enum AddressScope: Sendable {
+    case lan, vpn, internet
+
+    /// Private and link-local IPs and `.local` names are the home network; Tailscale's range
+    /// and names a VPN; the rest the internet.
+    static func infer(_ url: URL) -> AddressScope {
+        let host = (url.host() ?? "").lowercased()
+        if host.hasSuffix(".ts.net") { return .vpn }
+        let parts = host.split(separator: ".").compactMap { Int($0) }
+        if parts.count == 4 {
+            switch (parts[0], parts[1]) {
+            case (10, _), (192, 168), (169, 254): return .lan
+            case (172, 16...31): return .lan
+            case (100, 64...127): return .vpn
+            case (127, _): return .lan
+            default: return .internet
+            }
+        }
+        if host.hasSuffix(".local") || host.hasSuffix(".lan") || host.hasSuffix(".home.arpa") || !host.contains(".") { return .lan }
+        return .internet
+    }
+
+    var title: String {
+        switch self {
+        case .lan: String(localized: "Home network")
+        case .vpn: String(localized: "VPN")
+        case .internet: String(localized: "Internet")
         }
     }
 }

@@ -97,6 +97,92 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'gPodder sync'")).firstMatch.exists, "as a gPodder account")
     }
 
+    /// The switch on New Episodes: one source at a time, or all together, in Shows too.
+    func testSourceSwitch() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["OWNAUDIO_HOST"], let user = env["OWNAUDIO_EMAIL"], let password = env["OWNAUDIO_ACCOUNT_PASSWORD"] else {
+            throw XCTSkip("OWNAUDIO_HOST is not set")
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-debugFeedURL", "https://feeds.podcastindex.org/pc20.xml",
+                               "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+        app.launch()
+        let menu = app.buttons["home.serverMenu"].firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 40), "the switch shows with more than one source")
+        XCTAssertTrue(menu.label.contains("All Sources"))
+
+        let shows = app.buttons.matching(NSPredicate(format: "label == 'Shows'")).allElementsBoundByIndex.first { $0.isHittable } ?? app.buttons["Shows"].firstMatch
+        shows.tap()
+        let phoneShow = app.descendants(matching: .any)["show.Podcasting 2.0"]
+        XCTAssertTrue(phoneShow.waitForExistence(timeout: 20))
+        let serverShows = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'show.' AND identifier != 'show.Podcasting 2.0'"))
+        XCTAssertTrue(serverShows.firstMatch.waitForExistence(timeout: 30), "all sources: the server's shows too")
+
+        let inbox = app.buttons.matching(NSPredicate(format: "label == 'New Episodes'")).allElementsBoundByIndex.first { $0.isHittable } ?? app.buttons["New Episodes"].firstMatch
+        inbox.tap()
+        for _ in 0..<3 where !app.buttons["This iPhone"].exists {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            menu.tap()
+            _ = app.buttons["This iPhone"].waitForExistence(timeout: 3)
+        }
+        app.buttons["This iPhone"].tap()
+        XCTAssertTrue(menu.label.contains("This iPhone"))
+        shows.tap()
+        XCTAssertTrue(phoneShow.waitForExistence(timeout: 10))
+        XCTAssertEqual(serverShows.count, 0, "only this iPhone's shows")
+    }
+
+    /// A server's page in Settings: it answers and accepts the sign-in, its addresses are listed,
+    /// one can be added, and the server can be renamed.
+    func testServerPage() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["OWNAUDIO_HOST"], let user = env["OWNAUDIO_EMAIL"], let password = env["OWNAUDIO_ACCOUNT_PASSWORD"] else {
+            throw XCTSkip("OWNAUDIO_HOST is not set")
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+        app.launch()
+        let settings = app.buttons["home.settings"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 40))
+        let name = URL(string: host)?.host() ?? host
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "settings.server.\(name)")).firstMatch
+        for _ in 0..<3 where !row.exists {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            if settings.isHittable { settings.tap() }
+            _ = row.waitForExistence(timeout: 5)
+        }
+        row.tap()
+
+        let result = app.descendants(matching: .any)["serverDetail.checkResult"]
+        XCTAssertTrue(result.waitForExistence(timeout: 30))
+        XCTAssertTrue(result.label.contains("accepts the sign-in"), result.label)
+        XCTAssertTrue(app.descendants(matching: .any)["serverDetail.status"].label.contains("Connected"))
+        let original = app.descendants(matching: .any).matching(identifier: "serverDetail.address.\(host)").firstMatch
+        for _ in 0..<4 where !original.exists { app.swipeUp() }
+        XCTAssertTrue(original.exists, "the address it was added with")
+
+        app.buttons["serverDetail.addAddress"].tap()
+        let field = app.alerts.textFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.typeText("192.168.1.250:8080")
+        app.alerts.buttons["Add"].tap()
+        let added = app.descendants(matching: .any).matching(identifier: "serverDetail.address.http://192.168.1.250:8080").firstMatch
+        for _ in 0..<4 where !added.waitForExistence(timeout: 2) { app.swipeUp() }
+        XCTAssertTrue(added.exists, "an address added by hand")
+        XCTAssertTrue(app.staticTexts["Home network · added by you"].exists, "on the home network, added by hand")
+
+        for _ in 0..<4 where !app.buttons["serverDetail.rename"].isHittable { app.swipeDown() }
+        app.buttons["serverDetail.rename"].tap()
+        let nameField = app.alerts.textFields.firstMatch
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5))
+        let current = (nameField.value as? String) ?? ""
+        nameField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count + 2) + "Demo")
+        app.alerts.buttons["Save"].tap()
+        XCTAssertTrue(app.navigationBars["Demo"].waitForExistence(timeout: 5), "renamed")
+    }
+
     private func run(kind: String, prefix: String, userKey: String? = nil, passwordKey: String) throws {
         let env = ProcessInfo.processInfo.environment
         guard let host = env["\(prefix)_HOST"], let user = env[userKey ?? "\(prefix)_USERNAME"], let password = env[passwordKey] else {

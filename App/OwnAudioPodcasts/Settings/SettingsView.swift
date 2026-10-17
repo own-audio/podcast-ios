@@ -7,20 +7,34 @@ struct SettingsView: View {
     @State private var isAddingServer = false
     @State private var removing: ServerRecord?
 
+    /// Green when an address answers, orange when none does, grey while unknown.
+    private func connectionDot(_ server: ServerRecord) -> some View {
+        let color: Color = switch model.connectionStates[server.id] {
+        case .connected?: Theme.Colors.success
+        case .unreachable?: .orange
+        default: Theme.Colors.muted
+        }
+        return Circle().fill(color).frame(width: 8, height: 8).accessibilityHidden(true)
+    }
+
     var body: some View {
         @Bindable var settings = model.settings
         NavigationStack {
             Form {
                 Section {
                     ForEach(model.servers) { server in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(server.displayName).foregroundStyle(Theme.Colors.foreground)
-                            Text("\(server.kind.name) · \(server.username)").font(.caption).foregroundStyle(Theme.Colors.muted)
+                        NavigationLink {
+                            ServerDetailView(serverId: server.id)
+                        } label: {
+                            HStack(spacing: Theme.Spacing.md) {
+                                connectionDot(server)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(server.displayName).foregroundStyle(Theme.Colors.foreground)
+                                    Text("\(server.kind.name) · \(server.username)").font(.caption).foregroundStyle(Theme.Colors.muted)
+                                }
+                            }
                         }
                         .swipeActions {
-                            Button("Remove", role: .destructive) { removing = server }
-                        }
-                        .contextMenu {
                             Button("Remove", role: .destructive) { removing = server }
                         }
                         .accessibilityIdentifier("settings.server.\(server.displayName)")
