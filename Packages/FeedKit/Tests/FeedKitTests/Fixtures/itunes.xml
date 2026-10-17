@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>The Workshop Hour</title>
+    <link>https://example.com/workshop</link>
+    <atom:link href="https://example.com/workshop/feed.xml" rel="self" type="application/rss+xml"/>
+    <language>en-us</language>
+    <description><![CDATA[<p>Weekly talks about <b>making things</b>.</p><p>Tools &amp; techniques.</p>]]></description>
+    <itunes:author>Jane Maker &amp; Friends</itunes:author>
+    <itunes:owner><itunes:name>Jane Maker</itunes:name><itunes:email>jane@example.com</itunes:email></itunes:owner>
+    <itunes:image href="https://example.com/workshop/cover.jpg"/>
+    <itunes:category text="Leisure"><itunes:category text="Hobbies"/></itunes:category>
+    <itunes:category text="Arts &amp; Design"/>
+    <itunes:explicit>false</itunes:explicit>
+    <itunes:type>serial</itunes:type>
+    <itunes:new-feed-url>https://feeds.example.org/workshop</itunes:new-feed-url>
+    <lastBuildDate>Fri, 16 Oct 2026 08:30:00 GMT</lastBuildDate>
+    <image><url>https://example.com/workshop/rss-image.png</url><title>The Workshop Hour</title><link>https://example.com/workshop</link></image>
+    <item>
+      <title>Episode 3: Chisels</title>
+      <link>https://example.com/workshop/3</link>
+      <guid isPermaLink="false">workshop-0003</guid>
+      <pubDate>Fri, 16 Oct 2026 08:00:00 GMT</pubDate>
+      <enclosure url="https://cdn.example.com/workshop/003.mp3" length="58123456" type="audio/mpeg"/>
+      <itunes:duration>1:02:03</itunes:duration>
+      <itunes:season>1</itunes:season>
+      <itunes:episode>3</itunes:episode>
+      <itunes:episodeType>full</itunes:episodeType>
+      <itunes:explicit>yes</itunes:explicit>
+      <itunes:image href="https://example.com/workshop/3.jpg"/>
+      <description>Plain description.</description>
+      <content:encoded><![CDATA[<p>We sharpen chisels.</p><ul><li>Waterstones</li><li>Honing guide</li></ul><p>Links: <a href="https://example.com/stones">stones</a>&nbsp;&mdash; enjoy</p>]]></content:encoded>
+    </item>
+    <item>
+      <title>Episode 2: Saws</title>
+      <guid>https://example.com/workshop/2</guid>
+      <pubDate>Fri, 9 Oct 2026 08:00:00 +0200</pubDate>
+      <enclosure url="https://cdn.example.com/workshop/002.mp3" length="0" type="audio/mpeg"/>
+      <itunes:duration>45:10</itunes:duration>
+      <itunes:summary>Saws, &lt;i&gt;mostly&lt;/i&gt; Japanese.</itunes:summary>
+    </item>
+    <item>
+      <title>Trailer</title>
+      <guid>workshop-trailer</guid>
+      <pubDate>Thu, 1 Oct 2026 07:00 EDT</pubDate>
+      <enclosure url="https://cdn.example.com/workshop/trailer.m4a" length="1234" type="audio/x-m4a"/>
+      <itunes:duration>3723</itunes:duration>
+      <itunes:episodeType>trailer</itunes:episodeType>
+    </item>
+  </channel>
+</rss>

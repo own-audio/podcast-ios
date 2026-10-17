@@ -161,13 +161,16 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   scripts, `PRIVACY.md`. Builds and launches to a placeholder first screen; the launch test
   in English and Czech. The book-only parts of `OwnAudioKit` (uploads, narration) were left
   behind; `test-servers.sh` starts small and grows with the live tests.
-- [ ] **P1: FeedKit.** `XMLParser`-based parsing of RSS 2.0 and Atom into `FeedDocument`
+- [x] **P1: FeedKit** (2026-10-17). `XMLParser`-based parsing of RSS 2.0 and Atom into `FeedDocument`
   (show + episodes), with `itunes:` (author, image, duration in every form, explicit, season,
   episode, type), `podcast:` (chapters, transcript, person, funding, guid), enclosure, GUID,
   `pubDate` in every form seen in the wild, HTML descriptions to text with paragraphs kept, and
   the lenient parts: bad dates, missing durations, mis-encoded text (the books app's Mojibake
   repair). Conditional fetching with ETag / Last-Modified and a cap on size. Chapter documents
   (`application/json+chapters`) and PSC parsed. Tests against the fixture feeds, byte for byte.
+  Done with synthetic fixtures for every form (iTunes RSS, Podcasting 2.0, Atom, a messy feed,
+  non-feeds) and a live test over six real feeds — a Czech one, 3 000 episodes, the Podcasting 2.0
+  feed's chapter documents — all parsing. A bare `&` is repaired and the feed read again.
 - [ ] **P2: PodcastLibrary core.** Models in episode-time milliseconds: `Show`, `Episode`,
   `Chapter`, `ListeningProgress` (position, played, updated), `PodcastSource` protocol with
   `Capabilities` (`search`, `addByURL`, `serverDownloads`, `familySharing`, `liveUpdates`,

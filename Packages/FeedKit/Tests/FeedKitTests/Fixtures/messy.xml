@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Tom & Jerry Talk</title>
+    <description>Bare ampersands & odd dates</description>
+    <item>
+      <title>PÅÃ­bÄh prvnÃ­</title>
+      <guid>messy-1</guid>
+      <pubDate>Mon, 5 Oct 2026 21:00:00 PST</pubDate>
+      <enclosure url="https://messy.example.com/a b.mp3" type="audio/mpeg"/>
+      <itunes:duration>0</itunes:duration>
+    </item>
+    <item>
+      <title>Second</title>
+      <guid>messy-2</guid>
+      <pubDate>not a date</pubDate>
+      <enclosure url="//messy.example.com/2.mp3" type="audio/mpeg" length=" 77 "/>
+      <itunes:duration>12:34:56:78</itunes:duration>
+    </item>
+    <item>
+      <title>Third</title>
+      <pubDate>2026-10-01</pubDate>
+      <enclosure url="https://messy.example.com/3.mp3"/>
+      <itunes:duration> 90.5 </itunes:duration>
+    </item>
+    <item>
+      <title>A blog post, no audio</title>
+      <link>https://messy.example.com/post</link>
+    </item>
+  </channel>
+</rss>

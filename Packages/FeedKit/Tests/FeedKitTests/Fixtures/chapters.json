@@ -1,0 +1,6 @@
+{"version":"1.2.0","chapters":[
+ {"startTime":0,"title":"Cold open"},
+ {"startTime":95.5,"title":"Sponsor","toc":false,"img":"https://openair.example.net/sponsor.png"},
+ {"startTime":120,"endTime":900,"title":"Main","url":"https://openair.example.net/main"},
+ {"startTime":900,"title":"Outro"}
+]}

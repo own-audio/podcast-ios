@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom Talk</title>
+  <subtitle>A feed in Atom.</subtitle>
+  <link rel="alternate" href="https://atom.example.org/"/>
+  <link rel="self" href="https://atom.example.org/feed.atom"/>
+  <updated>2026-10-15T10:00:00Z</updated>
+  <author><name>Ada Atom</name></author>
+  <logo>https://atom.example.org/logo.png</logo>
+  <entry>
+    <title>First</title>
+    <id>tag:atom.example.org,2026:1</id>
+    <published>2026-10-15T09:30:00.500+02:00</published>
+    <updated>2026-10-15T10:00:00Z</updated>
+    <link rel="alternate" href="https://atom.example.org/1"/>
+    <link rel="enclosure" href="https://atom.example.org/1.mp3" type="audio/mpeg" length="4321"/>
+    <summary type="html">&lt;p&gt;Hello &lt;b&gt;Atom&lt;/b&gt;&lt;/p&gt;</summary>
+  </entry>
+</feed>

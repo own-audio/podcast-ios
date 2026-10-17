@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:podcast="https://podcastindex.org/namespace/1.0" xmlns:psc="http://podlove.org/simple-chapters" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>Open Air</title>
+    <link>https://openair.example.net</link>
+    <description>Notes from outside.</description>
+    <podcast:guid>917393e3-1b1e-5cef-ace4-edaa54e1f810</podcast:guid>
+    <podcast:funding url="https://openair.example.net/support">Support the show</podcast:funding>
+    <itunes:image href="https://openair.example.net/art.png"/>
+    <item>
+      <title>Rain</title>
+      <guid>openair-rain</guid>
+      <pubDate>Sat, 17 Oct 2026 06:00:00 +0000</pubDate>
+      <enclosure url="https://openair.example.net/rain.mp3" type="audio/mpeg" length="1000"/>
+      <itunes:duration>1800</itunes:duration>
+      <podcast:chapters url="https://openair.example.net/rain.chapters.json" type="application/json+chapters"/>
+      <podcast:transcript url="https://openair.example.net/rain.vtt" type="text/vtt" language="en"/>
+      <podcast:transcript url="https://openair.example.net/rain.srt" type="application/x-subrip"/>
+      <podcast:person role="guest" img="https://openair.example.net/ana.jpg" href="https://ana.example.net">Ana Rivers</podcast:person>
+      <podcast:person>Sam Host</podcast:person>
+      <psc:chapters version="1.2">
+        <psc:chapter start="00:10:00.000" title="Thunder"/>
+        <psc:chapter start="00:00:00" title="Intro &amp; drizzle" href="https://openair.example.net/drizzle"/>
+        <psc:chapter start="25:30" title="Puddles" image="https://openair.example.net/puddles.jpg"/>
+      </psc:chapters>
+    </item>
+    <item>
+      <title>Wind</title>
+      <pubDate>Sat, 10 Oct 2026 06:00:00 +0000</pubDate>
+      <media:content url="https://openair.example.net/wind.m4a" type="audio/mp4" fileSize="2000"/>
+    </item>
+  </channel>
+</rss>
