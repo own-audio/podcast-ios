@@ -384,7 +384,7 @@ final class AppModel {
             let chapters = await chapters(for: item.episode, durationMs: duration)
             let spoken = SpokenBook(
                 id: item.id, title: item.episode.title, author: show?.title,
-                parts: [SpokenPart(id: "audio", url: playback.url, durationMs: duration)], chapters: chapters
+                parts: [SpokenPart(id: "audio", url: playback.url, durationMs: duration, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))], chapters: chapters
             )
             nowPlaying = item
             nowPlayingShow = show
@@ -392,6 +392,18 @@ final class AppModel {
             engine.setRate(show?.settings.speed ?? settings.defaultRate)
         } catch {
             actionError = Self.message(for: error)
+        }
+    }
+
+    /// The type of an episode whose source names none, from its original file's extension.
+    static func audioType(forExtension ext: String?) -> String? {
+        switch ext?.lowercased() {
+        case "mp3": "audio/mpeg"
+        case "m4a", "m4b", "mp4", "aac": "audio/mp4"
+        case "ogg", "oga", "opus": "audio/ogg"
+        case "flac": "audio/flac"
+        case "wav": "audio/wav"
+        default: nil
         }
     }
 

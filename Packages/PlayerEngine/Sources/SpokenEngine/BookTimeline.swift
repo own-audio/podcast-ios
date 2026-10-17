@@ -9,12 +9,17 @@ public struct SpokenPart: Sendable, Equatable, Identifiable {
     public var durationMs: Int64
     /// An HLS playlist rather than a file (a server transcoding on the fly).
     public let isHLS: Bool
+    /// The file's type (`audio/mpeg`) when the source knows it. A server that streams from an
+    /// address with no extension and calls the file `application/octet-stream` leaves AVPlayer
+    /// unable to open it without this.
+    public let contentType: String?
 
-    public init(id: String, url: URL, durationMs: Int64, isHLS: Bool = false) {
+    public init(id: String, url: URL, durationMs: Int64, isHLS: Bool = false, contentType: String? = nil) {
         self.id = id
         self.url = url
         self.durationMs = durationMs
         self.isHLS = isHLS
+        self.contentType = contentType
     }
 }
 

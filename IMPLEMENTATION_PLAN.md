@@ -269,7 +269,7 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   adding own.audio (with two-factor), Audiobookshelf and gPodder, Czech for every string. The
   engine now takes the file's own length when the feed gives none or a wrong one. Verified: the
   feed flow UI test (follow by address, play, skip, speed, sleep, stop) and Offline Mode beside
-  Settings. Open: the server UI tests (written; blocked by the Mac's CoreAudio stalling), OPML
+  Settings. The Audiobookshelf and own.audio UI tests pass too. Open: the gPodder UI test (no account yet), OPML
   import (moved to P9 with discovery), the misuse suite and the large-text pass.
 - [ ] **P7: Downloads and offline.** Per-episode downloads on the books app's background
   `URLSession`, the per-show rules of decision 7, delete-when-played, the storage cap and

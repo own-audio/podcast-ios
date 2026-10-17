@@ -246,7 +246,11 @@ public final class SpokenEngine {
         currentIndex = index
         isLoading = true
         errorMessage = nil
-        let asset = AVURLAsset(url: part.url)
+        var options: [String: Any] = [:]
+        if let type = part.contentType, !part.isHLS, !part.url.isFileURL, part.url.pathExtension.isEmpty {
+            options[AVURLAssetOverrideMIMETypeKey] = type
+        }
+        let asset = AVURLAsset(url: part.url, options: options)
         let item = AVPlayerItem(asset: asset)
         // Speech keeps its pitch at any speed; the other algorithms are for music.
         item.audioTimePitchAlgorithm = .timeDomain

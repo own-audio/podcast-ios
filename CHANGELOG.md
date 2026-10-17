@@ -39,3 +39,5 @@ All notable changes to own.audio Podcasts. The format follows
   the player with speed, sleep timer and chapters; Settings; own.audio, Audiobookshelf and
   gPodder accounts; Czech throughout. The player takes an episode's length from the file when
   the feed has none.
+- own.audio episodes play: the server streams them from an address with no extension as
+  `application/octet-stream`, so the player now tells AVPlayer the episode's type.
