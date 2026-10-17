@@ -12,6 +12,9 @@
 #   GPODDER_HOST=http://…                # a gPodder API server (podfetch, Nextcloud's gPodder
 #   GPODDER_USERNAME=…                   # Sync); the tests use a device of their own and remove
 #   GPODDER_PASSWORD=…                   # the feed they add
+#   PODFETCH_HOST=https://…              # a podfetch server, and a user that is not its admin
+#   PODFETCH_TEST_USERNAME=…             # (podfetch refuses its admin through gPodder): the
+#   PODFETCH_TEST_PASSWORD=…             # add-server form recognises it by itself
 #
 # The servers' variables join as their phases arrive.
 #
@@ -34,7 +37,7 @@ for package in Packages/*/; do
 done
 echo "== UI tests"
 # XCTest hands TEST_RUNNER_-prefixed variables to the tests without the prefix.
-for name in AUDIOBOOKSHELF_HOST AUDIOBOOKSHELF_USERNAME AUDIOBOOKSHELF_PASSWORD OWNAUDIO_HOST OWNAUDIO_EMAIL OWNAUDIO_ACCOUNT_PASSWORD GPODDER_HOST GPODDER_USERNAME GPODDER_PASSWORD; do
+for name in AUDIOBOOKSHELF_HOST AUDIOBOOKSHELF_USERNAME AUDIOBOOKSHELF_PASSWORD OWNAUDIO_HOST OWNAUDIO_EMAIL OWNAUDIO_ACCOUNT_PASSWORD GPODDER_HOST GPODDER_USERNAME GPODDER_PASSWORD PODFETCH_HOST PODFETCH_TEST_USERNAME PODFETCH_TEST_PASSWORD; do
   [[ -n "${!name:-}" ]] && export "TEST_RUNNER_$name=${!name}"
 done
 xcodebuild test -project OwnAudioPodcasts.xcodeproj -scheme OwnAudioPodcasts -destination "id=$SIM" \

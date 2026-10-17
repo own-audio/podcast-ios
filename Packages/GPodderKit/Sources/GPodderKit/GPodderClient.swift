@@ -3,6 +3,9 @@ import Foundation
 public enum GPodderError: Error, Sendable, Equatable {
     /// Wrong name or password.
     case unauthorized
+    /// Signed in, but this account may not do that (a read-only demo). Some servers (podfetch)
+    /// also answer wrong credentials with 403, which is why `login()` reads it as `unauthorized`.
+    case forbidden
     case http(Int)
     case decoding
     case network
@@ -83,13 +86,30 @@ public struct GPodderClient: Sendable {
 
     /// Checks the name and password.
     public func login() async throws {
-        _ = try await raw("POST", "api/2/auth/\(escaped(username))/login.json", body: nil)
+        do {
+            _ = try await raw("POST", "api/2/auth/\(escaped(username))/login.json", body: nil)
+        } catch GPodderError.forbidden {
+            throw GPodderError.unauthorized
+        }
     }
 
     /// Registers (or renames) this phone as a device, which subscriptions are kept per.
     public func registerDevice(id: String, caption: String) async throws {
         struct Body: Encodable { let caption: String; let type: String }
         _ = try await raw("POST", "api/2/devices/\(escaped(username))/\(escaped(id)).json", body: try JSONEncoder().encode(Body(caption: caption, type: "mobile")))
+    }
+
+    /// What changed in the account's subscriptions on every device since `since`, where the
+    /// server keeps such a list (gpodder.net, podfetch); nil where it does not. On servers that
+    /// keep subscriptions per device, this is how shows added in another app arrive.
+    public func allSubscriptionChanges(since: Int64) async throws -> SubscriptionChanges? {
+        do {
+            return try decode(try await raw("GET", "api/2/subscriptions/\(escaped(username)).json", query: ["since": String(since)], body: nil))
+        } catch GPodderError.http(let status) where status == 404 || status == 400 || status == 405 {
+            return nil
+        } catch GPodderError.decoding {
+            return nil
+        }
     }
 
     /// What changed in the device's subscriptions since `since` (0 for everything).
@@ -156,6 +176,10 @@ public struct GPodderClient: Sendable {
         if !query.isEmpty { components.queryItems = query.sorted { $0.key < $1.key }.map { URLQueryItem(name: $0.key, value: $0.value) } }
         var request = URLRequest(url: components.url!, timeoutInterval: 30)
         request.httpMethod = method
+        // Credentials go with every request. A session cookie from an earlier sign-in would
+        // otherwise outrank them on servers that honour it first (podfetch), so a wrong
+        // password could pass after a right one.
+        request.httpShouldHandleCookies = false
         request.setValue("Basic " + Data("\(username):\(password)".utf8).base64EncodedString(), forHTTPHeaderField: "Authorization")
         request.setValue("own.audio Podcasts", forHTTPHeaderField: "User-Agent")
         if let body {
@@ -169,7 +193,8 @@ public struct GPodderClient: Sendable {
             throw GPodderError.network
         }
         guard let http = response as? HTTPURLResponse else { throw GPodderError.network }
-        if http.statusCode == 401 || http.statusCode == 403 { throw GPodderError.unauthorized }
+        if http.statusCode == 401 { throw GPodderError.unauthorized }
+        if http.statusCode == 403 { throw GPodderError.forbidden }
         guard (200..<300).contains(http.statusCode) else { throw GPodderError.http(http.statusCode) }
         return data
     }

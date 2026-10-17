@@ -15,6 +15,11 @@ private final class FakeAccount: @unchecked Sendable {
 
     /// Seconds' worth of log rows handed out again: a server answering with an overlap.
     var overlap: Int64 = 0
+    /// A read-only account (a public demo): uploads answer 403.
+    var readOnly = false
+    /// Subscriptions kept per device, as gpodder.net and podfetch keep them: the device's own
+    /// list is empty, and only the account-wide list has what other apps added.
+    var perDevice = false
 
     func serverAdds(_ feed: String) { lock.withLock { clock += 1; subscriptions.append((feed, true, clock)) } }
     func serverRemoves(_ feed: String) { lock.withLock { clock += 1; subscriptions.append((feed, false, clock)) } }
@@ -40,10 +45,15 @@ private final class FakeAccount: @unchecked Sendable {
         }
         let since = Int64(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "since" }?.value ?? "0") ?? 0
         let body = Self.body(request).flatMap { try? JSONSerialization.jsonObject(with: $0) }
+        if readOnly, request.httpMethod == "POST" { return .init(statusCode: 403, body: Data()) }
         return lock.withLock {
             let reply = { (object: Any) in MockURLProtocol.StubbedResponse(statusCode: 200, body: try! JSONSerialization.data(withJSONObject: object)) }
             switch (request.httpMethod!, url.path) {
-            case ("GET", "/api/2/subscriptions/jo/phone.json"):
+            case ("GET", "/api/2/subscriptions/jo/phone.json") where perDevice:
+                return reply(["add": [], "remove": [], "timestamp": clock])
+            case ("GET", "/api/2/subscriptions/jo.json") where !perDevice:
+                return .init(statusCode: 404, body: Data())
+            case ("GET", "/api/2/subscriptions/jo/phone.json"), ("GET", "/api/2/subscriptions/jo.json"):
                 let recent = subscriptions.filter { $0.at > since - overlap }
                 var last: [String: Bool] = [:]
                 for change in recent { last[change.feed] = change.added }
@@ -125,6 +135,31 @@ struct GPodderSyncTests {
         #expect(report.followed == 0, "the repeated add does not bring it back")
         #expect(await library.shows().isEmpty)
         #expect(account.feeds.isEmpty, "and the removal reaches the account")
+    }
+
+    @Test("a read-only account still brings its shows down; refused uploads don't stop the sync")
+    func readOnlyAccount() async throws {
+        let account = FakeAccount()
+        account.serverAdds(feed("a"))
+        account.readOnly = true
+        let (sync, library, _) = await makeSync(account)
+        _ = try await library.follow(feedURL: URL(string: feed("b"))!)
+        try await library.record(positionMs: 60_000, for: EpisodeKey(showId: await library.shows()[0].id, episodeId: "b-1"))
+        let report = try await sync.sync()
+        #expect(report.followed == 1)
+        #expect(Set(await library.shows().compactMap { $0.feedURL?.absoluteString }) == [feed("a"), feed("b")])
+        #expect(account.feeds == [feed("a")], "nothing went up")
+    }
+
+    @Test("a server with per-device lists: a show added in another app reaches the phone")
+    func perDeviceServer() async throws {
+        let account = FakeAccount()
+        account.perDevice = true
+        account.serverAdds(feed("a"))
+        let (sync, library, _) = await makeSync(account)
+        let report = try await sync.sync()
+        #expect(report.followed == 1)
+        #expect(await library.shows().compactMap { $0.feedURL?.absoluteString } == [feed("a")])
     }
 
     @Test("positions: the newer side wins, and what came from the account is not sent back")

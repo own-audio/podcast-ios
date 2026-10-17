@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ""
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
     "%@ left": {
       "localizations": {
         "cs": {
@@ -71,12 +82,23 @@
         }
       }
     },
-    "A gPodder sync account (podfetch, Nextcloud gPodder Sync): this iPhone's shows and positions are kept in step with your other players.": {
+    "123456": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Účet synchronizace gPodder (podfetch, Nextcloud gPodder Sync): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači."
+            "value": "123456"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Účet synchronizace gPodder (podfetch, gpodder.net, server own.audio): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači."
           }
         }
       }
@@ -167,6 +189,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Podle nastavení"
+          }
+        }
+      }
+    },
+    "Automatic": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automaticky"
           }
         }
       }
@@ -281,6 +313,16 @@
         }
       }
     },
+    "Email or User Name": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-mail nebo uživatelské jméno"
+          }
+        }
+      }
+    },
     "End of Chapter": {
       "localizations": {
         "cs": {
@@ -347,6 +389,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rychleji"
+          }
+        }
+      }
+    },
+    "Favourite": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oblíbené"
           }
         }
       }
@@ -561,6 +613,16 @@
         }
       }
     },
+    "No own.audio, Audiobookshelf or gPodder server answers at that address.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na této adrese neodpovídá žádný server own.audio, Audiobookshelf ani gPodder."
+          }
+        }
+      }
+    },
     "Nothing Downloaded": {
       "localizations": {
         "cs": {
@@ -647,6 +709,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pozastavit"
+          }
+        }
+      }
+    },
+    "Paused": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozastaveno"
           }
         }
       }
@@ -827,6 +899,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sdílet kanál"
+          }
+        }
+      }
+    },
+    "Shared with family": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sdíleno s rodinou"
           }
         }
       }
@@ -1071,6 +1153,16 @@
         }
       }
     },
+    "The app finds out what answers at the address: own.audio, Audiobookshelf, or a gPodder sync server such as podfetch.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikace sama zjistí, co na adrese odpovídá: own.audio, Audiobookshelf, nebo synchronizační server gPodder, například podfetch."
+          }
+        }
+      }
+    },
     "The episodes can't be loaded right now.": {
       "localizations": {
         "cs": {
@@ -1107,6 +1199,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Server není dostupný. Zkontrolujte adresu a síť."
+          }
+        }
+      }
+    },
+    "The server refuses this account for syncing. On podfetch the admin account can't sync: add a separate user there and sign in with it.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server tento účet k synchronizaci nepustí. Na podfetch se správcovský účet synchronizovat nemůže: přidejte tam samostatného uživatele a přihlaste se jím."
           }
         }
       }
@@ -1270,6 +1372,28 @@
           }
         }
       }
+    },
+    "https://example.com/feed.xml": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://example.com/feed.xml"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "https://podcasts.example.com": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "https://podcasts.example.com"
+          }
+        }
+      },
+      "shouldTranslate": false
     },
     "own.audio": {
       "localizations": {

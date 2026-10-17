@@ -192,12 +192,13 @@ final class AppModel {
         for text in (defaults.string(forKey: "debugFeedURL") ?? "").split(separator: " ") {
             if let url = URL(string: String(text)) { _ = try? await phone.follow(feedURL: url) }
         }
-        guard let kind = defaults.string(forKey: "debugServerKind").flatMap(ServerKind.init(rawValue:)),
+        guard let kindName = defaults.string(forKey: "debugServerKind"),
               let host = defaults.string(forKey: "debugServerHost"),
               let user = defaults.string(forKey: "debugServerUser"),
               let password = defaults.string(forKey: "debugServerPassword") else { return }
         do {
-            try await addServer(kind: kind, address: host, username: user, password: password)
+            // "automatic" (or anything unknown) finds the kind the way the form does.
+            try await addServer(kind: ServerKind(rawValue: kindName), address: host, username: user, password: password)
         } catch {
             actionError = Self.message(for: error)
         }
@@ -476,7 +477,18 @@ final class AppModel {
 
     var pendingTwoFactor: PendingTwoFactor?
 
-    func addServer(kind: ServerKind, address: String, username: String, password: String) async throws {
+    /// `kind` nil: whatever answers at the address, found out first (own.audio, podfetch and
+    /// other gPodder servers, Audiobookshelf).
+    func addServer(kind: ServerKind?, address: String, username: String, password: String) async throws {
+        guard let kind else {
+            switch await ServerDetector(session: Self.session).detect(address) {
+            case .ownAudio(let host)?: try await addServer(kind: .ownAudio, address: host.absoluteString, username: username, password: password)
+            case .audiobookshelf(let host)?: try await addServer(kind: .audiobookshelf, address: host.absoluteString, username: username, password: password)
+            case .gpodder(let host)?: try await addServer(kind: .gpodder, address: host.absoluteString, username: username, password: password)
+            case nil: throw AddServerError.notRecognised
+            }
+            return
+        }
         var lastError: Error = SourceError.network
         for host in Self.candidates(for: address, kind: kind) {
             do {
@@ -580,7 +592,7 @@ final class AppModel {
         }
     }
 
-    enum AddServerError: Error { case noPodcastLibrary }
+    enum AddServerError: Error { case noPodcastLibrary, notRecognised }
 
     /// What the listener is told when something fails.
     static func message(for error: Error) -> String {
@@ -591,6 +603,10 @@ final class AppModel {
             String(localized: "The name or password is wrong.")
         case AudiobookshelfError.signedOut, OwnAudioError.signedOut:
             String(localized: "The server signed this iPhone out. Remove the server and add it again.")
+        case AddServerError.notRecognised:
+            String(localized: "No own.audio, Audiobookshelf or gPodder server answers at that address.")
+        case GPodderError.http(409):
+            String(localized: "The server refuses this account for syncing. On podfetch the admin account can't sync: add a separate user there and sign in with it.")
         case AddServerError.noPodcastLibrary:
             String(localized: "This account has no podcast library on the server.")
         case _ where isUnreachable(error):

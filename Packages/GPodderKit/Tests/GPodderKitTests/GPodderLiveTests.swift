@@ -17,15 +17,16 @@ struct GPodderLiveTests {
         try await client.registerDevice(id: device, caption: "own.audio Podcasts tests")
         let feed = "https://feeds.example.org/own-audio-test-\(UUID().uuidString.prefix(8)).xml"
 
-        // Seen from a second device: a server need not tell a device about its own change.
-        let other = device + "-2"
-        let start = try await client.subscriptionChanges(device: other, since: 0)
         let added = try await client.uploadSubscriptionChanges(device: device, add: [feed], remove: [])
-        let afterAdd = try await client.subscriptionChanges(device: other, since: start.timestamp)
-        #expect(afterAdd.add.contains(feed), "the feed added shows up as added on the other device")
+        // The whole list (since 0) has it, on servers with per-device lists and account-wide ones.
+        let afterAdd = try await client.subscriptionChanges(device: device, since: 0)
+        #expect(afterAdd.add.contains(feed), "the feed added is in the device's list")
+        if let account = try await client.allSubscriptionChanges(since: 0) {
+            #expect(account.add.contains(feed), "and in the account's")
+        }
         let removed = try await client.uploadSubscriptionChanges(device: device, add: [], remove: [feed])
         #expect(removed.timestamp >= added.timestamp)
-        let all = try await client.subscriptionChanges(device: other, since: 0)
+        let all = try await client.subscriptionChanges(device: device, since: 0)
         #expect(!all.add.contains(feed), "and is gone once removed")
 
         let before = try await client.episodeActions(since: 0)

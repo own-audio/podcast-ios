@@ -5,7 +5,8 @@ import SwiftUI
 struct AddServerView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
-    @State private var kind: ServerKind = .ownAudio
+    /// nil: found out from the address.
+    @State private var kind: ServerKind?
     @State private var address = ""
     @State private var username = ""
     @State private var password = ""
@@ -30,21 +31,21 @@ struct AddServerView: View {
                 } else {
                     Section {
                         Picker("Kind", selection: $kind) {
-                            ForEach(ServerKind.allCases) { kind in Text(kind.name).tag(kind) }
+                            Text("Automatic").tag(ServerKind?.none)
+                            ForEach(ServerKind.allCases) { kind in Text(kind.name).tag(ServerKind?.some(kind)) }
                         }
-                        .pickerStyle(.segmented)
                         .accessibilityIdentifier("addServer.kind")
                     } footer: {
                         Text(explanation)
                     }
                     Section {
-                        TextField(kind == .ownAudio ? "own.audio" : "http://192.168.1.10:13378", text: $address)
+                        TextField(kind == .ownAudio ? "own.audio" : "https://podcasts.example.com", text: $address)
                             .keyboardType(.URL)
                             .textContentType(.URL)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()
                             .accessibilityIdentifier("addServer.address")
-                        TextField(kind == .ownAudio ? "Email" : "User Name", text: $username)
+                        TextField(kind == .ownAudio ? "Email" : kind == nil ? "Email or User Name" : "User Name", text: $username)
                             .textContentType(kind == .ownAudio ? .emailAddress : .username)
                             .keyboardType(kind == .ownAudio ? .emailAddress : .default)
                             .textInputAutocapitalization(.never)
@@ -54,7 +55,7 @@ struct AddServerView: View {
                             .textContentType(.password)
                             .accessibilityIdentifier("addServer.password")
                     }
-                    if kind == .ownAudio {
+                    if kind == .ownAudio || kind == nil {
                         Section {
                             Button("Try the Public Demo") { Task { await addDemo() } }
                                 .accessibilityIdentifier("addServer.demo")
@@ -91,9 +92,10 @@ struct AddServerView: View {
 
     private var explanation: LocalizedStringKey {
         switch kind {
-        case .ownAudio: "Your own.audio account: its shows, New Episodes and positions on every device."
-        case .audiobookshelf: "The podcast libraries of an Audiobookshelf server, with its downloaded episodes and positions."
-        case .gpodder: "A gPodder sync account (podfetch, Nextcloud gPodder Sync): this iPhone's shows and positions are kept in step with your other players."
+        case nil: "The app finds out what answers at the address: own.audio, Audiobookshelf, or a gPodder sync server such as podfetch."
+        case .ownAudio?: "Your own.audio account: its shows, New Episodes and positions on every device."
+        case .audiobookshelf?: "The podcast libraries of an Audiobookshelf server, with its downloaded episodes and positions."
+        case .gpodder?: "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players."
         }
     }
 

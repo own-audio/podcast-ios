@@ -55,6 +55,48 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertTrue(rowShown, "the account is listed in Settings")
     }
 
+    /// The add-server form with the kind left on Automatic: a podfetch address, a user name and
+    /// a password are enough, and it is added as a gPodder account.
+    func testAddServerFindsTheKindByItself() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["PODFETCH_HOST"], let user = env["PODFETCH_TEST_USERNAME"], let password = env["PODFETCH_TEST_PASSWORD"] else {
+            throw XCTSkip("PODFETCH_HOST is not set")
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["welcome.server"].waitForExistence(timeout: 15))
+        app.buttons["welcome.server"].tap()
+        for (id, text) in [("addServer.address", host), ("addServer.username", user)] {
+            let field = app.textFields[id]
+            XCTAssertTrue(field.waitForExistence(timeout: 10))
+            field.tap()
+            field.typeText(text)
+        }
+        let secret = app.secureTextFields["addServer.password"]
+        secret.tap()
+        secret.typeText(password)
+        app.buttons["addServer.add"].tap()
+        // Added: the first screen gives way to the tabs.
+        let settings = app.buttons["home.settings"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 40), "the server was recognised and added")
+        let deadline = Date().addingTimeInterval(4)
+        while Date() < deadline, !settings.isHittable {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        }
+        let name = URL(string: host)?.host() ?? host
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "settings.server.\(name)")).firstMatch
+        // iOS's "Save Password?" sheet can arrive late and take the first tap.
+        for _ in 0..<3 where !row.exists {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            if settings.isHittable { settings.tap() }
+            _ = row.waitForExistence(timeout: 5)
+        }
+        XCTAssertTrue(row.exists, "listed in Settings")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'gPodder sync'")).firstMatch.exists, "as a gPodder account")
+    }
+
     private func run(kind: String, prefix: String, userKey: String? = nil, passwordKey: String) throws {
         let env = ProcessInfo.processInfo.environment
         guard let host = env["\(prefix)_HOST"], let user = env[userKey ?? "\(prefix)_USERNAME"], let password = env[passwordKey] else {

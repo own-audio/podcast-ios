@@ -24,21 +24,25 @@ struct GPodderSyncLiveTests {
         let show = try await library.follow(feedURL: URL(string: "https://feeds.podcastindex.org/pc20.xml")!)
         let feed = try #require(show.feedURL?.absoluteString)
         defer { Task { _ = try? await client.uploadSubscriptionChanges(device: device, add: [], remove: [feed]) } }
-        let first = try await sync.sync()
-        #expect(first.uploadedShows >= 1)
+        // Uploaded now, or already on the account from an earlier run: either way it is there.
+        try await sync.sync()
         #expect(try await client.subscriptionChanges(device: device, since: 0).add.contains(feed), "the account has the show")
 
         let episode = try #require(try await library.episodes(showId: show.id).first)
         let key = episode.key
-        try await library.record(positionMs: 61_000, for: key, at: Date().addingTimeInterval(-120))
+        // Now: newer than anything an earlier run left on the account.
+        try await library.record(positionMs: 61_000, for: key, at: Date())
         let pushed = try await sync.sync()
         #expect(pushed.positionsSent >= 1)
         let actions = try await client.episodeActions(since: 0).actions
-        #expect(actions.contains { $0.episode == episode.audioURL?.absoluteString && $0.position == 61 && $0.device == device }, "the position went up")
+        // The device may be another's: podfetch keeps one row per episode and updates it in place.
+        #expect(actions.contains { $0.episode == episode.audioURL?.absoluteString && $0.position == 61 }, "the position went up")
 
+        // The API keeps whole seconds: the other device's position must be clearly later.
+        try await Task.sleep(for: .seconds(2))
         _ = try await client.uploadEpisodeActions([EpisodeAction(
             podcast: feed, episode: try #require(episode.audioURL?.absoluteString), action: .play,
-            timestamp: Date().addingTimeInterval(-10), started: 0, position: 300, total: 3600, device: "laptop-test")])
+            timestamp: Date(), started: 0, position: 300, total: 3600, device: "laptop-test")])
         let pulled = try await sync.sync()
         #expect(pulled.positionsApplied >= 1)
         #expect(await library.progress(key)?.positionMs == 300_000, "another device's newer position came down")

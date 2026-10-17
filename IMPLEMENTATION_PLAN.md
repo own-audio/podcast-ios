@@ -257,7 +257,8 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   carry removals both ways; actions from this device are skipped when they come back; what came
   from the account is not sent back. Mock tests cover both directions; live tests (the kit, the sync, and a UI test that a
   show followed on the phone reaches the account) pass against the open-source own.audio
-  server's gPodder API (2026-10-17).
+  server's gPodder API and podfetch (2026-10-17). Nextcloud's gPodder Sync app speaks its own API, not
+  this one, and is not supported.
 - [x] **P6: The app.** Onboarding (add a feed, search a show, import OPML — or add a server),
   tabs New Episodes / Shows / Downloads / Search, a show's page (episodes, rules, settings), the episode
   page (notes with links, chapters, transcript where there is one), the player (the books

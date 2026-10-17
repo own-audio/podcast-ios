@@ -50,4 +50,12 @@ struct GPodderClientTests {
         let client = GPodderClient(host: URL(string: "https://gpodder.example")!, username: "jo", password: "wrong", session: mock.urlSession)
         await #expect(throws: GPodderError.unauthorized) { try await client.login() }
     }
+
+    @Test("podfetch's 403 for wrong credentials still reads as a wrong password at sign-in")
+    func forbiddenAtLogin() async throws {
+        let mock = await MockURLProtocol.makeStubbedSession { _ in .init(statusCode: 403, body: Data()) }
+        let client = GPodderClient(host: URL(string: "https://gpodder.example")!, username: "jo", password: "wrong", session: mock.urlSession)
+        await #expect(throws: GPodderError.unauthorized) { try await client.login() }
+        await #expect(throws: GPodderError.forbidden) { _ = try await client.uploadEpisodeActions([]) }
+    }
 }

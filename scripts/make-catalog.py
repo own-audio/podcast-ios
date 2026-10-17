@@ -11,7 +11,19 @@ cs = {
  "%lld h %lld min": "%lld h %lld min",
  "%lld min": "%lld min",
  "%lld s": "%lld s",
- "A gPodder sync account (podfetch, Nextcloud gPodder Sync): this iPhone's shows and positions are kept in step with your other players.": "Účet synchronizace gPodder (podfetch, Nextcloud gPodder Sync): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači.",
+ "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players.": "Účet synchronizace gPodder (podfetch, gpodder.net, server own.audio): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači.",
+ "Automatic": "Automaticky",
+ "Favourite": "Oblíbené",
+ "Paused": "Pozastaveno",
+ "Shared with family": "Sdíleno s rodinou",
+ "": "",
+ "123456": "123456",
+ "https://example.com/feed.xml": "https://example.com/feed.xml",
+ "Email or User Name": "E-mail nebo uživatelské jméno",
+ "The app finds out what answers at the address: own.audio, Audiobookshelf, or a gPodder sync server such as podfetch.": "Aplikace sama zjistí, co na adrese odpovídá: own.audio, Audiobookshelf, nebo synchronizační server gPodder, například podfetch.",
+ "No own.audio, Audiobookshelf or gPodder server answers at that address.": "Na této adrese neodpovídá žádný server own.audio, Audiobookshelf ani gPodder.",
+ "The server refuses this account for syncing. On podfetch the admin account can't sync: add a separate user there and sign in with it.": "Server tento účet k synchronizaci nepustí. Na podfetch se správcovský účet synchronizovat nemůže: přidejte tam samostatného uživatele a přihlaste se jím.",
+ "https://podcasts.example.com": "https://podcasts.example.com",
  "A shared own.audio server with sample shows, to look around without an account.": "Sdílený server own.audio s ukázkovými pořady, abyste se mohli rozhlédnout bez účtu.",
  "About": "O aplikaci",
  "Add": "Přidat",
@@ -141,7 +153,7 @@ def unit(v): return {"stringUnit": {"state": "translated", "value": v}}
 strings = {}
 for key, value in cs.items():
     strings[key] = {"localizations": {"cs": unit(value)}}
-    if key in ("own.audio", "Audiobookshelf"): strings[key]["shouldTranslate"] = False
+    if key in ("own.audio", "Audiobookshelf", "", "123456", "https://example.com/feed.xml", "https://podcasts.example.com"): strings[key]["shouldTranslate"] = False
 for key, forms in plurals.items():
     strings[key] = {"localizations": {lang: {"variations": {"plural": {k: unit(v) for k, v in f.items()}}} for lang, f in forms.items()}}
 catalog = {"sourceLanguage": "en", "strings": dict(sorted(strings.items())), "version": "1.0"}

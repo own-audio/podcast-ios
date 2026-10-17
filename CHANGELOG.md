@@ -46,3 +46,10 @@ All notable changes to own.audio Podcasts. The format follows
 - gPodder sync tested against the open-source own.audio server's new gPodder API: a show
   unfollowed on the phone stays unfollowed when a server repeats its earlier "add", and live tests
   cover subscriptions and positions both ways and the app's own sync end to end.
+- Adding a server finds out what it is: own.audio, Audiobookshelf, or a gPodder sync server
+  such as podfetch, from the address alone (*Automatic*, the new default; the kind can still be
+  chosen). podfetch's refusal of its admin account says what to do.
+- gPodder sync works with podfetch: the account's subscriptions from every device arrive (podfetch
+  keeps lists per device), a wrong password is refused even after a right one (no session cookie
+  is kept), a position another app wrote into a row this phone created is taken, and a
+  read-only account still syncs down.

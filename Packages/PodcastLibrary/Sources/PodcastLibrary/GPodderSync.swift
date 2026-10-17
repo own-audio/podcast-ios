@@ -63,7 +63,18 @@ public actor GPodderSync {
         let before = Set(await library.shows().compactMap { $0.feedURL?.absoluteString })
         let removedHere = firstSync ? [] : state.syncedFeeds.subtracting(before)
         let addedHere = before.subtracting(state.syncedFeeds)
-        let changes = try await client.subscriptionChanges(device: device, since: state.subscriptionsSince)
+        // The account's list where the server keeps one, so shows added in another app (AntennaPod
+        // on a per-device server) arrive too; else this device's, which on own.audio is the account's.
+        let changes: SubscriptionChanges
+        // A show only the account's list names is not yet on this device's list, on a server
+        // that keeps lists per device; it is sent up below so the device holds it too.
+        var accountWide = false
+        if let account = try await client.allSubscriptionChanges(since: state.subscriptionsSince) {
+            changes = account
+            accountWide = true
+        } else {
+            changes = try await client.subscriptionChanges(device: device, since: state.subscriptionsSince)
+        }
 
         for feed in changes.remove where !addedHere.contains(feed) {
             state.syncedFeeds.remove(feed)
@@ -72,7 +83,7 @@ public actor GPodderSync {
             report.unfollowed += 1
         }
         for feed in changes.add where !changes.remove.contains(feed) && !removedHere.contains(feed) {
-            state.syncedFeeds.insert(feed)
+            if !accountWide { state.syncedFeeds.insert(feed) }
             guard await show(feed: feed) == nil, let url = URL(string: feed) else { continue }
             // One feed that is gone must not stop the rest; it stays on the account.
             if (try? await library.follow(feedURL: url)) != nil { report.followed += 1 }
@@ -83,7 +94,14 @@ public actor GPodderSync {
         let remove = removedHere.subtracting(local).sorted()
         var since = changes.timestamp
         if !add.isEmpty || !remove.isEmpty {
-            let answer = try await client.uploadSubscriptionChanges(device: device, add: add, remove: remove)
+            let answer: UploadAnswer
+            do {
+                answer = try await client.uploadSubscriptionChanges(device: device, add: add, remove: remove)
+            } catch GPodderError.forbidden {
+                // A read-only account: what it has still comes down; nothing goes up.
+                state.subscriptionsSince = since
+                return
+            }
             since = answer.timestamp
             report.uploadedShows = add.count
             state.syncedFeeds.formUnion(add)
@@ -100,8 +118,7 @@ public actor GPodderSync {
     private func pullActions(_ report: inout Report) async throws {
         let answer = try await client.episodeActions(since: state.actionsSince)
         var index: [String: [String: (key: EpisodeKey, durationMs: Int64?)]] = [:]
-        // The account hands back this phone's own actions too; they are already here.
-        for action in answer.actions where (action.action == .play || action.action == .new) && action.device != device {
+        for action in answer.actions where action.action == .play || action.action == .new {
             if index[action.podcast] == nil {
                 guard let show = await show(feed: action.podcast), let episodes = try? await library.episodes(showId: show.id) else { continue }
                 var byEpisode: [String: (key: EpisodeKey, durationMs: Int64?)] = [:]
@@ -113,6 +130,13 @@ public actor GPodderSync {
             }
             guard let match = index[action.podcast]?[action.episode] ?? action.guid.flatMap({ index[action.podcast]?["guid:" + $0] }) else { continue }
             let when = action.timestamp ?? Date(timeIntervalSince1970: TimeInterval(answer.timestamp))
+            // The account hands back this phone's own actions too. They are skipped unless they
+            // are clearly newer than what the phone holds: podfetch keeps one row per episode and
+            // updates it in place under the device that created it, so another app's newer
+            // position can arrive wearing this phone's name.
+            if action.device == device, let held = await library.progress(match.key), when.timeIntervalSince(held.updatedAt) < 1 {
+                continue
+            }
             let progress: ListeningProgress
             if action.action == .new {
                 progress = ListeningProgress(positionMs: 0, played: false, updatedAt: when)
@@ -157,7 +181,11 @@ public actor GPodderSync {
         guard !actions.isEmpty else { return }
         // gpodder.net takes at most a few hundred per call.
         for start in stride(from: 0, to: actions.count, by: 200) {
-            _ = try await client.uploadEpisodeActions(Array(actions[start..<min(start + 200, actions.count)]))
+            do {
+                _ = try await client.uploadEpisodeActions(Array(actions[start..<min(start + 200, actions.count)]))
+            } catch GPodderError.forbidden {
+                return
+            }
         }
         state.sent.merge(stamps) { _, new in new }
         report.positionsSent = actions.count
