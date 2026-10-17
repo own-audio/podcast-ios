@@ -34,3 +34,8 @@ All notable changes to own.audio Podcasts. The format follows
 - gPodder sync (P5): a client for the gPodder API as podfetch and Nextcloud's gPodder Sync
   serve it, and a sync that keeps the phone's feeds and the account's subscriptions in step both
   ways and exchanges positions and played marks as episode actions, the newer one winning.
+- The app (P6, first part): New Episodes, Shows, Downloads and Search tabs; onboarding with
+  show search (Apple's podcast directory), a feed address, or a server; show and episode pages;
+  the player with speed, sleep timer and chapters; Settings; own.audio, Audiobookshelf and
+  gPodder accounts; Czech throughout. The player takes an episode's length from the file when
+  the feed has none.

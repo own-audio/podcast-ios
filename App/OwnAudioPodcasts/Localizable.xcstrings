@@ -1,12 +1,432 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "Adding shows comes next.": {
+    "%@ left": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Přidávání pořadů přijde vzápětí."
+            "value": "zbývá %@"
+          }
+        }
+      }
+    },
+    "%@ of %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ z %@"
+          }
+        }
+      }
+    },
+    "%@ · %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · %@"
+          }
+        }
+      }
+    },
+    "%lld h": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h"
+          }
+        }
+      }
+    },
+    "%lld h %lld min": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld h %lld min"
+          }
+        }
+      }
+    },
+    "%lld min": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld min"
+          }
+        }
+      }
+    },
+    "%lld s": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s"
+          }
+        }
+      }
+    },
+    "A gPodder sync account (podfetch, Nextcloud gPodder Sync): this iPhone's shows and positions are kept in step with your other players.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Účet synchronizace gPodder (podfetch, Nextcloud gPodder Sync): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači."
+          }
+        }
+      }
+    },
+    "A shared own.audio server with sample shows, to look around without an account.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sdílený server own.audio s ukázkovými pořady, abyste se mohli rozhlédnout bez účtu."
+          }
+        }
+      }
+    },
+    "About": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O aplikaci"
+          }
+        }
+      }
+    },
+    "Add": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidat"
+          }
+        }
+      }
+    },
+    "Add 10 Minutes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidat 10 minut"
+          }
+        }
+      }
+    },
+    "Add a Feed by Address": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidat kanál podle adresy"
+          }
+        }
+      }
+    },
+    "Add a Server": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidat server"
+          }
+        }
+      }
+    },
+    "Add a Show": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidat pořad"
+          }
+        }
+      }
+    },
+    "Another device got to %@; this iPhone was at %@.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jiné zařízení došlo na %@, tento iPhone byl na %@."
+          }
+        }
+      }
+    },
+    "As in Settings": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podle nastavení"
+          }
+        }
+      }
+    },
+    "Back %lld seconds": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zpět o %lld sekund"
+          }
+        }
+      }
+    },
+    "Can't be reached right now": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teď není dostupný"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušit"
+          }
+        }
+      }
+    },
+    "Chapters": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kapitoly"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zavřít"
+          }
+        }
+      }
+    },
+    "Continue from %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokračovat od %@"
+          }
+        }
+      }
+    },
+    "Continue from another device?": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokračovat z jiného zařízení?"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebrat"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hotovo"
+          }
+        }
+      }
+    },
+    "Downloads": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stažené"
+          }
+        }
+      }
+    },
+    "Email": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-mail"
+          }
+        }
+      }
+    },
+    "End of Chapter": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konec kapitoly"
+          }
+        }
+      }
+    },
+    "End of Episode": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konec epizody"
+          }
+        }
+      }
+    },
+    "Enter the code from your authenticator app.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zadejte kód z ověřovací aplikace."
+          }
+        }
+      }
+    },
+    "Episode Website": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web epizody"
+          }
+        }
+      }
+    },
+    "Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Epizody"
+          }
+        }
+      }
+    },
+    "Episodes you download appear here, with the source each came from, and play with no network.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zde se objeví stažené epizody, u každé zdroj, odkud pochází. Hrají i bez sítě."
+          }
+        }
+      }
+    },
+    "Faster": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rychleji"
+          }
+        }
+      }
+    },
+    "Feed Address": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adresa kanálu"
+          }
+        }
+      }
+    },
+    "Find a Show": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Najít pořad"
+          }
+        }
+      }
+    },
+    "Find a show by its name or its host.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Najděte pořad podle názvu nebo moderátora."
+          }
+        }
+      }
+    },
+    "Follow": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebírat"
+          }
+        }
+      }
+    },
+    "Follow On": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebírat v"
+          }
+        }
+      }
+    },
+    "Follow a show by searching for it or by its feed address.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Začněte odebírat pořad vyhledáním nebo podle adresy jeho kanálu."
+          }
+        }
+      }
+    },
+    "Following — Open the Show": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebíráte — otevřít pořad"
+          }
+        }
+      }
+    },
+    "Forward %lld seconds": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vpřed o %lld sekund"
           }
         }
       }
@@ -21,12 +441,853 @@
         }
       }
     },
+    "Its episodes and positions on this source are removed.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeho epizody a pozice v tomto zdroji budou odstraněny."
+          }
+        }
+      }
+    },
+    "Its shows leave this iPhone. Nothing changes on the server.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jeho pořady z tohoto iPhonu zmizí. Na serveru se nic nezmění."
+          }
+        }
+      }
+    },
+    "Keep this iPhone's position (%@)": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ponechat pozici tohoto iPhonu (%@)"
+          }
+        }
+      }
+    },
+    "Kind": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Druh"
+          }
+        }
+      }
+    },
+    "Mark as Played": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označit jako přehrané"
+          }
+        }
+      }
+    },
+    "Mark as Unplayed": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Označit jako nepřehrané"
+          }
+        }
+      }
+    },
+    "More": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Další"
+          }
+        }
+      }
+    },
+    "New Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nové epizody"
+          }
+        }
+      }
+    },
+    "New episodes of the shows you follow appear here.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zde se objeví nové epizody pořadů, které odebíráte."
+          }
+        }
+      }
+    },
+    "No New Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Žádné nové epizody"
+          }
+        }
+      }
+    },
+    "No Shows": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Žádné pořady"
+          }
+        }
+      }
+    },
+    "No network": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bez sítě"
+          }
+        }
+      }
+    },
+    "Nothing Downloaded": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nic staženo"
+          }
+        }
+      }
+    },
+    "Nothing Playing": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nic nehraje"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vypnuto"
+          }
+        }
+      }
+    },
+    "Offline Mode": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Režim offline"
+          }
+        }
+      }
+    },
+    "Offline Mode is on": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Režim offline je zapnutý"
+          }
+        }
+      }
+    },
+    "Opens the player": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Otevře přehrávač"
+          }
+        }
+      }
+    },
+    "Password": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heslo"
+          }
+        }
+      }
+    },
+    "Pause": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pozastavit"
+          }
+        }
+      }
+    },
+    "Pitch stays the same at any speed. A show can keep its own speed in its settings.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Výška hlasu zůstává při každé rychlosti stejná. Pořad může mít ve svém nastavení vlastní rychlost."
+          }
+        }
+      }
+    },
+    "Play": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přehrát"
+          }
+        }
+      }
+    },
+    "Playback": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přehrávání"
+          }
+        }
+      }
+    },
+    "Played": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přehráno"
+          }
+        }
+      }
+    },
+    "Playing": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hraje"
+          }
+        }
+      }
+    },
+    "Privacy": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soukromí"
+          }
+        }
+      }
+    },
+    "Remove": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstranit"
+          }
+        }
+      }
+    },
+    "Remove %@?": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstranit %@?"
+          }
+        }
+      }
+    },
+    "Remove from New Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebrat z nových epizod"
+          }
+        }
+      }
+    },
+    "Removed server": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebraný server"
+          }
+        }
+      }
+    },
+    "Resume": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokračovat"
+          }
+        }
+      }
+    },
+    "Search": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hledat"
+          }
+        }
+      }
+    },
+    "Search Isn't Available": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hledání není k dispozici"
+          }
+        }
+      }
+    },
+    "Search for Shows": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hledat pořady"
+          }
+        }
+      }
+    },
+    "Searching needs the network.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hledání potřebuje síť."
+          }
+        }
+      }
+    },
+    "Servers": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servery"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nastavení"
+          }
+        }
+      }
+    },
+    "Share Feed": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sdílet kanál"
+          }
+        }
+      }
+    },
+    "Show Settings": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nastavení pořadu"
+          }
+        }
+      }
+    },
+    "Show in New Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zobrazovat v nových epizodách"
+          }
+        }
+      }
+    },
+    "Shows": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pořady"
+          }
+        }
+      }
+    },
+    "Shows on this iPhone stay; they are no longer kept in step.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pořady v tomto iPhonu zůstanou, jen se už nebudou synchronizovat."
+          }
+        }
+      }
+    },
+    "Shows you follow on this iPhone need no server. A server adds its own shows; a gPodder account keeps this iPhone's in step with your other players.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pořady odebírané v tomto iPhonu žádný server nepotřebují. Server přidá své vlastní pořady, účet gPodder udržuje pořady tohoto iPhonu ve shodě s ostatními přehrávači."
+          }
+        }
+      }
+    },
+    "Skip Back": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přeskočit zpět"
+          }
+        }
+      }
+    },
+    "Skip Forward": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přeskočit vpřed"
+          }
+        }
+      }
+    },
+    "Skip forward %lld seconds": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přeskočit vpřed o %lld sekund"
+          }
+        }
+      }
+    },
+    "Skip the Intro": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přeskočit úvod"
+          }
+        }
+      }
+    },
+    "Sleep": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spánek"
+          }
+        }
+      }
+    },
+    "Sleep Timer": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Časovač spánku"
+          }
+        }
+      }
+    },
+    "Slower": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pomaleji"
+          }
+        }
+      }
+    },
+    "Smart Rewind": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chytré přetočení"
+          }
+        }
+      }
+    },
+    "Something went wrong. Try again.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Něco se pokazilo. Zkuste to znovu."
+          }
+        }
+      }
+    },
+    "Source Code (MPL-2.0)": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdrojový kód (MPL-2.0)"
+          }
+        }
+      }
+    },
+    "Speed": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rychlost"
+          }
+        }
+      }
+    },
+    "Speed %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rychlost %@"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastavit"
+          }
+        }
+      }
+    },
+    "Stops at the end of the episode": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastaví se na konci epizody"
+          }
+        }
+      }
+    },
+    "Stops at the end of this chapter": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastaví se na konci této kapitoly"
+          }
+        }
+      }
+    },
+    "Stops in": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zastaví se za"
+          }
+        }
+      }
+    },
+    "That Didn't Work": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nepovedlo se"
+          }
+        }
+      }
+    },
+    "That address is not a podcast feed.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tato adresa není podcastový kanál."
+          }
+        }
+      }
+    },
+    "The RSS address a show publishes. To find a show by name, use Search.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adresa RSS, kterou pořad zveřejňuje. Pořad podle názvu najdete v Hledání."
+          }
+        }
+      }
+    },
+    "The episodes can't be loaded right now.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Epizody teď nelze načíst."
+          }
+        }
+      }
+    },
+    "The name or password is wrong.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jméno nebo heslo není správné."
+          }
+        }
+      }
+    },
+    "The podcast libraries of an Audiobookshelf server, with its downloaded episodes and positions.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podcastové knihovny serveru Audiobookshelf s jeho staženými epizodami a pozicemi."
+          }
+        }
+      }
+    },
+    "The server can't be reached. Check the address and the network.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server není dostupný. Zkontrolujte adresu a síť."
+          }
+        }
+      }
+    },
+    "The server signed this iPhone out. Remove the server and add it again.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server tento iPhone odhlásil. Odstraňte server a přidejte ho znovu."
+          }
+        }
+      }
+    },
+    "This account has no podcast library on the server.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento účet nemá na serveru žádnou podcastovou knihovnu."
+          }
+        }
+      }
+    },
+    "This iPhone": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tento iPhone"
+          }
+        }
+      }
+    },
+    "Try the Public Demo": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyzkoušet veřejné demo"
+          }
+        }
+      }
+    },
+    "Turn Off": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vypnout"
+          }
+        }
+      }
+    },
+    "Two-Factor Code": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dvoufázový kód"
+          }
+        }
+      }
+    },
+    "Unfollow": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušit odběr"
+          }
+        }
+      }
+    },
+    "Unfollow %@?": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušit odběr pořadu %@?"
+          }
+        }
+      }
+    },
+    "Unplayed": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nepřehráno"
+          }
+        }
+      }
+    },
+    "User Name": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uživatelské jméno"
+          }
+        }
+      }
+    },
+    "Verify": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ověřit"
+          }
+        }
+      }
+    },
+    "Version": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verze"
+          }
+        }
+      }
+    },
+    "Website": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Web"
+          }
+        }
+      }
+    },
+    "Your own.audio account: its shows, New Episodes and positions on every device.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Váš účet own.audio: jeho pořady, nové epizody a pozice na každém zařízení."
+          }
+        }
+      }
+    },
     "Your podcasts. No account, no server needed.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Vaše podcasty. Bez účtu, bez serveru."
+          }
+        }
+      }
+    },
+    "gPodder sync": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Synchronizace gPodder"
+          }
+        }
+      }
+    },
+    "own.audio": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own.audio"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "own.audio demo": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo own.audio"
           }
         }
       }

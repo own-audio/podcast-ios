@@ -25,6 +25,13 @@ public struct SpokenBook: Sendable, Equatable, Identifiable {
         if let index = parts.firstIndex(where: { $0.id == partId }) { parts[index].url = url }
         return SpokenBook(id: id, title: title, author: author, parts: parts, chapters: timeline.chapters, linksExpireAt: linksExpireAt)
     }
+
+    /// The same book with one part's length as the file itself says.
+    public func replacing(partId: String, durationMs: Int64) -> SpokenBook {
+        var parts = timeline.parts
+        if let index = parts.firstIndex(where: { $0.id == partId }) { parts[index].durationMs = durationMs }
+        return SpokenBook(id: id, title: title, author: author, parts: parts, chapters: timeline.chapters, linksExpireAt: linksExpireAt)
+    }
 }
 
 /// Chapter marks read from the files themselves (an M4B's chapter track, ID3 chapters), for

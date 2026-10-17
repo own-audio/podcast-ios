@@ -83,6 +83,9 @@ public final class SpokenEngine {
     private var lastTickAt = Date()
     private var refreshing = false
     private var artwork: NowPlayingImage?
+    /// Where to start once the length is known, for a book loaded without one: until then every
+    /// position clamps to 0.
+    private var startOnceLengthKnownMs: Int64?
     private let log = Logger(subsystem: "audio.own.player", category: "spoken")
 
     public init(nowPlaying: NowPlayingController, resumeStore: ResumeStore? = nil) {
@@ -119,6 +122,7 @@ public final class SpokenEngine {
         errorMessage = nil
         pausedAt = nil
         stopsAtEndOfChapter = false
+        startOnceLengthKnownMs = book.timeline.parts.contains { $0.durationMs == 0 } && positionMs > 0 ? positionMs : nil
         self.positionMs = book.timeline.clamp(positionMs)
         artwork = nil
         if let provider = artworkProvider {
@@ -276,12 +280,31 @@ public final class SpokenEngine {
             Task { @MainActor [weak self] in
                 guard let self, self.player.currentItem === item else { return }
                 switch status {
-                case .readyToPlay: self.isLoading = false
+                case .readyToPlay:
+                    self.isLoading = false
+                    await self.adoptLength(of: item)
                 case .failed: await self.recover(from: message ?? "The file could not be played.")
                 default: break
                 }
             }
         }
+    }
+
+    /// A length that was unknown, or that the feed got wrong by more than a couple of seconds, is
+    /// replaced by the file's own, so the scrubber, the end and the resume position are right.
+    private func adoptLength(of item: AVPlayerItem) async {
+        guard let book, let index = currentIndex, book.timeline.parts.indices.contains(index),
+              let duration = try? await item.asset.load(.duration), duration.isNumeric, duration.seconds > 0,
+              self.book?.id == book.id, player.currentItem === item else { return }
+        let part = book.timeline.parts[index]
+        let actual = Int64((duration.seconds * 1000).rounded())
+        guard abs(actual - part.durationMs) > 2000 else { return }
+        self.book = book.replacing(partId: part.id, durationMs: actual)
+        if let start = startOnceLengthKnownMs {
+            startOnceLengthKnownMs = nil
+            seek(to: start, report: false)
+        }
+        updateNowPlaying()
     }
 
     /// The part played to its end: the next one, or the book is finished.

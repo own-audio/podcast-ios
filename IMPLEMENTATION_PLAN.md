@@ -264,6 +264,13 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   (servers, downloads, playback, mobile data, about). Czech from the first screen. UI tests
   per source kind: add, play, seek, speed, chapters, sleep timer; the misuse suite and the
   large-text pass copied from the books app.
+  *In progress:* the four tabs, onboarding (search, feed address, server), the show and
+  episode pages, the player with speed, sleep timer and chapters, the mini player, Settings,
+  adding own.audio (with two-factor), Audiobookshelf and gPodder, Czech for every string. The
+  engine now takes the file's own length when the feed gives none or a wrong one. Verified: the
+  feed flow UI test (follow by address, play, skip, speed, sleep, stop) and Offline Mode beside
+  Settings. Open: the server UI tests (written; blocked by the Mac's CoreAudio stalling), OPML
+  import (moved to P9 with discovery), the misuse suite and the large-text pass.
 - [ ] **P7: Downloads and offline.** Per-episode downloads on the books app's background
   `URLSession`, the per-show rules of decision 7, delete-when-played, the storage cap and
   eviction, Offline Mode and the offline banner, the listening cache, the server's own

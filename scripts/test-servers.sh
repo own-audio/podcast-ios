@@ -33,7 +33,11 @@ for package in Packages/*/; do
   (cd "$package" && swift test 2>&1 | grep -E "✘|Test run" || true)
 done
 echo "== UI tests"
+# XCTest hands TEST_RUNNER_-prefixed variables to the tests without the prefix.
+for name in AUDIOBOOKSHELF_HOST AUDIOBOOKSHELF_USERNAME AUDIOBOOKSHELF_PASSWORD OWNAUDIO_HOST OWNAUDIO_EMAIL OWNAUDIO_ACCOUNT_PASSWORD GPODDER_HOST GPODDER_USERNAME GPODDER_PASSWORD; do
+  [[ -n "${!name:-}" ]] && export "TEST_RUNNER_$name=${!name}"
+done
 xcodebuild test -project OwnAudioPodcasts.xcodeproj -scheme OwnAudioPodcasts -destination "id=$SIM" \
   -derivedDataPath "$OUT/DerivedData" -resultBundlePath "$OUT/$(date +%Y%m%d-%H%M%S).xcresult" \
-  -test-timeouts-enabled YES -default-test-execution-time-allowance 420 2>&1 \
+  ${ONLY_TESTING:+-only-testing:$ONLY_TESTING} -test-timeouts-enabled YES -default-test-execution-time-allowance 420 2>&1 \
   | tee "$OUT/xcodebuild.log" | grep --line-buffered -E "Test Case .*(passed|failed)|: error: |\*\* TEST" || true

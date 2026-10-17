@@ -4,7 +4,9 @@ import Foundation
 public struct SpokenPart: Sendable, Equatable, Identifiable {
     public let id: String
     public var url: URL
-    public let durationMs: Int64
+    /// 0 when nobody knows yet (a podcast feed often doesn't say); the engine fills it in from
+    /// the file once the player has read it.
+    public var durationMs: Int64
     /// An HLS playlist rather than a file (a server transcoding on the fly).
     public let isHLS: Bool
 

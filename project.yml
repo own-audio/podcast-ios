@@ -8,6 +8,16 @@ options:
 packages:
   PlayerEngine:
     path: Packages/PlayerEngine
+  PodcastLibrary:
+    path: Packages/PodcastLibrary
+  FeedKit:
+    path: Packages/FeedKit
+  AudiobookshelfKit:
+    path: Packages/AudiobookshelfKit
+  OwnAudioKit:
+    path: Packages/OwnAudioKit
+  GPodderKit:
+    path: Packages/GPodderKit
 targets:
   OwnAudioPodcasts:
     type: application
@@ -53,6 +63,11 @@ targets:
         product: PlayerCore
       - package: PlayerEngine
         product: SpokenEngine
+      - package: PodcastLibrary
+      - package: FeedKit
+      - package: AudiobookshelfKit
+      - package: OwnAudioKit
+      - package: GPodderKit
   OwnAudioPodcastsUITests:
     type: bundle.ui-testing
     platform: iOS

@@ -1,29 +1,93 @@
+import PodcastLibrary
 import SwiftUI
 
-/// The first screen until the library arrives (P2): the own.audio hero, the mark, the
-/// wordmark, and what the app is going to ask for — a show, not a server.
+/// First run: find a show or add a server. After that four tabs — New Episodes, Shows,
+/// Downloads, Search — with the mini player above the tab bar and the full player as a cover.
 struct RootView: View {
+    @Environment(AppModel.self) private var model
+    @State private var isShowingPlayer = false
+    @State private var tab: AppTab = .inbox
+
+    private enum AppTab: Hashable { case inbox, shows, downloads, search }
+
     var body: some View {
-        ZStack {
-            HeroBackground()
-            VStack(spacing: Theme.Spacing.md) {
-                OwnAudioMark.tribe(size: 72)
-                RotatingWordmark()
-                Text("Your podcasts. No account, no server needed.")
-                    .font(.subheadline)
-                    .foregroundStyle(Theme.Colors.muted)
-                    .multilineTextAlignment(.center)
-                    .accessibilityIdentifier("welcome.tagline")
-                Text("Adding shows comes next.")
-                    .font(.footnote)
-                    .foregroundStyle(Theme.Colors.muted)
-                Link(destination: URL(string: "https://github.com/own-audio/podcast-ios")!) {
-                    Text("Free and open source · MPL-2.0").font(.footnote)
-                }
-                .padding(.top, Theme.Spacing.sm)
+        Group {
+            if !model.hasLoaded {
+                ProgressView()
+            } else if model.isEmpty {
+                OnboardingView()
+            } else {
+                tabs
             }
-            .padding(.horizontal, Theme.Spacing.xl)
-            .frame(maxWidth: 420)
+        }
+        .task { await model.load() }
+        .fullScreenCover(isPresented: $isShowingPlayer) { PlayerView() }
+        .alert("That Didn't Work", isPresented: Binding(get: { model.actionError != nil }, set: { if !$0 { model.actionError = nil } })) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(model.actionError ?? "")
+        }
+        .confirmationDialog(
+            "Continue from another device?",
+            isPresented: Binding(get: { model.pendingResume != nil }, set: { if !$0 { model.pendingResume = nil } }),
+            titleVisibility: .visible,
+            presenting: model.pendingResume
+        ) { pending in
+            Button("Continue from \(ProgressText.clock(pending.otherMs))") {
+                model.pendingResume = nil
+                Task { await model.play(pending.episode, startAt: pending.otherMs) }
+            }
+            .accessibilityIdentifier("resume.other")
+            Button("Keep this iPhone's position (\(ProgressText.clock(pending.localMs)))") {
+                model.pendingResume = nil
+                Task { await model.play(pending.episode, startAt: pending.localMs) }
+            }
+            .accessibilityIdentifier("resume.local")
+        } message: { pending in
+            Text("Another device got to \(ProgressText.clock(pending.otherMs)); this iPhone was at \(ProgressText.clock(pending.localMs)).")
+        }
+        .onChange(of: model.engine.errorMessage) { _, message in
+            if let message, !isShowingPlayer { model.actionError = message }
+        }
+    }
+
+    private var tabs: some View {
+        TabView(selection: $tab) {
+            Tab("New Episodes", systemImage: "tray", value: AppTab.inbox) {
+                NavigationStack { InboxView().appDestinations() }
+                    .miniPlayerInset { isShowingPlayer = true }
+            }
+            .accessibilityIdentifier("tab.inbox")
+            Tab("Shows", systemImage: "square.grid.2x2", value: AppTab.shows) {
+                NavigationStack { ShowsView().appDestinations() }
+                    .miniPlayerInset { isShowingPlayer = true }
+            }
+            .accessibilityIdentifier("tab.shows")
+            Tab("Downloads", systemImage: "arrow.down.circle", value: AppTab.downloads) {
+                NavigationStack { DownloadsView().appDestinations() }
+                    .miniPlayerInset { isShowingPlayer = true }
+            }
+            .accessibilityIdentifier("tab.downloads")
+            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
+                NavigationStack { SearchView().appDestinations() }
+                    .miniPlayerInset { isShowingPlayer = true }
+            }
+            .accessibilityIdentifier("tab.search")
+        }
+    }
+}
+
+extension View {
+    /// Where every list's rows lead: a show, an episode, a search result.
+    func appDestinations() -> some View {
+        navigationDestination(for: SourcedShow.self) { ShowView(show: $0) }
+            .navigationDestination(for: SourcedEpisode.self) { EpisodeView(item: $0) }
+            .navigationDestination(for: ShowSearchResult.self) { SearchResultView(result: $0) }
+    }
+
+    fileprivate func miniPlayerInset(onTap: @escaping () -> Void) -> some View {
+        safeAreaInset(edge: .bottom, spacing: 0) {
+            MiniPlayerBar(onTap: onTap)
         }
     }
 }
