@@ -153,14 +153,8 @@ struct EpisodeSummarySection: View {
     @State private var working = false
     @State private var error: String?
     @State private var question = ""
-    @State private var turns: [Turn] = []
-
-    private struct Turn: Identifiable {
-        let id = UUID()
-        let question: String
-        let answer: String
-        let chargedMicro: Int64
-    }
+    @State private var turns: [EpisodeAnswer] = []
+    @State private var isConfirmingClear = false
     @State private var asking = false
 
     var body: some View {
@@ -219,9 +213,17 @@ struct EpisodeSummarySection: View {
                             .disabled(asking || question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             .accessibilityIdentifier("episode.ask")
                         }
-                        Text("Answers come from the episode's transcript only, and each one is paid from your family's credit.")
+                        Text("Answers come from the episode's transcript only, and each one is paid from your family's credit. Your questions are kept for you alone.")
                             .font(.footnote)
                             .foregroundStyle(Theme.Colors.muted)
+                        if !turns.isEmpty {
+                            Button("Clear Questions", role: .destructive) { isConfirmingClear = true }
+                                .font(.footnote)
+                                .accessibilityIdentifier("episode.clearQuestions")
+                                .confirmationDialog("Delete your questions and answers for this episode?", isPresented: $isConfirmingClear, titleVisibility: .visible) {
+                                    Button("Clear Questions", role: .destructive) { Task { await clear() } }
+                                }
+                        }
                     }
                     if let error {
                         Text(error).font(.footnote).foregroundStyle(Theme.Colors.error).accessibilityIdentifier("episode.summaryError")
@@ -229,12 +231,26 @@ struct EpisodeSummarySection: View {
                 }
             }
         }
+        .task(id: item.id) {
+            guard await model.offersSummaries(item) else { return }
+            turns = (try? await model.questions(item)) ?? []
+        }
         .task(id: "\(item.id)-\(length.rawValue)") {
             available = await model.offersSummaries(item)
             guard available else { return }
             error = nil
             summary = try? await model.summary(item, length: length)
             checked = true
+        }
+    }
+
+    private func clear() async {
+        error = nil
+        do {
+            try await model.clearQuestions(item)
+            turns = []
+        } catch {
+            self.error = AppModel.summaryMessage(for: error)
         }
     }
 
@@ -265,9 +281,7 @@ struct EpisodeSummarySection: View {
         defer { asking = false }
         error = nil
         do {
-            let history = turns.map { EpisodeQuestion(question: $0.question, answer: $0.answer) }
-            let answer = try await model.ask(item, question: text, history: history)
-            turns.append(Turn(question: text, answer: answer.answer, chargedMicro: answer.chargedMicro))
+            turns.append(try await model.ask(item, question: text))
             question = ""
         } catch {
             self.error = AppModel.summaryMessage(for: error)

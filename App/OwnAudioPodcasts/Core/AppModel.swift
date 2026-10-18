@@ -695,9 +695,19 @@ final class AppModel {
         return usd.formatted(.currency(code: "USD").precision(.fractionLength(usd < 0.1 ? 3 : 2)))
     }
 
-    func ask(_ item: SourcedEpisode, question: String, history: [EpisodeQuestion]) async throws -> EpisodeAnswer {
+    func ask(_ item: SourcedEpisode, question: String) async throws -> EpisodeAnswer {
         guard let client = ownAudioClient(for: item) else { throw SourceError.unsupported }
-        return try await client.ask(episodeId: item.episode.key.episodeId, question: question, history: history)
+        return try await client.ask(episodeId: item.episode.key.episodeId, question: question)
+    }
+
+    func questions(_ item: SourcedEpisode) async throws -> [EpisodeAnswer] {
+        guard let client = ownAudioClient(for: item) else { return [] }
+        return try await client.questions(episodeId: item.episode.key.episodeId)
+    }
+
+    func clearQuestions(_ item: SourcedEpisode) async throws {
+        guard let client = ownAudioClient(for: item) else { return }
+        try await client.clearQuestions(episodeId: item.episode.key.episodeId)
     }
 
     /// What the listener is told when a paid summary or answer is refused.

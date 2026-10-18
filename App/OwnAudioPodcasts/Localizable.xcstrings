@@ -243,12 +243,12 @@
         }
       }
     },
-    "Answers come from the episode's transcript only, and each one is paid from your family's credit.": {
+    "Answers come from the episode's transcript only, and each one is paid from your family's credit. Your questions are kept for you alone.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odpovědi vycházejí jen z přepisu epizody a každá se platí z kreditu vaší rodiny."
+            "value": "Odpovědi vycházejí jen z přepisu epizody a každá se platí z kreditu vaší rodiny. Vaše otázky vidíte jen vy."
           }
         }
       }
@@ -393,6 +393,16 @@
         }
       }
     },
+    "Clear Questions": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smazat otázky"
+          }
+        }
+      }
+    },
     "Close": {
       "localizations": {
         "cs": {
@@ -459,6 +469,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cena %@"
+          }
+        }
+      }
+    },
+    "Delete your questions and answers for this episode?": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smazat vaše otázky a odpovědi k této epizodě?"
           }
         }
       }

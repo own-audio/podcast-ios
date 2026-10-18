@@ -8,6 +8,8 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Your questions about an episode and their answers are kept on the own.audio server, for you alone,
+  and come back when you open the episode again; Clear Questions deletes them.
 - Summaries in three lengths (short, medium, long), and the price under each summary and answer.
   Questions can be asked before any summary is made.
 - Summarize this episode, and ask questions about it, on an own.audio server that offers summaries

@@ -21,10 +21,18 @@ public struct EpisodeSummary: Decodable, Sendable, Equatable {
     }
 }
 
-/// An answer, and what the family paid for it in micro-dollars.
-public struct EpisodeAnswer: Sendable, Equatable {
+/// A question about an episode and its answer, kept for the person who asked, with what the
+/// family paid for it in micro-dollars.
+public struct EpisodeAnswer: Decodable, Sendable, Equatable, Identifiable {
+    public let id: String
+    public let question: String
     public let answer: String
     public let chargedMicro: Int64
+
+    enum CodingKeys: String, CodingKey {
+        case id, question, answer
+        case chargedMicro = "charged_micro"
+    }
 }
 
 public struct EpisodeQuestion: Codable, Sendable, Equatable, Hashable {
@@ -64,13 +72,23 @@ extension OwnAudioClient {
         return try JSONDecoder().decode(EpisodeSummary.self, from: data)
     }
 
-    /// An answer from the episode's transcript, paid; the earlier questions go along.
-    public func ask(episodeId: String, question: String, history: [EpisodeQuestion]) async throws -> EpisodeAnswer {
-        struct Body: Encodable { let question: String; let history: [EpisodeQuestion] }
-        struct Answer: Decodable { let answer: String; let charged_micro: Int64? }
-        let data = try await raw("POST", "/summaries/episodes/\(episodeId)/ask", query: [:], body: Body(question: question, history: history), idempotencyKey: nil, api: "api/v2")
-        let answer = try JSONDecoder().decode(Answer.self, from: data)
-        return EpisodeAnswer(answer: answer.answer, chargedMicro: answer.charged_micro ?? 0)
+    /// The listener's own questions about the episode and their answers, oldest first.
+    public func questions(episodeId: String) async throws -> [EpisodeAnswer] {
+        struct Page: Decodable { let items: [EpisodeAnswer] }
+        let data = try await raw("GET", "/summaries/episodes/\(episodeId)/questions", query: [:], body: Optional<Empty>.none, idempotencyKey: nil, api: "api/v2")
+        return try JSONDecoder().decode(Page.self, from: data).items
+    }
+
+    /// Clears the listener's questions about the episode.
+    public func clearQuestions(episodeId: String) async throws {
+        _ = try await raw("DELETE", "/summaries/episodes/\(episodeId)/questions", query: [:], body: Optional<Empty>.none, idempotencyKey: nil, api: "api/v2")
+    }
+
+    /// An answer from the episode's transcript, paid and kept; the server adds the earlier turns.
+    public func ask(episodeId: String, question: String) async throws -> EpisodeAnswer {
+        struct Body: Encodable { let question: String }
+        let data = try await raw("POST", "/summaries/episodes/\(episodeId)/ask", query: [:], body: Body(question: question), idempotencyKey: nil, api: "api/v2")
+        return try JSONDecoder().decode(EpisodeAnswer.self, from: data)
     }
 }
 
