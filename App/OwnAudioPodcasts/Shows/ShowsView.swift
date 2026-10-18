@@ -138,8 +138,12 @@ struct ShowView: View {
                     if let feed = show.show.feedURL {
                         ShareLink(item: feed) { Label("Share Feed", systemImage: "square.and.arrow.up") }
                     }
-                    Button(role: .destructive) { confirmUnfollow = true } label: { Label("Unfollow", systemImage: "minus.circle") }
-                        .accessibilityIdentifier("show.unfollow")
+                    // Neither own.audio nor Audiobookshelf lets a player unfollow yet; on
+                    // Audiobookshelf it would delete the show for everyone on the server.
+                    if show.source == .phone {
+                        Button(role: .destructive) { confirmUnfollow = true } label: { Label("Unfollow", systemImage: "minus.circle") }
+                            .accessibilityIdentifier("show.unfollow")
+                    }
                 } label: {
                     Label("More", systemImage: "ellipsis.circle")
                 }
@@ -194,7 +198,7 @@ struct ShowSettingsView: View {
                 }
                 Picker("Speed", selection: Binding(get: { settings.speed ?? 0 }, set: { settings.speed = $0 == 0 ? nil : $0 })) {
                     Text("As in Settings").tag(Float(0))
-                    ForEach([Float(0.8), 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75, 2.0], id: \.self) { rate in
+                    ForEach([0.75, 1.0, 1.25, 1.5, 1.75, 2.0] as [Float], id: \.self) { rate in
                         Text(String(format: "%.2g×", rate)).tag(rate)
                     }
                 }

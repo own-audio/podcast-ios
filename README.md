@@ -9,13 +9,16 @@ megabytes.
 In development; the plan is in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 - Opens on what is new: unplayed episodes across your shows, newest first
-- Speed with pitch correction, chapters, skip buttons, smart rewind, sleep timer
-- Downloads with rules per show (keep the last few, delete when played), and an offline mode
-- A queue: play next, play later, and the inbox played on
-- Search and add shows, import and export OPML
-- Several servers at once; iPad; CarPlay; a widget; the player on the lock screen
-- With own.audio: a family library, and episodes translated into your language
+- Speed with pitch correction (per show too), chapters, skip buttons, smart rewind, skip the
+  intro, sleep timer
+- An Offline Mode, and the player on the lock screen
+- Search Apple's podcast directory and follow by feed address
+- Several servers at once, each reached at the fastest of its addresses; iPad
+- With own.audio: summaries of an episode, and questions about it
 - English and Czech
+
+Coming, in the order of the plan: downloads with rules per show, a queue, OPML import and
+export, CarPlay, a widget, and with own.audio a family library and translated episodes.
 
 Made by [own.audio](https://www.own.audio). Free, no account needed, no tracking.
 

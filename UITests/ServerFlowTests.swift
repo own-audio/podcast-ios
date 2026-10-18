@@ -69,6 +69,8 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 10))
         field.tap()
         // The console's address, as people type it: the app knows the server is at api-canary.
+        // A development build offers the canary as one tap, as the books and music apps do.
+        XCTAssertTrue(app.buttons["addServer.canary"].waitForExistence(timeout: 10))
         field.typeText("app-canary.own.audio")
         XCTAssertTrue(app.buttons["addServer.apple"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.buttons["addServer.google"].exists)
@@ -151,6 +153,40 @@ final class ServerFlowTests: XCTestCase {
         shows.tap()
         XCTAssertTrue(phoneShow.waitForExistence(timeout: 10))
         XCTAssertEqual(serverShows.count, 0, "only this iPhone's shows")
+    }
+
+    /// Unfollow is offered for this iPhone's shows only: own.audio can't unfollow for a player yet,
+    /// and on Audiobookshelf it would delete the show for everyone.
+    func testUnfollowOnlyForThisIPhonesShows() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["OWNAUDIO_HOST"], let user = env["OWNAUDIO_EMAIL"], let password = env["OWNAUDIO_ACCOUNT_PASSWORD"] else {
+            throw XCTSkip("OWNAUDIO_HOST is not set")
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-debugFeedURL", "https://feeds.podcastindex.org/pc20.xml",
+                               "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+        app.launch()
+        XCTAssertTrue(app.buttons["home.serverMenu"].firstMatch.waitForExistence(timeout: 40))
+        let shows = app.buttons.matching(NSPredicate(format: "label == 'Shows'")).allElementsBoundByIndex.first { $0.isHittable } ?? app.buttons["Shows"].firstMatch
+        shows.tap()
+
+        let phoneShow = app.descendants(matching: .any)["show.Podcasting 2.0"]
+        XCTAssertTrue(phoneShow.waitForExistence(timeout: 20))
+        phoneShow.tap()
+        app.buttons["show.menu"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["show.unfollow"].waitForExistence(timeout: 5), "this iPhone's show can be unfollowed")
+        // Close the menu, then back to Shows.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).tap()
+        XCTAssertTrue(app.buttons["show.unfollow"].waitForNonExistence(timeout: 5))
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        let serverShow = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'show.' AND identifier != 'show.Podcasting 2.0'")).firstMatch
+        XCTAssertTrue(serverShow.waitForExistence(timeout: 30))
+        serverShow.tap()
+        app.buttons["show.menu"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["show.settings"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["show.unfollow"].exists, "a server's show offers no Unfollow")
     }
 
     /// A server's page in Settings: it answers and accepts the sign-in, its addresses are listed,

@@ -55,7 +55,7 @@ struct SettingsView: View {
                         ForEach(PlaybackSettings.skipChoices, id: \.self) { Text("\(Int($0)) s").tag($0) }
                     }
                     Picker("Speed", selection: $settings.defaultRate) {
-                        ForEach([Float(0.8), 0.9, 1.0, 1.1, 1.2, 1.3, 1.5, 1.75, 2.0], id: \.self) { Text(String(format: "%.2g×", $0)).tag($0) }
+                        ForEach([0.75, 1.0, 1.25, 1.5, 1.75, 2.0] as [Float], id: \.self) { Text(String(format: "%.2g×", $0)).tag($0) }
                     }
                     Toggle("Smart Rewind", isOn: $settings.smartRewind)
                 }

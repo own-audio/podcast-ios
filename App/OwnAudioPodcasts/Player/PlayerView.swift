@@ -209,7 +209,7 @@ struct SpeedSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
-    private let presets: [Float] = [0.8, 1.0, 1.2, 1.5, 1.75, 2.0, 2.5, 3.0]
+    private let presets: [Float] = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
 
     var body: some View {
         NavigationStack {

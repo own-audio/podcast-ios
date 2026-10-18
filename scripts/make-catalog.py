@@ -207,6 +207,7 @@ cs = {
  "gPodder sync": "Synchronizace gPodder",
  "own.audio": "own.audio",
  "own.audio demo": "Demo own.audio",
+ "own.audio canary (testing)": "own.audio canary (testování)",
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {

@@ -50,6 +50,10 @@ final class FeedFlowTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(seconds(elapsed.label), before + 25, "skip forward moves 30 s")
 
         app.buttons["player.speed"].tap()
+        // The books app's presets, so both spoken-word apps offer the same steps.
+        for preset in ["0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0"] {
+            XCTAssertTrue(app.buttons["speed.preset.\(preset)"].waitForExistence(timeout: 3), "preset \(preset)")
+        }
         app.buttons["speed.preset.1.5"].tap()
         XCTAssertEqual(app.staticTexts["speed.value"].label, "1.50×")
         app.buttons["Done"].firstMatch.tap()

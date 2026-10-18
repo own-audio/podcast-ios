@@ -15,6 +15,7 @@ struct AddServerView: View {
     @State private var error: String?
     /// Which of Apple and Google the own.audio server at the typed address accepts.
     @State private var providers: Set<String> = []
+    @State private var offersCanary = false
 
     var body: some View {
         NavigationStack {
@@ -56,6 +57,9 @@ struct AddServerView: View {
                         SecureField("Password", text: $password)
                             .textContentType(.password)
                             .accessibilityIdentifier("addServer.password")
+                    } footer: {
+                        // Under the address, as in the books app, so it is on screen while typing.
+                        if offersCanary { CanaryServerButton(address: $address) }
                     }
                     if (kind == .ownAudio || kind == nil) && !providers.isEmpty {
                         Section {
@@ -94,6 +98,7 @@ struct AddServerView: View {
                 let found = await model.ownAudioProviders(address: address)
                 if !Task.isCancelled { providers = found }
             }
+            .task { offersCanary = await TestServers.available() }
             .navigationTitle("Add a Server")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -8,6 +8,21 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- The "own.audio canary (testing)" button in Add a Server, under the address, in TestFlight and
+  development builds only (`TestServers.swift`, copied from the books app).
+
+### Changed
+
+- Speed presets are those of the books app: 0.75, 1, 1.25, 1.5, 1.75, 2, 2.5, 3 in the player, and
+  0.75–2× in Settings and Show Settings.
+- Unfollow is offered only for this iPhone's shows. own.audio has no unfollow for players yet,
+  and on Audiobookshelf it would delete the show for everyone, so the menu no longer shows an
+  action that ends in an error.
+- The README lists what the app does today; downloads, the queue, OPML, CarPlay, the widget and
+  the family library are listed as coming.
+- UI tests: the player offers the books app's presets; Add a Server shows the canary button in a
+  development build; a server's show has no Unfollow while this iPhone's has.
+
 - Your questions about an episode and their answers are kept on the own.audio server, for you alone,
   and come back when you open the episode again; Clear Questions deletes them.
 - Summaries in three lengths (short, medium, long), and the price under each summary and answer.
