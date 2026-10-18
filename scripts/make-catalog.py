@@ -18,6 +18,7 @@ cs = {
  "Google didn't return a sign-in. Try again.": "Google nevrátil přihlášení. Zkuste to znovu.",
  "Or sign in with the Apple or Google account you use on this own.audio server.": "Nebo se přihlaste účtem Apple nebo Google, který na tomto serveru own.audio používáte.",
  "Sign in with Apple": "Přihlásit se přes Apple",
+ "The server didn't accept this sign-in. Its owner can allow sign-in with Apple or Google, or use your email and password.": "Server toto přihlášení nepřijal. Jeho správce může povolit přihlášení přes Apple nebo Google, nebo použijte e-mail a heslo.",
  "Libraries": "Knihovny",
  "The podcast libraries on this server. A library you turn off leaves New Episodes, Shows and the switch; with more than one, each is in the switch on its own.": "Podcastové knihovny na tomto serveru. Vypnutá knihovna zmizí z nových epizod, pořadů i přepínače; je-li jich víc, má každá v přepínači vlastní položku.",
  "Account": "Účet",

@@ -1,5 +1,6 @@
 import AuthenticationServices
 import CryptoKit
+import OwnAudioKit
 import SwiftUI
 
 // Sign in with Apple and Google to an own.audio server, copied from own-audio/book-ios
@@ -56,7 +57,7 @@ struct AppleSignInButton: View {
             } catch let error as ASAuthorizationError where error.code == .canceled {
                 return
             } catch {
-                errorMessage = AppModel.message(for: error)
+                errorMessage = providerMessage(for: error)
             }
         }
     }
@@ -148,7 +149,7 @@ struct GoogleSignInButton: View {
             } catch is CancellationError {
                 return
             } catch {
-                errorMessage = (error as? GoogleSignIn.Failure)?.errorDescription ?? AppModel.message(for: error)
+                errorMessage = (error as? GoogleSignIn.Failure)?.errorDescription ?? providerMessage(for: error)
             }
         }
     }
@@ -255,6 +256,15 @@ final class GoogleSignIn: NSObject, ASWebAuthenticationPresentationContextProvid
         _ = SecRandomCopyBytes(kSecRandomDefault, count, &bytes)
         return Data(bytes).base64URL
     }
+}
+
+/// A refusal from the server is not a wrong password here: none was typed.
+@MainActor
+private func providerMessage(for error: Error) -> String {
+    if case OwnAudioError.problem = error {
+        return String(localized: "The server didn't accept this sign-in. Its owner can allow sign-in with Apple or Google, or use your email and password.")
+    }
+    return AppModel.message(for: error)
 }
 
 @MainActor

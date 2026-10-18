@@ -1563,6 +1563,16 @@
         }
       }
     },
+    "The server didn't accept this sign-in. Its owner can allow sign-in with Apple or Google, or use your email and password.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server toto přihlášení nepřijal. Jeho správce může povolit přihlášení přes Apple nebo Google, nebo použijte e-mail a heslo."
+          }
+        }
+      }
+    },
     "The server refuses this account for syncing. On podfetch the admin account can't sync: add a separate user there and sign in with it.": {
       "localizations": {
         "cs": {

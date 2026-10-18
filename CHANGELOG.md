@@ -8,6 +8,7 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- A refused Apple or Google sign-in says the server didn't accept it, not that a password is wrong.
 - An own.audio console address (`app-canary.own.audio`) typed into Add a Server reaches its server
   (`api-canary.own.audio`), so sign-in and the Apple and Google buttons work with it.
 - Sign in with Apple and Google to an own.audio server, copied from the books app: the buttons show
