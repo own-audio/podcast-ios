@@ -40,8 +40,12 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
     var serverIdentity: String?
     /// Which software a gPodder server is, where it says (`podfetch`), for its logo.
     var software: String?
+    /// Audiobookshelf: the account's podcast libraries, as last read (names for offline).
+    var libraries: [ServerLibrary]
+    /// Audiobookshelf: libraries the listener hid from New Episodes, Shows and the switch.
+    var hiddenLibraries: [String]
 
-    init(id: UUID = UUID(), displayName: String, kind: ServerKind, host: URL, username: String, audiobookshelfTokens: AudiobookshelfKit.Tokens? = nil, ownAudioTokens: OwnAudioKit.Tokens? = nil, password: String? = nil, canAddShows: Bool = false, addresses: [ServerAddress] = [], fixedAddress: URL? = nil, serverIdentity: String? = nil, software: String? = nil) {
+    init(id: UUID = UUID(), displayName: String, kind: ServerKind, host: URL, username: String, audiobookshelfTokens: AudiobookshelfKit.Tokens? = nil, ownAudioTokens: OwnAudioKit.Tokens? = nil, password: String? = nil, canAddShows: Bool = false, addresses: [ServerAddress] = [], fixedAddress: URL? = nil, serverIdentity: String? = nil, software: String? = nil, libraries: [ServerLibrary] = [], hiddenLibraries: [String] = []) {
         self.id = id
         self.displayName = displayName
         self.kind = kind
@@ -55,10 +59,12 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
         self.fixedAddress = fixedAddress
         self.serverIdentity = serverIdentity
         self.software = software
+        self.libraries = libraries
+        self.hiddenLibraries = hiddenLibraries
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, displayName, kind, host, username, audiobookshelfTokens, ownAudioTokens, password, canAddShows, addresses, fixedAddress, serverIdentity, software
+        case id, displayName, kind, host, username, audiobookshelfTokens, ownAudioTokens, password, canAddShows, addresses, fixedAddress, serverIdentity, software, libraries, hiddenLibraries
     }
 
     /// Records saved before addresses existed decode with none.
@@ -77,7 +83,11 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
         fixedAddress = try c.decodeIfPresent(URL.self, forKey: .fixedAddress)
         serverIdentity = try c.decodeIfPresent(String.self, forKey: .serverIdentity)
         software = try c.decodeIfPresent(String.self, forKey: .software)
+        libraries = try c.decodeIfPresent([ServerLibrary].self, forKey: .libraries) ?? []
+        hiddenLibraries = try c.decodeIfPresent([String].self, forKey: .hiddenLibraries) ?? []
     }
+
+    var visibleLibraries: [ServerLibrary] { libraries.filter { !hiddenLibraries.contains($0.id) } }
 
     /// Every address to try, the one it was added with first, each once.
     var candidateAddresses: [ServerAddress] {
@@ -92,6 +102,12 @@ struct ServerRecord: Codable, Sendable, Equatable, Identifiable {
         case .gpodder: password != nil
         }
     }
+}
+
+/// One library of an Audiobookshelf server.
+struct ServerLibrary: Codable, Sendable, Equatable, Hashable, Identifiable {
+    var id: String
+    var name: String
 }
 
 /// One address of a server, and where the app learned it.

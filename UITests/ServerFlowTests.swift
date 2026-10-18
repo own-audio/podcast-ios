@@ -183,6 +183,49 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Demo"].waitForExistence(timeout: 5), "renamed")
     }
 
+    /// An Audiobookshelf server with several podcast libraries: each is in the switch on its own,
+    /// and a library turned off on the server page leaves it.
+    func testAudiobookshelfLibraries() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["AUDIOBOOKSHELF_HOST"], let user = env["AUDIOBOOKSHELF_USERNAME"], let password = env["AUDIOBOOKSHELF_PASSWORD"] else {
+            throw XCTSkip("AUDIOBOOKSHELF_HOST is not set")
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-debugServerKind", "audiobookshelf", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+        app.launch()
+        let menu = app.buttons["home.serverMenu"].firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 60), "the switch shows: this iPhone and the server's libraries")
+        let name = URL(string: host)?.host() ?? host
+        let libraryEntry = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(name) · ")).firstMatch
+        for _ in 0..<5 where !libraryEntry.exists {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            menu.tap()
+            if !libraryEntry.waitForExistence(timeout: 3) { app.tap() }
+        }
+        XCTAssertTrue(libraryEntry.exists, "a library on its own in the switch")
+        let label = libraryEntry.label
+        let library = String(label.dropFirst("\(name) · ".count))
+        libraryEntry.tap()
+        XCTAssertTrue(menu.label.contains(library), menu.label)
+
+        app.buttons["home.settings"].firstMatch.tap()
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "settings.server.\(name)")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.tap()
+        let toggle = app.switches["serverDetail.library.\(library)"].firstMatch
+        for _ in 0..<4 where !toggle.isHittable { app.swipeUp() }
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10), "the library on the server page")
+        toggle.switches.firstMatch.exists ? toggle.switches.firstMatch.tap() : toggle.tap()
+        XCTAssertEqual(toggle.value as? String, "0", "turned off")
+        app.navigationBars.buttons.firstMatch.tap()
+        app.buttons["Done"].firstMatch.tap()
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        XCTAssertFalse(menu.label.contains(library), "the switch fell back from the hidden library: \(menu.label)")
+        menu.tap()
+        XCTAssertFalse(app.buttons[label].waitForExistence(timeout: 3), "the hidden library left the switch")
+    }
+
     private func run(kind: String, prefix: String, userKey: String? = nil, passwordKey: String) throws {
         let env = ProcessInfo.processInfo.environment
         guard let host = env["\(prefix)_HOST"], let user = env[userKey ?? "\(prefix)_USERNAME"], let password = env[passwordKey] else {

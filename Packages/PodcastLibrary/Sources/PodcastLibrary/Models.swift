@@ -19,8 +19,10 @@ public struct Show: Codable, Sendable, Equatable, Identifiable {
     public var followedAt: Date
     public var refreshedAt: Date?
     public var settings: ShowSettings
+    /// The part of the source it lives in, where a source has parts: an Audiobookshelf library.
+    public var collection: String?
 
-    public init(id: String, title: String, author: String? = nil, description: String? = nil, imageURL: URL? = nil, feedURL: URL? = nil, link: URL? = nil, categories: [String] = [], isSerial: Bool = false, isExplicit: Bool = false, followedAt: Date = Date(), refreshedAt: Date? = nil, settings: ShowSettings = ShowSettings()) {
+    public init(id: String, title: String, author: String? = nil, description: String? = nil, imageURL: URL? = nil, feedURL: URL? = nil, link: URL? = nil, categories: [String] = [], isSerial: Bool = false, isExplicit: Bool = false, followedAt: Date = Date(), refreshedAt: Date? = nil, settings: ShowSettings = ShowSettings(), collection: String? = nil) {
         self.id = id
         self.title = title
         self.author = author
@@ -34,6 +36,7 @@ public struct Show: Codable, Sendable, Equatable, Identifiable {
         self.followedAt = followedAt
         self.refreshedAt = refreshedAt
         self.settings = settings
+        self.collection = collection
     }
 }
 

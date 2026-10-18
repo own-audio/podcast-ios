@@ -13,6 +13,8 @@ cs = {
  "%lld s": "%lld s",
  "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players.": "Účet synchronizace gPodder (podfetch, gpodder.net, server own.audio): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači.",
  "Automatic": "Automaticky",
+ "Libraries": "Knihovny",
+ "The podcast libraries on this server. A library you turn off leaves New Episodes, Shows and the switch; with more than one, each is in the switch on its own.": "Podcastové knihovny na tomto serveru. Vypnutá knihovna zmizí z nových epizod, pořadů i přepínače; je-li jich víc, má každá v přepínači vlastní položku.",
  "Account": "Účet",
  "Add Address": "Přidat adresu",
  "Add the server's address on your home network, a VPN such as Tailscale, or a second public name. On each network the app uses the fastest one that answers.": "Přidejte adresu serveru v domácí síti, ve VPN jako Tailscale nebo druhé veřejné jméno. V každé síti aplikace použije tu nejrychlejší, která odpovídá.",

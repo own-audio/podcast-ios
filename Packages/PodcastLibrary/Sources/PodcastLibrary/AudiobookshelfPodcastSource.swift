@@ -104,10 +104,23 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
 
     // MARK: - Following
 
+    /// The account's podcast libraries, in the server's order: `(id, name)`.
+    public func podcastLibraries() async throws -> [(id: String, name: String)] {
+        try await translating { try await client.podcastLibraries() }
+            .sorted { ($0.displayOrder ?? 0) < ($1.displayOrder ?? 0) }
+            .map { ($0.id, $0.name) }
+    }
+
     public func follow(feedURL: URL) async throws -> Show {
+        try await follow(feedURL: feedURL, libraryId: nil)
+    }
+
+    /// Into `libraryId`'s first folder; nil: the first library that has a folder.
+    public func follow(feedURL: URL, libraryId: String?) async throws -> Show {
         guard canAddShows else { throw SourceError.unsupported }
         if let existing = try await shows().first(where: { $0.feedURL == feedURL }) { return existing }
-        guard let library = try await translating({ try await client.podcastLibraries() }).first(where: { !($0.folders ?? []).isEmpty }),
+        let libraries = try await translating({ try await client.podcastLibraries() })
+        guard let library = libraries.first(where: { (libraryId == nil || $0.id == libraryId) && !($0.folders ?? []).isEmpty }),
               let folder = library.folders?.first else { throw SourceError.unsupported }
         let title: String
         switch try? await fetcher.fetch(feedURL) {
@@ -243,10 +256,38 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
             // what this phone plays.
             let session = try await translating { try await client.playEpisode(itemId: key.showId, episodeId: key.episodeId, device: device) }
             guard let track = session.audioTracks.first else { throw SourceError.notFound }
-            return Playback(url: client.mediaURL(contentUrl: track.contentUrl, token: token), isServerFile: true, isHLS: session.isHLS)
+            let url = client.mediaURL(contentUrl: track.contentUrl, token: token)
+            if session.isHLS { await Self.waitForPlaylist(url) }
+            return Playback(url: url, isServerFile: true, isHLS: session.isHLS)
         }
         guard let ino = file.ino else { throw SourceError.notFound }
         return Playback(url: client.fileURL(itemId: key.showId, ino: ino, token: token), isServerFile: true)
+    }
+
+    /// The server names the playlist before its transcoder has written it, and lists every
+    /// segment at once while it writes them one by one; a request too early gets a 404 and the
+    /// player gives up. So the playlist and its first segment are asked for every half second,
+    /// for up to 20 seconds, before playing.
+    static func waitForPlaylist(_ url: URL, session: URLSession = .shared) async {
+        func fetch(_ target: URL) async -> Data? {
+            var request = URLRequest(url: target, timeoutInterval: 5)
+            request.httpShouldHandleCookies = false
+            request.setValue("bytes=0-1023", forHTTPHeaderField: "Range")
+            guard let (data, response) = try? await session.data(for: request),
+                  let status = (response as? HTTPURLResponse)?.statusCode, status == 200 || status == 206 else { return nil }
+            return data
+        }
+        var segment: URL?
+        for _ in 0..<40 {
+            if segment == nil, let playlist = await fetch(url), playlist.starts(with: Data("#EXTM3U".utf8)) {
+                let first = String(decoding: playlist, as: UTF8.self).split(whereSeparator: \.isNewline)
+                    .map { $0.trimmingCharacters(in: .whitespaces) }.first { !$0.isEmpty && !$0.hasPrefix("#") }
+                guard let first else { return }
+                segment = URL(string: first, relativeTo: url)?.absoluteURL
+            }
+            if let segment, await fetch(segment) != nil { return }
+            try? await Task.sleep(for: .milliseconds(500))
+        }
     }
 
     // MARK: - Mapping
@@ -263,7 +304,8 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
             feedURL: FeedValues.url(metadata.feedUrl), link: FeedValues.url(metadata.itunesPageUrl), categories: metadata.genres,
             isSerial: metadata.type == "serial", isExplicit: metadata.explicit,
             followedAt: await store.firstSeen(showId: item.id) ?? Date(timeIntervalSince1970: Double(item.addedAt) / 1000),
-            settings: await store.settings(showId: item.id)
+            settings: await store.settings(showId: item.id),
+            collection: item.libraryId
         )
     }
 

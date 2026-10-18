@@ -68,6 +68,22 @@ struct ServerDetailView: View {
                     Text("Server")
                 }
 
+                if server.kind == .audiobookshelf, !server.libraries.isEmpty {
+                    Section {
+                        ForEach(server.libraries) { library in
+                            Toggle(library.name, isOn: Binding(
+                                get: { !server.hiddenLibraries.contains(library.id) },
+                                set: { shown in Task { await model.setLibrary(library.id, hidden: !shown, on: server.id) } }
+                            ))
+                            .accessibilityIdentifier("serverDetail.library.\(library.name)")
+                        }
+                    } header: {
+                        Text("Libraries")
+                    } footer: {
+                        Text("The podcast libraries on this server. A library you turn off leaves New Episodes, Shows and the switch; with more than one, each is in the switch on its own.")
+                    }
+                }
+
                 if server.kind == .gpodder {
                     Section {
                         Button {

@@ -13,17 +13,30 @@ import UIKit
 enum SourceRef: Hashable, Sendable {
     case phone
     case server(UUID)
+    /// One library of a server (Audiobookshelf), for the switch and for adding shows; items
+    /// themselves always belong to `.server`.
+    case library(UUID, String)
 
     var id: String {
         switch self {
         case .phone: "phone"
         case .server(let id): id.uuidString
+        case .library(let id, let library): id.uuidString + "#" + library
+        }
+    }
+
+    var serverId: UUID? {
+        switch self {
+        case .phone: nil
+        case .server(let id), .library(let id, _): id
         }
     }
 
     init?(id: String) {
         if id == "phone" {
             self = .phone
+        } else if let hash = id.firstIndex(of: "#"), let uuid = UUID(uuidString: String(id[..<hash])) {
+            self = .library(uuid, String(id[id.index(after: hash)...]))
         } else if let uuid = UUID(uuidString: id) {
             self = .server(uuid)
         } else {
@@ -165,8 +178,13 @@ final class AppModel {
     /// not one.
     var switchableSources: [SourceRef] {
         // own.audio first, always; then this iPhone, then the other servers and gPodder accounts.
-        serversInOrder.filter { $0.kind == .ownAudio }.map { .server($0.id) } + [.phone]
-            + serversInOrder.filter { $0.kind != .ownAudio }.map { .server($0.id) }
+        // A server with several libraries offers each one after itself.
+        func entries(_ record: ServerRecord) -> [SourceRef] {
+            let libraries = record.visibleLibraries
+            return [.server(record.id)] + (libraries.count > 1 ? libraries.map { .library(record.id, $0.id) } : [])
+        }
+        return serversInOrder.filter { $0.kind == .ownAudio }.flatMap(entries) + [.phone]
+            + serversInOrder.filter { $0.kind != .ownAudio }.flatMap(entries)
     }
 
     /// Each gPodder account's shows, as of its last sync: the phone's shows it holds.
@@ -183,6 +201,13 @@ final class AppModel {
             return source == .phone && showFeed.map { gpodderFeeds[id]?.contains($0.absoluteString) == true } == true
         }
         return source == active
+    }
+
+    private func matches(_ source: SourceRef, show: Show?, active: SourceRef) -> Bool {
+        if case .library(let id, let library) = active {
+            return source == .server(id) && show?.collection == library
+        }
+        return matches(source, showFeed: show?.feedURL, active: active)
     }
 
     /// Servers as every list shows them: own.audio first, then Audiobookshelf, then gPodder
@@ -203,25 +228,25 @@ final class AppModel {
 
     var visibleInbox: [SourcedEpisode] {
         guard let activeSource else { return inbox }
-        return inbox.filter { matches($0.source, showFeed: show(for: $0)?.feedURL, active: activeSource) }
+        return inbox.filter { matches($0.source, show: show(for: $0), active: activeSource) }
     }
 
     var visibleShows: [SourcedShow] {
         guard let activeSource else { return shows }
-        return shows.filter { matches($0.source, showFeed: $0.show.feedURL, active: activeSource) }
+        return shows.filter { matches($0.source, show: $0.show, active: activeSource) }
     }
 
     func brand(_ ref: SourceRef) -> ServerBrand {
-        switch ref {
-        case .phone: .phone
-        case .server(let id): server(id).map(ServerBrand.init) ?? .gpodder
-        }
+        guard let id = ref.serverId else { return .phone }
+        return server(id).map(ServerBrand.init) ?? .gpodder
     }
 
     func sourceName(_ ref: SourceRef) -> String {
         switch ref {
         case .phone: String(localized: "This iPhone")
         case .server(let id): server(id)?.displayName ?? String(localized: "Removed server")
+        case .library(let id, let library):
+            "\(server(id)?.displayName ?? String(localized: "Removed server")) · \(server(id)?.libraries.first { $0.id == library }?.name ?? library)"
         }
     }
 
@@ -231,13 +256,17 @@ final class AppModel {
 
     /// Where shows can be followed: the phone always, and every server that takes a feed URL.
     var followTargets: [SourceRef] {
-        [.phone] + servers.filter { $0.kind != .gpodder && sources[$0.id]?.capabilities.contains(.addByURL) == true }.map { .server($0.id) }
+        [.phone] + serversInOrder.filter { $0.kind != .gpodder && sources[$0.id]?.capabilities.contains(.addByURL) == true }.flatMap { record -> [SourceRef] in
+            // On a server with several libraries, the show goes into the one chosen.
+            let libraries = record.visibleLibraries
+            return libraries.count > 1 ? libraries.map { .library(record.id, $0.id) } : [.server(record.id)]
+        }
     }
 
     func source(_ ref: SourceRef) -> (any PodcastSource)? {
         switch ref {
         case .phone: phone
-        case .server(let id): sources[id]
+        case .server(let id), .library(let id, _): sources[id]
         }
     }
 
@@ -259,6 +288,7 @@ final class AppModel {
         hasLoaded = true
         await chooseAddresses()
         await loadServerIcons()
+        await loadLibraries()
         await refresh()
     }
 
@@ -320,8 +350,11 @@ final class AppModel {
         for ref in refs {
             guard let source = source(ref) else { continue }
             do {
-                allShows += try await source.shows().map { SourcedShow(source: ref, show: $0) }
-                allInbox += try await source.inbox(limit: 200).map { SourcedEpisode(source: ref, episode: $0) }
+                let hidden = Set(ref.serverId.flatMap { server($0)?.hiddenLibraries } ?? [])
+                let sourceShows = try await source.shows().filter { $0.collection.map { !hidden.contains($0) } ?? true }
+                let kept = Set(sourceShows.map(\.id))
+                allShows += sourceShows.map { SourcedShow(source: ref, show: $0) }
+                allInbox += try await source.inbox(limit: 200).filter { hidden.isEmpty || kept.contains($0.showId) }.map { SourcedEpisode(source: ref, episode: $0) }
                 for (key, value) in try await source.allProgress() {
                     allProgress[ref.id + "/" + key.description] = value
                 }
@@ -365,10 +398,15 @@ final class AppModel {
     @discardableResult
     func follow(_ feedURL: URL, into ref: SourceRef = .phone) async throws -> SourcedShow {
         guard let source = source(ref) else { throw SourceError.notFound }
-        let show = try await source.follow(feedURL: feedURL)
+        let show: Show
+        if case .library(_, let library) = ref, let abs = source as? AudiobookshelfPodcastSource {
+            show = try await abs.follow(feedURL: feedURL, libraryId: library)
+        } else {
+            show = try await source.follow(feedURL: feedURL)
+        }
         await reloadLists()
         if ref == .phone { scheduleSync() }
-        return SourcedShow(source: ref, show: show)
+        return SourcedShow(source: ref.serverId.map { .server($0) } ?? .phone, show: show)
     }
 
     func unfollow(_ show: SourcedShow) async {
@@ -632,7 +670,7 @@ final class AppModel {
     }
 
     func removeServer(_ id: UUID) async {
-        if activeSource == .server(id) { activeSource = nil }
+        if activeSource?.serverId == id { activeSource = nil }
         serverIcons[id] = nil
         if case .server(id)? = nowPlaying?.source { stopPlayback() }
         try? await store.remove(id: id)
@@ -646,7 +684,10 @@ final class AppModel {
         try await store.add(record)
         servers.append(record)
         rebuildSources()
-        Task { await loadServerIcons() }
+        Task {
+            await loadServerIcons()
+            await loadLibraries()
+        }
         if record.kind == .gpodder, let sync = syncs[record.id] {
             _ = try? await sync.sync()
             await noteAccountFeeds()
@@ -677,7 +718,31 @@ final class AppModel {
     private(set) var serverIcons: [UUID: UIImage] = [:]
 
     func icon(_ ref: SourceRef) -> UIImage? {
-        if case .server(let id) = ref { serverIcons[id] } else { nil }
+        ref.serverId.flatMap { serverIcons[$0] }
+    }
+
+    /// Each Audiobookshelf server's podcast libraries, read again and kept on its record.
+    func loadLibraries() async {
+        guard !isOffline else { return }
+        for record in servers where record.kind == .audiobookshelf {
+            guard let abs = sources[record.id] as? AudiobookshelfPodcastSource,
+                  let found = try? await abs.podcastLibraries() else { continue }
+            let libraries = found.map { ServerLibrary(id: $0.id, name: $0.name) }
+            if libraries != record.libraries {
+                var updated = record
+                updated.libraries = libraries
+                try? await update(updated, rebuild: false)
+            }
+        }
+    }
+
+    func setLibrary(_ library: String, hidden: Bool, on id: UUID) async {
+        guard var record = server(id) else { return }
+        record.hiddenLibraries.removeAll { $0 == library }
+        if hidden { record.hiddenLibraries.append(library) }
+        if case .library(id, library)? = activeSource, hidden { activeSource = .server(id) }
+        try? await update(record, rebuild: false)
+        await reloadLists()
     }
 
     /// Where each kind of server keeps its icon, best first.

@@ -145,3 +145,41 @@ struct ListeningStoreTests {
         init(_ now: Date) { self.now = now }
     }
 }
+
+@Suite("Audiobookshelf libraries")
+struct AudiobookshelfLibraryTests {
+    @Test("the libraries are listed in order, and a show is added into the one chosen")
+    func followIntoLibrary() async throws {
+        final class Sent: @unchecked Sendable { var body = "" }
+        let sent = Sent()
+        let mock = await MockURLProtocol.makeStubbedSession { request in
+            let json = { (body: String) in MockURLProtocol.StubbedResponse(statusCode: 200, body: Data(body.utf8)) }
+            switch (request.httpMethod ?? "", request.url?.path ?? "") {
+            case ("GET", "/api/libraries"):
+                return json(#"{"libraries":[{"id":"lib3","name":"YouTube","mediaType":"podcast","displayOrder":2,"folders":[{"id":"f3","fullPath":"/youtube"}]},{"id":"lib1","name":"Podcasts","mediaType":"podcast","displayOrder":1,"folders":[{"id":"f1","fullPath":"/podcasts"}]}]}"#)
+            case ("GET", let path) where path.hasSuffix("/items"):
+                return json(#"{"results":[],"total":0,"limit":200,"page":0}"#)
+            case ("GET", "/feed.xml"):
+                return json("<?xml version='1.0'?><rss version='2.0'><channel><title>New Show</title><item><title>One</title><guid>1</guid><enclosure url='https://abs.example.com/1.mp3' type='audio/mpeg' length='1'/></item></channel></rss>")
+            case ("POST", "/api/podcasts"):
+                sent.body = request.httpBody.map { String(decoding: $0, as: UTF8.self) } ?? request.httpBodyStream.map { stream in
+                    stream.open(); defer { stream.close() }
+                    var data = Data(); let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 4096); defer { buffer.deallocate() }
+                    while stream.hasBytesAvailable { let n = stream.read(buffer, maxLength: 4096); if n <= 0 { break }; data.append(buffer, count: n) }
+                    return String(decoding: data, as: UTF8.self)
+                } ?? ""
+                return json(#"{"id":"new1","libraryId":"lib3","addedAt":1,"updatedAt":1,"media":{"metadata":{"title":"New Show","feedUrl":"https://abs.example.com/feed.xml"},"episodes":[]}}"#)
+            default:
+                return .init(statusCode: 404, body: Data())
+            }
+        }
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("abs-\(UUID().uuidString)", isDirectory: true)
+        let client = AudiobookshelfClient(host: URL(string: "https://abs.example.com")!, tokens: TokenSession(Tokens(accessToken: "t", refreshToken: nil, expiresAt: Date().addingTimeInterval(3600))), session: mock.urlSession)
+        let abs = AudiobookshelfPodcastSource(client: client, store: ListeningStore(directory: directory), fetcher: FeedFetcher(session: mock.urlSession), canAddShows: true)
+        let libraries = try await abs.podcastLibraries()
+        #expect(libraries.map(\.name) == ["Podcasts", "YouTube"], "in the server's order")
+        let show = try await abs.follow(feedURL: URL(string: "https://abs.example.com/feed.xml")!, libraryId: "lib3")
+        #expect(show.collection == "lib3")
+        #expect(sent.body.contains("lib3") && sent.body.contains("f3"), "into the chosen library's folder: \(sent.body)")
+    }
+}

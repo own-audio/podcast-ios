@@ -291,7 +291,8 @@ public final class SpokenEngine {
                     return parts?.string ?? ""
                 } ?? ""
                 let underlying = (item.error as NSError?)?.userInfo[NSUnderlyingErrorKey].map { "\($0)" } ?? "-"
-                Logger(subsystem: "audio.own.player", category: "spoken").error("open failed: \(address, privacy: .public) http=\(event?.errorStatusCode ?? 0, privacy: .public) \(event?.errorComment ?? "", privacy: .public) underlying=\(underlying, privacy: .public)")
+                let failedAt = event?.uri.map { uri in uri.components(separatedBy: "?").first ?? uri } ?? "-"
+                Logger(subsystem: "audio.own.player", category: "spoken").error("open failed: \(address, privacy: .public) at \(failedAt, privacy: .public) http=\(event?.errorStatusCode ?? 0, privacy: .public) \(event?.errorComment ?? "", privacy: .public) underlying=\(underlying, privacy: .public)")
             }
             Task { @MainActor [weak self] in
                 guard let self, self.player.currentItem === item else { return }

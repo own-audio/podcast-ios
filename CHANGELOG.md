@@ -72,3 +72,8 @@ All notable changes to own.audio Podcasts. The format follows
   "Cannot Open"; a failed open logs what the server answered.
 - gPodder accounts (podfetch) are in the source switch too: choosing one shows this iPhone's shows
   that are on the account.
+- Audiobookshelf libraries: with more than one podcast library, each is in the source switch on its
+  own after the server; the server page lists them with a switch each, and one turned off leaves
+  New Episodes, Shows and the switch; a show added to the server goes into the library chosen.
+- Transcoded Audiobookshelf streams wait until the server has written the playlist and its first
+  segment, instead of failing on the 404 the server answers at first.

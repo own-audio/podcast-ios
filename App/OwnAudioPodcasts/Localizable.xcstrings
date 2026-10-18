@@ -683,6 +683,16 @@
         }
       }
     },
+    "Libraries": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knihovny"
+          }
+        }
+      }
+    },
     "Mark as Played": {
       "localizations": {
         "cs": {
@@ -1479,6 +1489,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Podcastové knihovny serveru Audiobookshelf s jeho staženými epizodami a pozicemi."
+          }
+        }
+      }
+    },
+    "The podcast libraries on this server. A library you turn off leaves New Episodes, Shows and the switch; with more than one, each is in the switch on its own.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Podcastové knihovny na tomto serveru. Vypnutá knihovna zmizí z nových epizod, pořadů i přepínače; je-li jich víc, má každá v přepínači vlastní položku."
           }
         }
       }
