@@ -657,6 +657,57 @@ final class AppModel {
         try await save(ServerRecord(displayName: Self.displayName(pending.host), kind: .ownAudio, host: pending.host, username: email, ownAudioTokens: tokens))
     }
 
+    // MARK: Summaries and questions (own.audio's hosted service)
+
+    /// Per server, whether it offers summaries; asked once per launch.
+    @ObservationIgnored private var summaryServers: [UUID: Bool] = [:]
+
+    private func ownAudioClient(for item: SourcedEpisode) -> OwnAudioClient? {
+        guard case .server(let id) = item.source else { return nil }
+        return (sources[id] as? OwnAudioPodcastSource)?.client
+    }
+
+    /// An episode with a transcript on an own.audio server that summarizes.
+    func offersSummaries(_ item: SourcedEpisode) async -> Bool {
+        guard case .server(let id) = item.source, !item.episode.transcripts.isEmpty, let client = ownAudioClient(for: item) else { return false }
+        if let known = summaryServers[id] { return known }
+        let offered = await client.offersSummaries()
+        summaryServers[id] = offered
+        return offered
+    }
+
+    /// The language summaries are written in: the app's own.
+    static var summaryLanguage: String { Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) } ?? "en" }
+
+    func summary(_ item: SourcedEpisode) async throws -> EpisodeSummary? {
+        guard let client = ownAudioClient(for: item) else { return nil }
+        return try await client.summary(episodeId: item.episode.key.episodeId, language: Self.summaryLanguage)
+    }
+
+    func summarize(_ item: SourcedEpisode) async throws -> EpisodeSummary {
+        guard let client = ownAudioClient(for: item) else { throw SourceError.unsupported }
+        return try await client.summarize(episodeId: item.episode.key.episodeId, language: Self.summaryLanguage)
+    }
+
+    func ask(_ item: SourcedEpisode, question: String, history: [EpisodeQuestion]) async throws -> String {
+        guard let client = ownAudioClient(for: item) else { throw SourceError.unsupported }
+        return try await client.ask(episodeId: item.episode.key.episodeId, question: question, history: history)
+    }
+
+    /// What the listener is told when a paid summary or answer is refused.
+    static func summaryMessage(for error: Error) -> String {
+        switch OwnAudioError.status(of: error) {
+        case 402:
+            String(localized: "There isn't enough credit for this. Top up the family's credit in the own.audio web app.")
+        case 409:
+            String(localized: "Today's limit for paid work is reached. Try again tomorrow.")
+        case 400:
+            String(localized: "This episode has no transcript to read.")
+        default:
+            message(for: error)
+        }
+    }
+
     // MARK: Sign in with Apple and Google
 
     enum OwnAudioSignIn {

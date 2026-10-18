@@ -7,7 +7,7 @@ import OwnAudioKit
 /// Following and refreshing are not in v2 yet, so they are hidden; New Episodes is built from
 /// each show's newest page, by the same first-sighting rules as the other sources.
 public actor OwnAudioPodcastSource: PodcastSource {
-    public let client: OwnAudioClient
+    public nonisolated let client: OwnAudioClient
     private let store: ListeningStore
     private let now: @Sendable () -> Date
     private var podcasts: [String: Podcast] = [:]

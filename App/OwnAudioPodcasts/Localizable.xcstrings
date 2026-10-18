@@ -113,6 +113,16 @@
         }
       }
     },
+    "A summary is made from the transcript with AI and paid from your family's credit, usually a cent or two. Everyone in the family can then read it.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrnutí se vytvoří z přepisu pomocí AI a zaplatí z kreditu vaší rodiny, obvykle méně než korunu. Pak si ho může přečíst celá rodina."
+          }
+        }
+      }
+    },
     "About": {
       "localizations": {
         "cs": {
@@ -233,6 +243,16 @@
         }
       }
     },
+    "Answers come from the episode's transcript only, and each one is paid from your family's credit.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odpovědi vycházejí jen z přepisu epizody a každá se platí z kreditu vaší rodiny."
+          }
+        }
+      }
+    },
     "Apple didn't return a sign-in. Try again.": {
       "localizations": {
         "cs": {
@@ -249,6 +269,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Podle nastavení"
+          }
+        }
+      }
+    },
+    "Ask": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeptat se"
+          }
+        }
+      }
+    },
+    "Ask about this episode": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zeptejte se na tuto epizodu"
           }
         }
       }
@@ -1443,6 +1483,36 @@
         }
       }
     },
+    "Summarize Episode": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrnout epizodu"
+          }
+        }
+      }
+    },
+    "Summarizing…": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrnuji…"
+          }
+        }
+      }
+    },
+    "Summary": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shrnutí"
+          }
+        }
+      }
+    },
     "Sync": {
       "localizations": {
         "cs": {
@@ -1603,12 +1673,32 @@
         }
       }
     },
+    "There isn't enough credit for this. Top up the family's credit in the own.audio web app.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na tohle není dost kreditu. Dobijte kredit rodiny ve webové aplikaci own.audio."
+          }
+        }
+      }
+    },
     "This account has no podcast library on the server.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Tento účet nemá na serveru žádnou podcastovou knihovnu."
+          }
+        }
+      }
+    },
+    "This episode has no transcript to read.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tato epizoda nemá přepis, ze kterého by šlo vycházet."
           }
         }
       }
@@ -1629,6 +1719,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pořady a pozice v tomto iPhonu se udržují ve shodě s účtem, stejně jako v každé další aplikaci, která je k němu přihlášená."
+          }
+        }
+      }
+    },
+    "Today's limit for paid work is reached. Try again tomorrow.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dnešní limit placené práce je vyčerpaný. Zkuste to zítra."
           }
         }
       }

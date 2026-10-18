@@ -1,4 +1,5 @@
 import FeedKit
+import OwnAudioKit
 import PodcastLibrary
 import SwiftUI
 
@@ -96,6 +97,7 @@ struct EpisodeView: View {
                     .buttonStyle(.bordered)
                     .accessibilityIdentifier("episode.markPlayed")
                 }
+                EpisodeSummarySection(item: item)
                 if !episode.chapters.isEmpty {
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         Text("Chapters").font(.headline)
@@ -135,6 +137,111 @@ struct EpisodeView: View {
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// A summary of the episode and answers to questions about it, made by an own.audio server
+/// from the episode's transcript and paid from the family's credit. Shown only where the server
+/// offers it and the episode has a transcript.
+struct EpisodeSummarySection: View {
+    @Environment(AppModel.self) private var model
+    let item: SourcedEpisode
+    @State private var available = false
+    @State private var checked = false
+    @State private var summary: EpisodeSummary?
+    @State private var working = false
+    @State private var error: String?
+    @State private var question = ""
+    @State private var turns: [EpisodeQuestion] = []
+    @State private var asking = false
+
+    var body: some View {
+        Group {
+            if available {
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text("Summary").font(.headline)
+                    if let summary {
+                        Text(summary.text)
+                            .foregroundStyle(Theme.Colors.foreground)
+                            .textSelection(.enabled)
+                            .accessibilityIdentifier("episode.summary")
+                        ForEach(turns, id: \.self) { turn in
+                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                                Text(turn.question).font(.subheadline.bold()).foregroundStyle(Theme.Colors.foreground)
+                                Text(turn.answer).foregroundStyle(Theme.Colors.muted).textSelection(.enabled)
+                            }
+                        }
+                        HStack(alignment: .bottom, spacing: Theme.Spacing.sm) {
+                            TextField("Ask about this episode", text: $question, axis: .vertical)
+                                .lineLimit(1...4)
+                                .textFieldStyle(.roundedBorder)
+                                .submitLabel(.send)
+                                .onSubmit { Task { await ask() } }
+                                .accessibilityIdentifier("episode.question")
+                            Button {
+                                Task { await ask() }
+                            } label: {
+                                if asking { ProgressView() } else { Text("Ask") }
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(asking || question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            .accessibilityIdentifier("episode.ask")
+                        }
+                        Text("Answers come from the episode's transcript only, and each one is paid from your family's credit.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.Colors.muted)
+                    } else if checked {
+                        Text("A summary is made from the transcript with AI and paid from your family's credit, usually a cent or two. Everyone in the family can then read it.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.Colors.muted)
+                        Button {
+                            Task { await make() }
+                        } label: {
+                            Label(working ? "Summarizing…" : "Summarize Episode", systemImage: "sparkles")
+                                .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(working)
+                        .accessibilityIdentifier("episode.summarize")
+                    }
+                    if let error {
+                        Text(error).font(.footnote).foregroundStyle(Theme.Colors.error).accessibilityIdentifier("episode.summaryError")
+                    }
+                }
+            }
+        }
+        .task(id: item.id) {
+            available = await model.offersSummaries(item)
+            guard available else { return }
+            summary = try? await model.summary(item)
+            checked = true
+        }
+    }
+
+    private func make() async {
+        working = true
+        defer { working = false }
+        error = nil
+        do {
+            summary = try await model.summarize(item)
+        } catch {
+            self.error = AppModel.summaryMessage(for: error)
+        }
+    }
+
+    private func ask() async {
+        let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty, !asking else { return }
+        asking = true
+        defer { asking = false }
+        error = nil
+        do {
+            let answer = try await model.ask(item, question: text, history: turns)
+            turns.append(EpisodeQuestion(question: text, answer: answer))
+            question = ""
+        } catch {
+            self.error = AppModel.summaryMessage(for: error)
+        }
     }
 }
 

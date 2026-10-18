@@ -8,6 +8,9 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Summarize this episode, and ask questions about it, on an own.audio server that offers summaries
+  (`features.summaries`, `/api/v2/summaries`). Shown on an episode with a transcript; paid from the
+  family's credit, and a summary once made is kept for the whole family.
 - A refused Apple or Google sign-in says the server didn't accept it, not that a password is wrong.
 - An own.audio console address (`app-canary.own.audio`) typed into Add a Server reaches its server
   (`api-canary.own.audio`), so sign-in and the Apple and Google buttons work with it.
