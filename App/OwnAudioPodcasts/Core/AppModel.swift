@@ -106,6 +106,8 @@ final class AppModel {
     @ObservationIgnored private var syncs: [UUID: GPodderSync] = [:]
     @ObservationIgnored private let store = ServerStore()
     @ObservationIgnored private let directory: URL
+    /// Positions meant for a server, on disk until the server has them.
+    @ObservationIgnored private let pending: PendingProgress
     @ObservationIgnored private var syncTask: Task<Void, Never>?
 
     /// The hosted service's edge refuses requests with no User-Agent.
@@ -138,6 +140,7 @@ final class AppModel {
             try? FileManager.default.removeItem(at: directory)
         }
         phone = FeedLibrary(directory: directory.appendingPathComponent("phone", isDirectory: true), fetcher: FeedFetcher(session: Self.session))
+        pending = PendingProgress(directory: directory)
         engine = SpokenEngine(nowPlaying: nowPlayingController, resumeStore: nil)
         engine.skipForwardSecs = settings.skipForwardSecs
         engine.skipBackwardSecs = settings.skipBackwardSecs
@@ -397,6 +400,7 @@ final class AppModel {
         guard !isOffline, !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
+        await sendPendingProgress()
         for (id, sync) in syncs where (try? await sync.sync()) != nil { lastSyncs[id] = Date() }
         await noteAccountFeeds()
         _ = await phone.refresh(showId: nil)
@@ -482,8 +486,14 @@ final class AppModel {
 
     func markPlayed(_ episode: SourcedEpisode, _ played: Bool) async {
         do {
-            try await source(episode.source)?.markPlayed(episode.episode.key, played)
-            progress[episode.id] = ListeningProgress(positionMs: played ? (progress[episode.id]?.positionMs ?? 0) : 0, played: played)
+            let value = ListeningProgress(positionMs: played ? (progress[episode.id]?.positionMs ?? 0) : 0, played: played)
+            if episode.source == .phone {
+                try await source(episode.source)?.markPlayed(episode.episode.key, played)
+            } else {
+                // A server's copy goes through the queue, so marking works offline too.
+                send(value, for: episode.id)
+            }
+            progress[episode.id] = value
             if played { inbox.removeAll { $0.id == episode.id } }
             if episode.source == .phone { scheduleSync() }
             if played { await applyDownloadRules() }
@@ -601,7 +611,11 @@ final class AppModel {
         let value = ListeningProgress(positionMs: position.positionMs, played: played, updatedAt: position.at)
         progress[position.bookId] = value
         if played { inbox.removeAll { $0.id == position.bookId } }
-        Task { _ = try? await source.saveProgress(value, for: key) }
+        if ref == .phone {
+            Task { _ = try? await source.saveProgress(value, for: key) }
+        } else {
+            send(value, for: position.bookId)
+        }
         if ref == .phone, [.pause, .stop, .finished].contains(position.reason) { scheduleSync() }
         if played, position.reason == .finished { Task { await applyDownloadRules() } }
     }
@@ -843,6 +857,7 @@ final class AppModel {
         serverIcons[id] = nil
         if case .server(id)? = nowPlaying?.source { stopPlayback() }
         downloads.removeAll { $0.sourceRef?.serverId == id }
+        pending.removeAll(prefix: id.uuidString)
         try? await store.remove(id: id)
         servers.removeAll { $0.id == id }
         try? FileManager.default.removeItem(at: serverDirectory(id))
@@ -1288,4 +1303,41 @@ extension AppModel {
             await cache.prefetch(trackId: item.id)
         }
     }
+}
+
+// MARK: - Positions for servers
+
+extension AppModel {
+    /// Written to disk first, then sent; it stays on disk until the server has it.
+    func send(_ value: ListeningProgress, for id: String) {
+        let entry = PendingProgress.Entry(id: id, progress: value)
+        pending.record(entry)
+        guard !isOffline, let (ref, key) = SourcedEpisode.parse(id), let source = source(ref) else { return }
+        Task {
+            do {
+                _ = try await source.saveProgress(value, for: key)
+                pending.sent(entry)
+            } catch {
+                // Kept for the next refresh.
+            }
+        }
+    }
+
+    /// What a server didn't get, oldest first: at launch, when the network comes back, when
+    /// Offline Mode is turned off, on every refresh. A source that fails is left for next time.
+    func sendPendingProgress() async {
+        var failing = Set<String>()
+        for entry in pending.all() {
+            guard let (ref, key) = SourcedEpisode.parse(entry.id) else { pending.sent(entry); continue }
+            guard !failing.contains(ref.id), let source = source(ref) else { continue }
+            do {
+                _ = try await source.saveProgress(entry.progress, for: key)
+                pending.sent(entry)
+            } catch {
+                failing.insert(ref.id)
+            }
+        }
+    }
+
+    var pendingProgressCount: Int { pending.all().count }
 }

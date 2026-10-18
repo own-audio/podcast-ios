@@ -8,6 +8,13 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Positions meant for a server wait on disk until the server has them (`PendingProgress`, copied
+  from the books app, with tests): listening offline, a dead server or a killed app no longer loses
+  where you got to. They are sent oldest first on every refresh — at launch, when the network comes
+  back, when Offline Mode is turned off. Marking a server's episode played or unplayed goes the same
+  way, so it works offline too instead of showing an error. UI test: an own.audio episode played
+  offline from its download is resumed at that position on a fresh install.
+
 - Downloads (P7), on the books app's `DownloadManager`: an episode downloads from its page (the
   arrow beside Play: a ring while it comes, a check when it is here) or from a row's menu, on a
   background `URLSession` that goes on when the app is in the background or killed. Files live in

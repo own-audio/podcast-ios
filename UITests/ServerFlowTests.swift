@@ -189,6 +189,93 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertFalse(app.buttons["show.unfollow"].exists, "a server's show offers no Unfollow")
     }
 
+    /// Never lose a position: an own.audio episode downloaded, then played with Offline Mode on.
+    /// Once Offline Mode is off the position reaches the server — a fresh install, with nothing
+    /// on the phone, offers to resume it.
+    func testPositionFromOfflineReachesTheServer() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["OWNAUDIO_HOST"], let user = env["OWNAUDIO_EMAIL"], let password = env["OWNAUDIO_ACCOUNT_PASSWORD"] else {
+            throw XCTSkip("OWNAUDIO_HOST is not set")
+        }
+        func launch() -> XCUIApplication {
+            let app = XCUIApplication()
+            app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                                   "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+            app.launch()
+            return app
+        }
+        func tab(_ app: XCUIApplication, _ label: String) -> XCUIElement {
+            app.buttons.matching(NSPredicate(format: "label == %@", label)).allElementsBoundByIndex.first { $0.isHittable } ?? app.buttons[label].firstMatch
+        }
+        func waitUntil(_ timeout: TimeInterval, _ condition: () -> Bool) -> Bool {
+            let end = Date().addingTimeInterval(timeout)
+            while Date() < end, !condition() { RunLoop.current.run(until: Date().addingTimeInterval(0.5)) }
+            return condition()
+        }
+
+        var app = launch()
+        let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'episode.'")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 60), "New Episodes from the server")
+        let rowId = row.identifier
+        row.tap()
+        // From the start, whatever an earlier run left: played, then unplayed.
+        let mark = app.buttons["episode.markPlayed"]
+        XCTAssertTrue(mark.waitForExistence(timeout: 10))
+        mark.tap()
+        XCTAssertTrue(waitUntil(5) { mark.label == "Unplayed" })
+        mark.tap()
+        XCTAssertTrue(waitUntil(5) { mark.label == "Played" })
+        XCTAssertEqual(app.buttons["episode.play"].label, "Play")
+        let download = app.buttons["episode.download"]
+        download.tap()
+        XCTAssertTrue(waitUntil(300) { download.label == "Downloaded" }, "the download finishes: \(download.label)")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        let offline = app.buttons["home.offlineMode"].firstMatch
+        offline.tap()
+        XCTAssertTrue(app.staticTexts["Offline Mode is on"].waitForExistence(timeout: 5))
+        tab(app, "Downloads").tap()
+        let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 10))
+        play.tap()
+        let mini = app.buttons["miniPlayer"]
+        XCTAssertTrue(mini.waitForExistence(timeout: 15))
+        mini.tap()
+        let elapsed = app.staticTexts["player.elapsed"]
+        XCTAssertTrue(elapsed.waitForExistence(timeout: 10))
+        XCTAssertTrue(waitUntil(20) { elapsed.label != "0:00" }, "it plays offline")
+        app.buttons["player.skipForward"].tap()
+        app.buttons["player.skipForward"].tap()
+        app.buttons["player.stop"].tap()
+
+        tab(app, "New Episodes").tap()
+        offline.tap()
+        XCTAssertFalse(app.staticTexts["Offline Mode is on"].waitForExistence(timeout: 3))
+        // Turning Offline Mode off refreshes, which sends what waited.
+        sleep(8)
+        app.terminate()
+
+        app = launch()
+        let again = app.buttons[rowId]
+        XCTAssertTrue(again.waitForExistence(timeout: 60), "the episode is still unplayed")
+        again.tap()
+        // Playing asks the server, which has the position from offline: it starts past the
+        // two skips (a fresh install's lists only know positions of episodes stored before).
+        let start = app.buttons["episode.play"]
+        XCTAssertTrue(start.waitForExistence(timeout: 10))
+        start.tap()
+        for label in ["Continue from", "Keep this iPhone"] where app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", label)).firstMatch.waitForExistence(timeout: 2) {
+            app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", label)).firstMatch.tap()
+        }
+        XCTAssertTrue(app.buttons["miniPlayer"].waitForExistence(timeout: 20))
+        app.buttons["miniPlayer"].tap()
+        let at = app.staticTexts["player.elapsed"]
+        XCTAssertTrue(at.waitForExistence(timeout: 10))
+        let seconds = { at.label.split(separator: ":").reduce(0) { $0 * 60 + (Int($1) ?? 0) } }
+        XCTAssertTrue(waitUntil(15) { seconds() >= 50 }, "the server has the position from offline: \(at.label)")
+        app.buttons["player.stop"].tap()
+    }
+
     /// A server's page in Settings: it answers and accepts the sign-in, its addresses are listed,
     /// one can be added, and the server can be renamed.
     func testServerPage() throws {
