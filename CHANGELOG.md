@@ -8,6 +8,29 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Up Next (P8): one queue across every source, kept on the phone with each episode and its show,
+  so it lists and plays offline (`UpNext`, with tests). Play Next and Play Later from an episode's
+  menu and its page; a mark on queued rows; the Up Next sheet from the player to play one now,
+  reorder, swipe away or clear. When an episode ends the next in Up Next plays, then the newest new
+  episode (Settings → Play New Episodes After Up Next, on by default). A show can add its new
+  episodes to Up Next as they arrive (Show Settings); the back catalogue never floods in.
+- Search finds your own shows and episodes too — New Episodes, downloads and Up Next — before
+  Apple's directory, and with no network.
+- The Shows tab sorts by title, new episodes first, or recently followed (remembered); a show's
+  episodes filter to all, unplayed or downloaded.
+- On iPad the tabs are a sidebar that can be shown or hidden; the iPhone keeps its tab bar.
+- UI tests (`LibraryFlowTests`, `IPadTests`): Up Next on a local fixture feed of three 12-second
+  episodes (served with byte ranges by `UITests/Fixtures/serve.py` from `scripts/test-servers.sh`,
+  so playing to the end takes seconds and asks no publisher); own shows found offline; sort and
+  filter; the iPad sidebar with the mini player.
+
+### Fixed
+
+- UI tests launch through `launchChecked()`, which makes sure the app got its arguments: iOS can
+  hand a test a prewarmed copy of the app, started without them — in the device's language and
+  without `-uiTestReset`. Playback, download and Up Next settings are reset on `-uiTestReset` too,
+  so one test's Offline Mode no longer leaks into the next.
+
 - The Up Next widget (small: one episode; medium: three): the episode in the player, then the
   ones under way, then the newest new episodes, with pictures and time left. It reads a snapshot
   the app writes into the App Group `group.audio.own.podcastplayer`; a tap plays the episode.

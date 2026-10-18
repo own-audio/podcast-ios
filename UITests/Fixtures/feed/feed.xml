@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Three short episodes for the UI tests, served from this folder by scripts/test-servers.sh
+     at http://127.0.0.1:8765/ — so playing an episode to its end takes seconds, and no
+     publisher's server is asked. The audio is macOS's `say`, made by make-fixtures.sh. -->
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>own.audio Test Fixtures</title>
+    <link>https://github.com/own-audio/podcast-ios</link>
+    <description>Short episodes for the app's UI tests.</description>
+    <itunes:author>own.audio</itunes:author>
+    <item>
+      <title>Fixture Episode 3</title>
+      <guid>fixture-3</guid>
+      <pubDate>Fri, 16 Oct 2026 08:00:00 +0000</pubDate>
+      <enclosure url="http://127.0.0.1:8765/ep3.m4a" type="audio/mp4" length="52317"/>
+      <itunes:duration>12</itunes:duration>
+    </item>
+    <item>
+      <title>Fixture Episode 2</title>
+      <guid>fixture-2</guid>
+      <pubDate>Thu, 15 Oct 2026 08:00:00 +0000</pubDate>
+      <enclosure url="http://127.0.0.1:8765/ep2.m4a" type="audio/mp4" length="52558"/>
+      <itunes:duration>12</itunes:duration>
+    </item>
+    <item>
+      <title>Fixture Episode 1</title>
+      <guid>fixture-1</guid>
+      <pubDate>Wed, 14 Oct 2026 08:00:00 +0000</pubDate>
+      <enclosure url="http://127.0.0.1:8765/ep1.m4a" type="audio/mp4" length="52779"/>
+      <itunes:duration>12</itunes:duration>
+    </item>
+  </channel>
+</rss>

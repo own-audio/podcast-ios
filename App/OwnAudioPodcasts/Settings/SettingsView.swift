@@ -80,6 +80,8 @@ struct SettingsView: View {
                         ForEach([0.75, 1.0, 1.25, 1.5, 1.75, 2.0] as [Float], id: \.self) { Text(String(format: "%.2g×", $0)).tag($0) }
                     }
                     Toggle("Smart Rewind", isOn: $settings.smartRewind)
+                    Toggle("Play New Episodes After Up Next", isOn: $settings.continueWithNewEpisodes)
+                        .accessibilityIdentifier("settings.continueWithNew")
                 }
                 Section {
                     Picker("On Mobile Data", selection: $settings.mobileData) {

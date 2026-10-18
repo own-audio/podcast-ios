@@ -62,7 +62,17 @@ struct RootView: View {
         }
     }
 
+    /// On iPad the tabs become a sidebar that can be shown or hidden; the iPhone keeps its tab bar.
+    @ViewBuilder
     private var tabs: some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            tabView.tabViewStyle(.sidebarAdaptable)
+        } else {
+            tabView
+        }
+    }
+
+    private var tabView: some View {
         TabView(selection: $tab) {
             Tab("New Episodes", systemImage: "tray", value: AppTab.inbox) {
                 NavigationStack { InboxView().appDestinations() }

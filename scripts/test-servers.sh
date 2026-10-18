@@ -36,6 +36,12 @@ for package in Packages/*/; do
   (cd "$package" && swift test 2>&1 | grep -E "✘|Test run" || true)
 done
 echo "== UI tests"
+# The short fixture feed (UITests/Fixtures/feed), served from this Mac for the tests that play
+# an episode to its end; the simulator reaches the Mac's 127.0.0.1.
+python3 UITests/Fixtures/serve.py 8765 UITests/Fixtures/feed >/dev/null 2>&1 &
+FIXTURES_PID=$!
+trap 'kill $FIXTURES_PID 2>/dev/null || true' EXIT
+export TEST_RUNNER_LOCAL_FEED_URL="http://127.0.0.1:8765/feed.xml"
 # XCTest hands TEST_RUNNER_-prefixed variables to the tests without the prefix.
 for name in AUDIOBOOKSHELF_HOST AUDIOBOOKSHELF_USERNAME AUDIOBOOKSHELF_PASSWORD OWNAUDIO_HOST OWNAUDIO_EMAIL OWNAUDIO_ACCOUNT_PASSWORD GPODDER_HOST GPODDER_USERNAME GPODDER_PASSWORD PODFETCH_HOST PODFETCH_TEST_USERNAME PODFETCH_TEST_PASSWORD; do
   [[ -n "${!name:-}" ]] && export "TEST_RUNNER_$name=${!name}"

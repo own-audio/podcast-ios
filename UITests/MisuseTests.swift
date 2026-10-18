@@ -137,7 +137,7 @@ final class MisuseTests: XCTestCase {
         app.terminate()
         app = XCUIApplication()
         app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
+        app.launchChecked()
         tabButton(app, "Shows").tap()
         let show = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'show.'")).firstMatch
         XCTAssertTrue(show.waitForExistence(timeout: 15), "the show is still followed")
@@ -154,7 +154,7 @@ final class MisuseTests: XCTestCase {
     private func launch(_ extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + extra
-        app.launch()
+        app.launchChecked()
         return app
     }
 

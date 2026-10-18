@@ -30,7 +30,7 @@ final class ServerFlowTests: XCTestCase {
             app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                    "-debugFeedURL", feed,
                                    "-debugServerKind", "gpodder", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-            app.launch()
+            app.launchChecked()
         }
         let settings = await app.buttons["home.settings"]
         let appeared = await MainActor.run { settings.waitForExistence(timeout: 30) }
@@ -62,7 +62,7 @@ final class ServerFlowTests: XCTestCase {
     func testSignInButtonsFollowTheServer() throws {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
+        app.launchChecked()
         XCTAssertTrue(app.buttons["welcome.server"].waitForExistence(timeout: 15))
         app.buttons["welcome.server"].tap()
         let field = app.textFields["addServer.address"]
@@ -86,7 +86,7 @@ final class ServerFlowTests: XCTestCase {
         }
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
+        app.launchChecked()
         XCTAssertTrue(app.buttons["welcome.server"].waitForExistence(timeout: 15))
         app.buttons["welcome.server"].tap()
         for (id, text) in [("addServer.address", host), ("addServer.username", user)] {
@@ -129,7 +129,7 @@ final class ServerFlowTests: XCTestCase {
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                "-debugFeedURL", "https://feeds.podcastindex.org/pc20.xml",
                                "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
+        app.launchChecked()
         let menu = app.buttons["home.serverMenu"].firstMatch
         XCTAssertTrue(menu.waitForExistence(timeout: 40), "the switch shows with more than one source")
         XCTAssertTrue(menu.label.contains("All Sources"))
@@ -166,7 +166,7 @@ final class ServerFlowTests: XCTestCase {
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                "-debugFeedURL", "https://feeds.podcastindex.org/pc20.xml",
                                "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
+        app.launchChecked()
         XCTAssertTrue(app.buttons["home.serverMenu"].firstMatch.waitForExistence(timeout: 40))
         let shows = app.buttons.matching(NSPredicate(format: "label == 'Shows'")).allElementsBoundByIndex.first { $0.isHittable } ?? app.buttons["Shows"].firstMatch
         shows.tap()
@@ -201,7 +201,7 @@ final class ServerFlowTests: XCTestCase {
             let app = XCUIApplication()
             app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                    "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-            app.launch()
+            app.launchChecked()
             return app
         }
         func tab(_ app: XCUIApplication, _ label: String) -> XCUIElement {
@@ -286,7 +286,7 @@ final class ServerFlowTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
+        app.launchChecked()
         let settings = app.buttons["home.settings"]
         XCTAssertTrue(settings.waitForExistence(timeout: 40))
         let name = URL(string: host)?.host() ?? host
@@ -325,7 +325,7 @@ final class ServerFlowTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
+        app.launchChecked()
         let settings = app.buttons["home.settings"]
         XCTAssertTrue(settings.waitForExistence(timeout: 40))
         let name = URL(string: host)?.host() ?? host
@@ -375,7 +375,7 @@ final class ServerFlowTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                "-debugServerKind", "audiobookshelf", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
+        app.launchChecked()
         let menu = app.buttons["home.serverMenu"].firstMatch
         XCTAssertTrue(menu.waitForExistence(timeout: 60), "the switch shows: this iPhone and the server's libraries")
         let name = URL(string: host)?.host() ?? host
@@ -416,7 +416,7 @@ final class ServerFlowTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
                                "-debugServerKind", kind, "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
-        app.launch()
+        app.launchChecked()
         let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
         XCTAssertTrue(play.waitForExistence(timeout: 60), "New Episodes from the server")
         play.tap()

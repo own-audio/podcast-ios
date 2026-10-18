@@ -281,14 +281,19 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   *Done 2026-10-18, except the server's own auto-download setting, which moves to P10 with
   the other server features. Mobile data offers Stream / Downloaded Only (no Saver: a feed has
   one file).*
-- [ ] **P8: Queue and continuous play.** Play next / play later, the queue sheet with reorder
+- [x] **P8: Queue and continuous play.** Play next / play later, the queue sheet with reorder
   and remove, the inbox playing on, "mark played" as episodes finish, skip-the-intro per show
   (a start offset), per-show speed. UI tests.
+  *Done 2026-10-18: one Up Next across every source (`UpNext`, on the phone) rather than the
+  sources' own queues; New Episodes play on unless turned off in Settings; a show can add its
+  new episodes to Up Next. UI test on a local fixture feed of 12-second episodes.*
 - [ ] **P9: Discovery and OPML.** iTunes Search (shows, by name; the feed URL from the lookup),
   the Podcast Index with the listener's own key, the server's search where there is one,
   trending/categories only where a source offers them. OPML import (Files app, share sheet)
   and export; subscribing to a feed URL typed or pasted; `podcast://`, `feed://` and
   `ownpodcast://` links.
+  *Links done 2026-10-18, and Search also finds your own shows and episodes. Still to do: the
+  Podcast Index, the server's search, OPML.*
 - [ ] **P10: own.audio extras.** The family (shows shared with the household, members,
   invites — copied from the books app), server-side storing of episodes, and **translation**:
   on hosted servers with the module, quote an episode in a language, start, follow the job,

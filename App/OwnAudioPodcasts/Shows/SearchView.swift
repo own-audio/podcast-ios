@@ -1,7 +1,9 @@
+import FeedKit
 import PodcastLibrary
 import SwiftUI
 
-/// Finds shows by name through Apple's podcast directory, and follows one.
+/// Finds what you already have — your shows and their episodes, from every source, offline too —
+/// and new shows by name through Apple's podcast directory, to follow one.
 struct SearchView: View {
     @Environment(AppModel.self) private var model
     @State private var term = ""
@@ -10,22 +12,68 @@ struct SearchView: View {
 
     private enum SearchState: Equatable { case idle, searching, done, failed }
 
+    private var needle: String { term.trimmingCharacters(in: .whitespaces) }
+
+    private var myShows: [SourcedShow] {
+        guard !needle.isEmpty else { return [] }
+        return model.shows.filter { $0.show.title.localizedCaseInsensitiveContains(needle) || ($0.show.author?.localizedCaseInsensitiveContains(needle) ?? false) }
+    }
+
+    /// New Episodes, the downloads and Up Next: what the phone has to hand without asking anyone.
+    private var myEpisodes: [SourcedEpisode] {
+        guard !needle.isEmpty else { return [] }
+        var seen = Set<String>()
+        let known = model.inbox + model.downloads.episodes.values.compactMap(\.item) + model.upNextList.compactMap(model.item)
+        return known.filter { $0.episode.title.localizedCaseInsensitiveContains(needle) && seen.insert($0.id).inserted }.prefix(20).map { $0 }
+    }
+
+    private var hasLibraryMatches: Bool { !myShows.isEmpty || !myEpisodes.isEmpty }
+
     var body: some View {
-        List(results) { result in
-            NavigationLink(value: result) {
-                HStack(spacing: Theme.Spacing.md) {
-                    ArtworkView(url: result.imageURL, size: 56)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(result.title).font(.subheadline.weight(.semibold)).lineLimit(2)
-                        if let author = result.author { Text(author).font(.caption).foregroundStyle(Theme.Colors.muted).lineLimit(1) }
+        List {
+            if !myShows.isEmpty {
+                Section("Your Shows") {
+                    ForEach(myShows) { show in
+                        NavigationLink(value: show) {
+                            HStack(spacing: Theme.Spacing.md) {
+                                ArtworkView(url: show.show.imageURL, size: 44)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(Mojibake.repair(show.show.title)).font(.subheadline.weight(.semibold)).lineLimit(2)
+                                    SourceLabel(source: show.source)
+                                }
+                            }
+                        }
+                        .accessibilityIdentifier("search.mine.\(show.show.title)")
                     }
                 }
             }
-            .accessibilityIdentifier("search.result.\(result.title)")
+            if !myEpisodes.isEmpty {
+                Section("Your Episodes") {
+                    ForEach(myEpisodes) { item in EpisodeRow(item: item) }
+                }
+            }
+            if !results.isEmpty {
+                Section(hasLibraryMatches ? "From Apple Podcasts" : "") {
+                    ForEach(results) { result in
+                        NavigationLink(value: result) {
+                            HStack(spacing: Theme.Spacing.md) {
+                                ArtworkView(url: result.imageURL, size: 56)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(result.title).font(.subheadline.weight(.semibold)).lineLimit(2)
+                                    if let author = result.author { Text(author).font(.caption).foregroundStyle(Theme.Colors.muted).lineLimit(1) }
+                                }
+                            }
+                        }
+                        .accessibilityIdentifier("search.result.\(result.title)")
+                    }
+                }
+            }
         }
         .listStyle(.plain)
         .overlay {
             switch state {
+            case _ where hasLibraryMatches:
+                EmptyView()
             case .idle where results.isEmpty:
                 ContentUnavailableView("Search for Shows", systemImage: "magnifyingglass", description: Text("Find a show by its name or its host."))
             case .searching where results.isEmpty:
@@ -39,7 +87,7 @@ struct SearchView: View {
             }
         }
         .navigationTitle("Search")
-        .searchable(text: $term, prompt: "Shows")
+        .searchable(text: $term, prompt: "Shows and Episodes")
         .onSubmit(of: .search) { Task { await search() } }
         .task(id: term) {
             // Results as the listener types, after a pause.

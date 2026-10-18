@@ -14,7 +14,7 @@ final class FeedFlowTests: XCTestCase {
     private func launch(_ extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"] + extra
-        app.launch()
+        app.launchChecked()
         return app
     }
 
@@ -104,7 +104,7 @@ final class FeedFlowTests: XCTestCase {
         // Started again, without the reset that clears everything.
         app = XCUIApplication()
         app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
+        app.launchChecked()
         let mini = app.buttons["miniPlayer"]
         XCTAssertTrue(mini.waitForExistence(timeout: 30), "the last episode is back in the mini player")
         XCTAssertEqual(app.buttons["miniPlayer.playPause"].label, "Play", "paused, not playing by itself")
@@ -115,7 +115,7 @@ final class FeedFlowTests: XCTestCase {
 
         app.buttons["player.stop"].tap()
         app.terminate()
-        app.launch()
+        app.launchChecked()
         XCTAssertTrue(app.buttons["home.settings"].waitForExistence(timeout: 30))
         XCTAssertFalse(app.buttons["miniPlayer"].waitForExistence(timeout: 5), "Stop clears it")
     }

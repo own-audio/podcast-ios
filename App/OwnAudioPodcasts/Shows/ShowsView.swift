@@ -6,6 +6,12 @@ import SwiftUI
 struct ShowsView: View {
     @Environment(AppModel.self) private var model
     @State private var isAdding = false
+    /// Remembered between launches.
+    @AppStorage("shows.sort") private var sort: ShowSort = .title
+
+    enum ShowSort: String, CaseIterable {
+        case title, newEpisodes, recentlyFollowed
+    }
 
     private let columns = [GridItem(.adaptive(minimum: 104), spacing: Theme.Spacing.md)]
 
@@ -64,6 +70,14 @@ struct ShowsView: View {
                 Button { isAdding = true } label: { Label("Add a Show", systemImage: "plus") }
                     .accessibilityIdentifier("shows.add")
             }
+            ToolbarItem(placement: .secondaryAction) {
+                Picker("Sort", selection: $sort) {
+                    Text("Title").tag(ShowSort.title)
+                    Text("New Episodes First").tag(ShowSort.newEpisodes)
+                    Text("Recently Followed").tag(ShowSort.recentlyFollowed)
+                }
+                .accessibilityIdentifier("shows.sort")
+            }
         }
         .sheet(isPresented: $isAdding) { AddFeedView() }
     }
@@ -77,7 +91,33 @@ struct ShowsView: View {
         }
         // In the switch's order: own.audio first, then this iPhone, then the other servers.
         let rank = Dictionary(uniqueKeysWithValues: model.switchableSources.enumerated().map { ($1, $0) })
-        return order.sorted { (rank[$0] ?? .max) < (rank[$1] ?? .max) }.map { ($0, bySource[$0] ?? []) }
+        return order.sorted { (rank[$0] ?? .max) < (rank[$1] ?? .max) }.map { ($0, sorted(bySource[$0] ?? [])) }
+    }
+
+    private func sorted(_ shows: [SourcedShow]) -> [SourcedShow] {
+        let byTitle = { (a: SourcedShow, b: SourcedShow) in a.show.title.localizedStandardCompare(b.show.title) == .orderedAscending }
+        switch sort {
+        case .title:
+            return shows.sorted(by: byTitle)
+        case .recentlyFollowed:
+            return shows.sorted { $0.show.followedAt > $1.show.followedAt }
+        case .newEpisodes:
+            // The newest unplayed episode of each show, from New Episodes; the rest by title.
+            var newest: [String: Date] = [:]
+            for item in model.inbox {
+                let key = item.source.id + "/" + item.episode.showId
+                let date = item.episode.publishedAt ?? item.episode.firstSeenAt
+                if date > newest[key] ?? .distantPast { newest[key] = date }
+            }
+            return shows.sorted { a, b in
+                switch (newest[a.id], newest[b.id]) {
+                case let (x?, y?): x > y
+                case (_?, nil): true
+                case (nil, _?): false
+                default: byTitle(a, b)
+                }
+            }
+        }
     }
 }
 
@@ -88,6 +128,18 @@ struct ShowView: View {
     let show: SourcedShow
     @State private var episodes: [SourcedEpisode]?
     @State private var failed = false
+    @State private var filter: EpisodeFilter = .all
+
+    enum EpisodeFilter: Hashable { case all, unplayed, downloaded }
+
+    private var shownEpisodes: [SourcedEpisode] {
+        let all = episodes ?? []
+        switch filter {
+        case .all: return all
+        case .unplayed: return all.filter { model.progress(of: $0)?.played != true }
+        case .downloaded: return all.filter { model.downloadState($0) != nil }
+        }
+    }
     @State private var isShowingSettings = false
     @State private var confirmUnfollow = false
 
@@ -107,9 +159,17 @@ struct ShowView: View {
                 }
             }
             .listRowSeparator(.hidden)
-            Section("Episodes") {
-                if let episodes {
-                    ForEach(episodes) { item in
+            Section {
+                if episodes != nil {
+                    Picker("Episodes", selection: $filter) {
+                        Text("All").tag(EpisodeFilter.all)
+                        Text("Unplayed").tag(EpisodeFilter.unplayed)
+                        Text("Downloaded").tag(EpisodeFilter.downloaded)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("show.filter")
+                    .listRowSeparator(.hidden)
+                    ForEach(shownEpisodes) { item in
                         EpisodeRow(item: item, showsShowTitle: false)
                     }
                 } else if failed {
@@ -190,6 +250,7 @@ struct ShowSettingsView: View {
         NavigationStack {
             Form {
                 Toggle("Show in New Episodes", isOn: $settings.inInbox).accessibilityIdentifier("showSettings.inbox")
+                Toggle("Add New Episodes to Up Next", isOn: $settings.autoQueue).accessibilityIdentifier("showSettings.autoQueue")
                 Picker("Skip the Intro", selection: $settings.skipIntroSecs) {
                     Text("Off").tag(0.0)
                     ForEach([10.0, 15, 20, 30, 45, 60, 90, 120], id: \.self) { secs in

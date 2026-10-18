@@ -12,7 +12,7 @@ struct PlayerView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private enum Sheet: Identifiable {
-        case speed, sleep, chapters
+        case speed, sleep, chapters, upNext
         var id: Self { self }
     }
 
@@ -46,6 +46,7 @@ struct PlayerView: View {
                 case .speed: SpeedSheet()
                 case .sleep: SleepTimerSheet()
                 case .chapters: ChaptersSheet()
+                case .upNext: UpNextSheet()
                 }
             }
         }
@@ -184,6 +185,9 @@ struct PlayerView: View {
                     Image(systemName: "list.bullet").font(.title3)
                 } action: { sheet = .chapters }
             }
+            tool(id: "player.upNext", label: String(localized: "Up Next"), caption: "Up Next", tinted: !model.upNextList.isEmpty) {
+                Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.title3)
+            } action: { sheet = .upNext }
             VStack(spacing: Theme.Spacing.xs) {
                 AirPlayRouteButton().frame(width: 28, height: 24)
                 Text("AirPlay").font(.caption2).foregroundStyle(Theme.Colors.foreground)
@@ -359,6 +363,70 @@ struct ChaptersSheet: View {
             .navigationTitle("Chapters")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+    }
+}
+
+/// What plays after this episode, across every source: tap to play one now, drag to reorder,
+/// swipe to remove. When it runs out, New Episodes play on if Settings says so.
+struct UpNextSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if model.upNextList.isEmpty {
+                    ContentUnavailableView {
+                        Label("Nothing Up Next", systemImage: "text.line.first.and.arrowtriangle.forward")
+                    } description: {
+                        Text("Add episodes with Play Next or Play Later from their menu.")
+                    }
+                    .accessibilityIdentifier("upNext.empty")
+                }
+                Section {
+                    ForEach(model.upNextList) { entry in
+                        Button {
+                            Task {
+                                await model.play(entry)
+                                dismiss()
+                            }
+                        } label: {
+                            HStack(spacing: Theme.Spacing.md) {
+                                ArtworkView(url: entry.episode.imageURL ?? entry.show?.imageURL, size: 44)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    if let show = entry.show {
+                                        Text(Mojibake.repair(show.title)).font(.caption).foregroundStyle(Theme.Colors.muted).lineLimit(1)
+                                    }
+                                    Text(Mojibake.repair(entry.episode.title)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.Colors.foreground).lineLimit(2)
+                                }
+                            }
+                        }
+                        .accessibilityIdentifier("upNext.\(entry.episode.id)")
+                    }
+                    .onDelete { offsets in for index in offsets { model.removeFromUpNext(model.upNextList[index].id) } }
+                    .onMove { model.moveUpNext(from: $0, to: $1) }
+                } footer: {
+                    if model.settings.continueWithNewEpisodes {
+                        Text("Then the newest new episodes play on.")
+                    }
+                }
+            }
+            .listStyle(.insetGrouped)
+            .navigationTitle("Up Next")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    if !model.upNextList.isEmpty { EditButton().accessibilityIdentifier("upNext.edit") }
+                }
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .bottomBar) {
+                    if !model.upNextList.isEmpty {
+                        Button("Clear Up Next", role: .destructive) { model.clearUpNext() }
+                            .accessibilityIdentifier("upNext.clear")
+                    }
+                }
+            }
         }
     }
 }

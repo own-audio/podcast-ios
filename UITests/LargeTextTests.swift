@@ -11,14 +11,14 @@ final class LargeTextTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL",
                                "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
-        app.launch()
+        app.launchChecked()
         XCTAssertTrue(app.buttons["welcome.feed"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["welcome.search"].exists && app.buttons["welcome.server"].exists, "every way in fits")
         shot(app, "large-00-welcome")
         app.terminate()
 
         app.launchArguments += ["-debugFeedURL", "https://feeds.podcastindex.org/pc20.xml"]
-        app.launch()
+        app.launchChecked()
         let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
         XCTAssertTrue(play.waitForExistence(timeout: 30))
         shot(app, "large-01-new-episodes")

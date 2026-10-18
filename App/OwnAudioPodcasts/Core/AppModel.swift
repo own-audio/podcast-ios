@@ -3,6 +3,7 @@ import FeedKit
 import Foundation
 import GPodderKit
 import Observation
+import OSLog
 import OwnAudioKit
 import PlayerCore
 import PodcastLibrary
@@ -76,6 +77,7 @@ struct SourcedEpisode: Identifiable, Hashable, Sendable {
 @MainActor
 final class AppModel {
     static let shared = AppModel()
+    nonisolated static let upNextLog = Logger(subsystem: "audio.own.podcastplayer", category: "upNext")
 
     private(set) var hasLoaded = false
     private(set) var servers: [ServerRecord] = []
@@ -108,6 +110,9 @@ final class AppModel {
     @ObservationIgnored private let directory: URL
     /// Positions meant for a server, on disk until the server has them.
     @ObservationIgnored private let pending: PendingProgress
+    /// The queue across every source; `upNextList` is what the screens show.
+    @ObservationIgnored let upNext: UpNext
+    private(set) var upNextList: [UpNext.Entry] = []
     @ObservationIgnored var liveUpdates: [UUID: Task<Void, Never>] = [:]
     @ObservationIgnored var liveActivity: LiveActivityController?
     /// Small JPEGs for the widget and the Live Activity, by picture address.
@@ -152,6 +157,8 @@ final class AppModel {
         }
         phone = FeedLibrary(directory: directory.appendingPathComponent("phone", isDirectory: true), fetcher: FeedFetcher(session: Self.session))
         pending = PendingProgress(directory: directory)
+        upNext = UpNext(directory: directory)
+        upNextList = upNext.all
         engine = SpokenEngine(nowPlaying: nowPlayingController, resumeStore: nil)
         engine.skipForwardSecs = settings.skipForwardSecs
         engine.skipBackwardSecs = settings.skipBackwardSecs
@@ -426,6 +433,7 @@ final class AppModel {
         for source in sources.values { _ = try? await source.refresh(showId: nil) }
         await reloadLists()
         await applyDownloadRules()
+        queueNewEpisodes()
     }
 
     /// After the phone's subscriptions or positions changed: one gPodder sync a few seconds later,
@@ -461,6 +469,7 @@ final class AppModel {
             try await source(show.source)?.unfollow(showId: show.show.id)
             if nowPlaying?.source == show.source, nowPlaying?.episode.showId == show.show.id { stopPlayback() }
             downloads.removeAll { $0.source == show.source.id && $0.episode.showId == show.show.id }
+            changeUpNext { $0.removeAll { $0.source == show.source.id && $0.episode.showId == show.show.id } }
             shows.removeAll { $0.id == show.id }
             inbox.removeAll { $0.source == show.source && $0.episode.showId == show.show.id }
             if show.source == .phone { scheduleSync() }
@@ -651,6 +660,7 @@ final class AppModel {
         if [.pause, .stop, .finished].contains(position.reason) { scheduleWidgetUpdate() }
         if position.reason == .finished {
             forgetLastPlayed()
+            Task { await playOn(after: position.bookId) }
         } else if let item = nowPlaying, item.id == position.bookId {
             saveLastPlayed(item, positionMs: position.positionMs)
         }
@@ -902,6 +912,7 @@ final class AppModel {
         if case .server(id)? = nowPlaying?.source { stopPlayback() }
         downloads.removeAll { $0.sourceRef?.serverId == id }
         pending.removeAll(prefix: id.uuidString)
+        changeUpNext { $0.removeAll { SourceRef(id: $0.source)?.serverId == id } }
         try? await store.remove(id: id)
         servers.removeAll { $0.id == id }
         try? FileManager.default.removeItem(at: serverDirectory(id))
@@ -1481,5 +1492,91 @@ extension AppModel {
         isInForeground = foreground
         followLibraryChanges()
         if foreground { Task { await refresh() } }
+    }
+}
+
+// MARK: - Up Next
+
+extension AppModel {
+    func isQueued(_ item: SourcedEpisode) -> Bool { upNextList.contains { $0.id == item.id } }
+
+    func playNext(_ item: SourcedEpisode) {
+        changeUpNext { $0.playNext(entry(item)) }
+    }
+
+    func playLater(_ item: SourcedEpisode) {
+        changeUpNext { $0.playLater(entry(item)) }
+    }
+
+    func removeFromUpNext(_ id: String) {
+        changeUpNext { $0.remove(id) }
+    }
+
+    func moveUpNext(from offsets: IndexSet, to destination: Int) {
+        changeUpNext { $0.move(from: offsets, to: destination) }
+    }
+
+    func clearUpNext() {
+        changeUpNext { $0.clear() }
+    }
+
+    func item(_ entry: UpNext.Entry) -> SourcedEpisode? {
+        SourceRef(id: entry.source).map { SourcedEpisode(source: $0, episode: entry.episode) }
+    }
+
+    /// Plays a queued episode now; it leaves the queue.
+    func play(_ entry: UpNext.Entry) async {
+        guard let item = item(entry) else { return }
+        removeFromUpNext(entry.id)
+        await play(item)
+        if nowPlaying?.id == item.id, nowPlayingShow == nil { nowPlayingShow = entry.show }
+    }
+
+    func changeUpNext(_ work: (UpNext) -> Void) {
+        work(upNext)
+        upNextList = upNext.all
+    }
+
+    private func entry(_ item: SourcedEpisode) -> UpNext.Entry {
+        UpNext.Entry(id: item.id, source: item.source.id, episode: item.episode, show: show(for: item) ?? (nowPlaying?.id == item.id ? nowPlayingShow : nil))
+    }
+
+    /// When an episode ends: the next in Up Next, else (when the listener wants it) the newest
+    /// new episode that can play now. Nobody is asked where to start: the newer position wins.
+    func playOn(after finished: String) async {
+        Self.upNextLog.info("finished \(finished, privacy: .public); \(self.upNext.all.count) queued")
+        var next: SourcedEpisode?
+        var show: Show?
+        while next == nil, let queued = upNext.takeNext(after: finished) {
+            if let candidate = item(queued), canPlay(candidate) { next = candidate; show = queued.show }
+        }
+        upNextList = upNext.all
+        if next == nil, settings.continueWithNewEpisodes {
+            next = inbox.first { $0.id != finished && canPlay($0) && progress[$0.id]?.played != true }
+        }
+        guard let next else {
+            Self.upNextLog.info("nothing to play on")
+            return
+        }
+        Self.upNextLog.info("playing on with \(next.id, privacy: .public)")
+        await play(next)
+        if let pending = pendingResume, pending.episode.id == next.id {
+            pendingResume = nil
+            await play(pending.episode, startAt: pending.otherMs)
+        }
+        if nowPlaying?.id == next.id, nowPlayingShow == nil { nowPlayingShow = show }
+    }
+
+    /// Shows set to add their new episodes to Up Next: what arrived since the last look goes
+    /// to the end. The first look only notes the time, so the back catalogue never floods in.
+    func queueNewEpisodes() {
+        let key = "upNext.autoQueuedAt"
+        let since = UserDefaults.standard.object(forKey: key) as? Date
+        UserDefaults.standard.set(Date(), forKey: key)
+        guard let since else { return }
+        let auto = Set(shows.filter { $0.show.settings.autoQueue }.map { $0.source.id + "/" + $0.show.id })
+        guard !auto.isEmpty else { return }
+        let arrived = inbox.filter { auto.contains($0.source.id + "/" + $0.episode.showId) && $0.episode.firstSeenAt > since }
+        for item in arrived.reversed() { playLater(item) }
     }
 }

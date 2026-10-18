@@ -61,6 +61,10 @@ struct EpisodeRow: View {
                 .foregroundStyle(progress?.played == true ? Theme.Colors.muted : Theme.Colors.foreground)
                 .lineLimit(lineLimit)
             HStack(spacing: 4) {
+                if model.isQueued(item) {
+                    Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.caption).foregroundStyle(Theme.Colors.accent)
+                        .accessibilityLabel("In Up Next")
+                }
                 DownloadBadge(state: model.downloadState(item))
                 Text(ProgressText.line(episode: episode, progress: progress))
                     .font(.caption)
@@ -137,6 +141,12 @@ struct EpisodeRow: View {
                 Task { await model.markPlayed(item, progress?.played != true) }
             } label: {
                 progress?.played == true ? Label("Mark as Unplayed", systemImage: "circle") : Label("Mark as Played", systemImage: "checkmark.circle")
+            }
+            if model.isQueued(item) {
+                Button { model.removeFromUpNext(item.id) } label: { Label("Remove from Up Next", systemImage: "minus.circle") }
+            } else {
+                Button { model.playNext(item) } label: { Label("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward") }
+                Button { model.playLater(item) } label: { Label("Play Later", systemImage: "text.line.last.and.arrowtriangle.forward") }
             }
             switch model.downloadState(item) {
             case nil:

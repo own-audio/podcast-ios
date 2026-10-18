@@ -379,6 +379,16 @@
         }
       }
     },
+    "Add New Episodes to Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přidávat nové epizody do fronty"
+          }
+        }
+      }
+    },
     "Add a Feed by Address": {
       "localizations": {
         "cs": {
@@ -405,6 +415,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přidat pořad"
+          }
+        }
+      }
+    },
+    "Add episodes with Play Next or Play Later from their menu.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Epizody přidáte z jejich nabídky volbou Přehrát jako další nebo Přehrát později."
           }
         }
       }
@@ -449,6 +469,16 @@
         }
       },
       "shouldTranslate": false
+    },
+    "All": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vše"
+          }
+        }
+      }
     },
     "All Sources": {
       "localizations": {
@@ -676,6 +706,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Smazat otázky"
+          }
+        }
+      }
+    },
+    "Clear Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyprázdnit frontu"
           }
         }
       }
@@ -1190,6 +1230,16 @@
         }
       }
     },
+    "From Apple Podcasts": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Z Apple Podcasts"
+          }
+        }
+      }
+    },
     "Goes on with the episode you were listening to.": {
       "localizations": {
         "cs": {
@@ -1216,6 +1266,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Domácí síť"
+          }
+        }
+      }
+    },
+    "In Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ve frontě"
           }
         }
       }
@@ -1490,6 +1550,16 @@
         }
       }
     },
+    "New Episodes First": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nejdřív s novými epizodami"
+          }
+        }
+      }
+    },
     "New episodes download on their own, the newest first; unplayed ones only. Settings decides whether this waits for Wi-Fi.": {
       "localizations": {
         "cs": {
@@ -1626,6 +1696,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nic nehraje"
+          }
+        }
+      }
+    },
+    "Nothing Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fronta je prázdná"
           }
         }
       }
@@ -1810,6 +1890,36 @@
         }
       }
     },
+    "Play Later": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přehrát později"
+          }
+        }
+      }
+    },
+    "Play New Episodes After Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Po frontě přehrávat nové epizody"
+          }
+        }
+      }
+    },
+    "Play Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přehrát jako další"
+          }
+        }
+      }
+    },
     "Play a Show": {
       "localizations": {
         "cs": {
@@ -1900,6 +2010,16 @@
         }
       }
     },
+    "Recently Followed": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Naposledy odebírané"
+          }
+        }
+      }
+    },
     "Remove": {
       "localizations": {
         "cs": {
@@ -1976,6 +2096,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Odebrat z nových epizod"
+          }
+        }
+      }
+    },
+    "Remove from Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odebrat z fronty"
           }
         }
       }
@@ -2232,6 +2362,16 @@
         }
       }
     },
+    "Shows and Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pořady a epizody"
+          }
+        }
+      }
+    },
     "Shows on this iPhone stay; they are no longer kept in step.": {
       "localizations": {
         "cs": {
@@ -2418,6 +2558,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Něco se pokazilo. Zkuste to znovu."
+          }
+        }
+      }
+    },
+    "Sort": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Řadit"
           }
         }
       }
@@ -2792,6 +2942,16 @@
         }
       }
     },
+    "Then the newest new episodes play on.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pak se pokračuje nejnovějšími novými epizodami."
+          }
+        }
+      }
+    },
     "There is nothing to play; follow a show in own.podcast first.": {
       "localizations": {
         "cs": {
@@ -2882,6 +3042,16 @@
         }
       }
     },
+    "Title": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Název"
+          }
+        }
+      }
+    },
     "Today's limit for paid work is reached. Try again tomorrow.": {
       "localizations": {
         "cs": {
@@ -2968,6 +3138,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nepřehráno"
+          }
+        }
+      }
+    },
+    "Up Next": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na řadě"
           }
         }
       }
@@ -3078,6 +3258,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tento pořad už neodebíráte."
+          }
+        }
+      }
+    },
+    "Your Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaše epizody"
+          }
+        }
+      }
+    },
+    "Your Shows": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaše pořady"
           }
         }
       }

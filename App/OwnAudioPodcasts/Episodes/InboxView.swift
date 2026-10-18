@@ -99,6 +99,27 @@ struct EpisodeView: View {
                     .accessibilityIdentifier("episode.markPlayed")
                     DownloadButton(item: item)
                 }
+                HStack(spacing: Theme.Spacing.md) {
+                    if model.isQueued(item) {
+                        Button { model.removeFromUpNext(item.id) } label: {
+                            Label("In Up Next", systemImage: "checkmark").frame(maxWidth: .infinity, minHeight: Theme.minTarget)
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("episode.removeFromUpNext")
+                    } else {
+                        Button { model.playNext(item) } label: {
+                            Label("Play Next", systemImage: "text.line.first.and.arrowtriangle.forward").frame(maxWidth: .infinity, minHeight: Theme.minTarget)
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("episode.playNext")
+                        Button { model.playLater(item) } label: {
+                            Label("Play Later", systemImage: "text.line.last.and.arrowtriangle.forward").frame(maxWidth: .infinity, minHeight: Theme.minTarget)
+                        }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("episode.playLater")
+                    }
+                }
+                .font(.subheadline)
                 EpisodeSummarySection(item: item)
                 if !episode.chapters.isEmpty {
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {

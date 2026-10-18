@@ -15,7 +15,7 @@ final class DownloadFlowTests: XCTestCase {
     private func launch(reset: Bool = true) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = (reset ? ["-uiTestReset"] : []) + ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "-debugFeedURL", feed]
-        app.launch()
+        app.launchChecked()
         return app
     }
 

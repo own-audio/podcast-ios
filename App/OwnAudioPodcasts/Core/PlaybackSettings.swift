@@ -19,6 +19,12 @@ final class PlaybackSettings {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        // A UI test starts from the defaults, whatever the previous one left switched on.
+        if UITestFlags.isUITesting {
+            for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("playback.") || key.hasPrefix("downloads.") || key.hasPrefix("upNext.") {
+                defaults.removeObject(forKey: key)
+            }
+        }
         skipForwardSecs = defaults.object(forKey: "playback.skipForward") as? Double ?? 30
         skipBackwardSecs = defaults.object(forKey: "playback.skipBackward") as? Double ?? 15
         defaultRate = defaults.object(forKey: "playback.defaultRate") as? Float ?? 1.0
@@ -27,7 +33,11 @@ final class PlaybackSettings {
         wifiOnlyDownloads = defaults.object(forKey: "downloads.wifiOnly") as? Bool ?? true
         storageCapBytes = defaults.object(forKey: "downloads.capBytes") as? Int64
         mobileData = MobileData(rawValue: defaults.string(forKey: "playback.mobileData") ?? "") ?? .stream
+        continueWithNewEpisodes = defaults.object(forKey: "playback.continueWithNew") as? Bool ?? true
     }
+
+    /// When Up Next is empty, the newest new episode plays on.
+    var continueWithNewEpisodes: Bool { didSet { defaults.set(continueWithNewEpisodes, forKey: "playback.continueWithNew") } }
 
     var wifiOnlyDownloads: Bool { didSet { defaults.set(wifiOnlyDownloads, forKey: "downloads.wifiOnly") } }
     /// nil is no limit.
