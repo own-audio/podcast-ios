@@ -148,11 +148,19 @@ struct EpisodeSummarySection: View {
     let item: SourcedEpisode
     @State private var available = false
     @State private var checked = false
+    @State private var length: SummaryLength = .medium
     @State private var summary: EpisodeSummary?
     @State private var working = false
     @State private var error: String?
     @State private var question = ""
-    @State private var turns: [EpisodeQuestion] = []
+    @State private var turns: [Turn] = []
+
+    private struct Turn: Identifiable {
+        let id = UUID()
+        let question: String
+        let answer: String
+        let chargedMicro: Int64
+    }
     @State private var asking = false
 
     var body: some View {
@@ -160,15 +168,39 @@ struct EpisodeSummarySection: View {
             if available {
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                     Text("Summary").font(.headline)
+                    Picker("Summary Length", selection: $length) {
+                        Text("Short").tag(SummaryLength.short)
+                        Text("Medium").tag(SummaryLength.medium)
+                        Text("Long").tag(SummaryLength.long)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("episode.summaryLength")
                     if let summary {
                         Text(summary.text)
                             .foregroundStyle(Theme.Colors.foreground)
                             .textSelection(.enabled)
                             .accessibilityIdentifier("episode.summary")
-                        ForEach(turns, id: \.self) { turn in
+                        price(summary.chargedMicro ?? 0)
+                    } else if checked {
+                        Text("A summary is made from the transcript with AI and paid from your family's credit, usually a cent or two. Everyone in the family can then read it.")
+                            .font(.footnote)
+                            .foregroundStyle(Theme.Colors.muted)
+                        Button {
+                            Task { await make() }
+                        } label: {
+                            Label(working ? "Summarizing…" : "Summarize Episode", systemImage: "sparkles")
+                                .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(working)
+                        .accessibilityIdentifier("episode.summarize")
+                    }
+                    if checked {
+                        ForEach(turns) { turn in
                             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                                 Text(turn.question).font(.subheadline.bold()).foregroundStyle(Theme.Colors.foreground)
                                 Text(turn.answer).foregroundStyle(Theme.Colors.muted).textSelection(.enabled)
+                                price(turn.chargedMicro)
                             }
                         }
                         HStack(alignment: .bottom, spacing: Theme.Spacing.sm) {
@@ -190,19 +222,6 @@ struct EpisodeSummarySection: View {
                         Text("Answers come from the episode's transcript only, and each one is paid from your family's credit.")
                             .font(.footnote)
                             .foregroundStyle(Theme.Colors.muted)
-                    } else if checked {
-                        Text("A summary is made from the transcript with AI and paid from your family's credit, usually a cent or two. Everyone in the family can then read it.")
-                            .font(.footnote)
-                            .foregroundStyle(Theme.Colors.muted)
-                        Button {
-                            Task { await make() }
-                        } label: {
-                            Label(working ? "Summarizing…" : "Summarize Episode", systemImage: "sparkles")
-                                .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
-                        }
-                        .buttonStyle(.bordered)
-                        .disabled(working)
-                        .accessibilityIdentifier("episode.summarize")
                     }
                     if let error {
                         Text(error).font(.footnote).foregroundStyle(Theme.Colors.error).accessibilityIdentifier("episode.summaryError")
@@ -210,11 +229,18 @@ struct EpisodeSummarySection: View {
                 }
             }
         }
-        .task(id: item.id) {
+        .task(id: "\(item.id)-\(length.rawValue)") {
             available = await model.offersSummaries(item)
             guard available else { return }
-            summary = try? await model.summary(item)
+            error = nil
+            summary = try? await model.summary(item, length: length)
             checked = true
+        }
+    }
+
+    @ViewBuilder private func price(_ micro: Int64) -> some View {
+        if micro > 0 {
+            Text("Cost \(AppModel.price(micro: micro))").font(.caption).foregroundStyle(Theme.Colors.muted)
         }
     }
 
@@ -223,7 +249,10 @@ struct EpisodeSummarySection: View {
         defer { working = false }
         error = nil
         do {
-            summary = try await model.summarize(item)
+            let asked = length
+            let made = try await model.summarize(item, length: asked)
+            // The listener may have switched length while it was being made.
+            if asked == length { summary = made }
         } catch {
             self.error = AppModel.summaryMessage(for: error)
         }
@@ -236,8 +265,9 @@ struct EpisodeSummarySection: View {
         defer { asking = false }
         error = nil
         do {
-            let answer = try await model.ask(item, question: text, history: turns)
-            turns.append(EpisodeQuestion(question: text, answer: answer))
+            let history = turns.map { EpisodeQuestion(question: $0.question, answer: $0.answer) }
+            let answer = try await model.ask(item, question: text, history: history)
+            turns.append(Turn(question: text, answer: answer.answer, chargedMicro: answer.chargedMicro))
             question = ""
         } catch {
             self.error = AppModel.summaryMessage(for: error)

@@ -453,6 +453,16 @@
         }
       }
     },
+    "Cost %@": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cena %@"
+          }
+        }
+      }
+    },
     "Dismiss": {
       "localizations": {
         "cs": {
@@ -763,6 +773,16 @@
         }
       }
     },
+    "Long": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delší"
+          }
+        }
+      }
+    },
     "Mark as Played": {
       "localizations": {
         "cs": {
@@ -779,6 +799,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Označit jako nepřehrané"
+          }
+        }
+      }
+    },
+    "Medium": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Střední"
           }
         }
       }
@@ -1223,6 +1253,16 @@
         }
       }
     },
+    "Short": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Krátké"
+          }
+        }
+      }
+    },
     "Show Settings": {
       "localizations": {
         "cs": {
@@ -1509,6 +1549,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Shrnutí"
+          }
+        }
+      }
+    },
+    "Summary Length": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Délka shrnutí"
           }
         }
       }

@@ -679,17 +679,23 @@ final class AppModel {
     /// The language summaries are written in: the app's own.
     static var summaryLanguage: String { Bundle.main.preferredLocalizations.first.map { String($0.prefix(2)) } ?? "en" }
 
-    func summary(_ item: SourcedEpisode) async throws -> EpisodeSummary? {
+    func summary(_ item: SourcedEpisode, length: SummaryLength) async throws -> EpisodeSummary? {
         guard let client = ownAudioClient(for: item) else { return nil }
-        return try await client.summary(episodeId: item.episode.key.episodeId, language: Self.summaryLanguage)
+        return try await client.summary(episodeId: item.episode.key.episodeId, language: Self.summaryLanguage, length: length)
     }
 
-    func summarize(_ item: SourcedEpisode) async throws -> EpisodeSummary {
+    func summarize(_ item: SourcedEpisode, length: SummaryLength) async throws -> EpisodeSummary {
         guard let client = ownAudioClient(for: item) else { throw SourceError.unsupported }
-        return try await client.summarize(episodeId: item.episode.key.episodeId, language: Self.summaryLanguage)
+        return try await client.summarize(episodeId: item.episode.key.episodeId, language: Self.summaryLanguage, length: length)
     }
 
-    func ask(_ item: SourcedEpisode, question: String, history: [EpisodeQuestion]) async throws -> String {
+    /// A price in the ledger's dollars; summaries cost fractions of a cent, so three decimals below 10 ¢.
+    static func price(micro: Int64) -> String {
+        let usd = Double(micro) / 1_000_000
+        return usd.formatted(.currency(code: "USD").precision(.fractionLength(usd < 0.1 ? 3 : 2)))
+    }
+
+    func ask(_ item: SourcedEpisode, question: String, history: [EpisodeQuestion]) async throws -> EpisodeAnswer {
         guard let client = ownAudioClient(for: item) else { throw SourceError.unsupported }
         return try await client.ask(episodeId: item.episode.key.episodeId, question: question, history: history)
     }

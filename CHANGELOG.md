@@ -8,6 +8,8 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Summaries in three lengths (short, medium, long), and the price under each summary and answer.
+  Questions can be asked before any summary is made.
 - Summarize this episode, and ask questions about it, on an own.audio server that offers summaries
   (`features.summaries`, `/api/v2/summaries`). Shown on an episode with a transcript; paid from the
   family's credit, and a summary once made is kept for the whole family.
