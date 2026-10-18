@@ -233,6 +233,16 @@
         }
       }
     },
+    "Apple didn't return a sign-in. Try again.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple nevrátil přihlášení. Zkuste to znovu."
+          }
+        }
+      }
+    },
     "As in Settings": {
       "localizations": {
         "cs": {
@@ -389,6 +399,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pokračovat z jiného zařízení?"
+          }
+        }
+      }
+    },
+    "Continue with Google": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokračovat přes Google"
           }
         }
       }
@@ -609,6 +629,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Svobodný software s otevřeným kódem · MPL-2.0"
+          }
+        }
+      }
+    },
+    "Google didn't return a sign-in. Try again.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Google nevrátil přihlášení. Zkuste to znovu."
           }
         }
       }
@@ -879,6 +909,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Otevře přehrávač"
+          }
+        }
+      }
+    },
+    "Or sign in with the Apple or Google account you use on this own.audio server.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nebo se přihlaste účtem Apple nebo Google, který na tomto serveru own.audio používáte."
           }
         }
       }
@@ -1209,6 +1249,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Přihlásit znovu"
+          }
+        }
+      }
+    },
+    "Sign in with Apple": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přihlásit se přes Apple"
           }
         }
       }

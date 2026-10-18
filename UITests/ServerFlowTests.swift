@@ -57,6 +57,25 @@ final class ServerFlowTests: XCTestCase {
 
     /// The add-server form with the kind left on Automatic: a podfetch address, a user name and
     /// a password are enough, and it is added as a gPodder account.
+    /// The Apple and Google buttons show for an own.audio server that takes them (the public
+    /// canary takes both) and for nothing else. Needs only the network.
+    func testSignInButtonsFollowTheServer() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        XCTAssertTrue(app.buttons["welcome.server"].waitForExistence(timeout: 15))
+        app.buttons["welcome.server"].tap()
+        let field = app.textFields["addServer.address"]
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        field.tap()
+        field.typeText("https://api-canary.own.audio")
+        XCTAssertTrue(app.buttons["addServer.apple"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.buttons["addServer.google"].exists)
+        field.clearAndType("https://feeds.npr.org")
+        XCTAssertTrue(app.buttons["addServer.google"].waitForNonExistence(timeout: 20))
+        XCTAssertFalse(app.buttons["addServer.apple"].exists)
+    }
+
     func testAddServerFindsTheKindByItself() throws {
         let env = ProcessInfo.processInfo.environment
         guard let host = env["PODFETCH_HOST"], let user = env["PODFETCH_TEST_USERNAME"], let password = env["PODFETCH_TEST_PASSWORD"] else {
@@ -249,5 +268,14 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertNotEqual(elapsed.label, first, "the server's episode plays")
         app.buttons["player.stop"].tap()
         XCTAssertFalse(app.buttons["miniPlayer"].waitForExistence(timeout: 3))
+    }
+}
+
+private extension XCUIElement {
+    func clearAndType(_ text: String) {
+        tap()
+        let current = value as? String ?? ""
+        typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))
+        typeText(text)
     }
 }

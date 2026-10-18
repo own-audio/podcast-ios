@@ -13,6 +13,8 @@ struct AddServerView: View {
     @State private var code = ""
     @State private var isWorking = false
     @State private var error: String?
+    /// Which of Apple and Google the own.audio server at the typed address accepts.
+    @State private var providers: Set<String> = []
 
     var body: some View {
         NavigationStack {
@@ -55,6 +57,20 @@ struct AddServerView: View {
                             .textContentType(.password)
                             .accessibilityIdentifier("addServer.password")
                     }
+                    if (kind == .ownAudio || kind == nil) && !providers.isEmpty {
+                        Section {
+                            if providers.contains("apple") {
+                                AppleSignInButton(address: address, isWorking: $isWorking, errorMessage: $error, onSignedIn: signedIn)
+                            }
+                            if providers.contains("google") {
+                                GoogleSignInButton(address: address, isWorking: $isWorking, errorMessage: $error, onSignedIn: signedIn)
+                            }
+                        } footer: {
+                            Text("Or sign in with the Apple or Google account you use on this own.audio server.")
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                    }
                     if kind == .ownAudio || kind == nil {
                         Section {
                             Button("Try the Public Demo") { Task { await addDemo() } }
@@ -67,6 +83,16 @@ struct AddServerView: View {
                 if let error {
                     Text(error).foregroundStyle(Theme.Colors.error).accessibilityIdentifier("addServer.error")
                 }
+            }
+            // Asked once typing pauses: whether an own.audio server answers there, and which
+            // sign-ins it takes.
+            .task(id: "\(String(describing: kind))|\(address)") {
+                providers = []
+                guard kind == .ownAudio || kind == nil, address.count > 3 else { return }
+                try? await Task.sleep(for: .milliseconds(600))
+                guard !Task.isCancelled else { return }
+                let found = await model.ownAudioProviders(address: address)
+                if !Task.isCancelled { providers = found }
             }
             .navigationTitle("Add a Server")
             .navigationBarTitleDisplayMode(.inline)
@@ -113,6 +139,10 @@ struct AddServerView: View {
         } catch {
             self.error = AppModel.message(for: error)
         }
+    }
+
+    private func signedIn() {
+        if model.pendingTwoFactor == nil { dismiss() }
     }
 
     private func addDemo() async {

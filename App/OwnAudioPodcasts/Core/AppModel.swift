@@ -646,13 +646,78 @@ final class AppModel {
         guard let pending = pendingTwoFactor else { return }
         let tokens = try await OwnAudioClient.finishTwoFactor(host: pending.host, mfaToken: pending.mfaToken, code: code, session: Self.session)
         pendingTwoFactor = nil
+        // An Apple or Google sign-in typed no email: the server says which account it is.
+        let email = pending.email.isEmpty ? await Self.accountEmail(host: pending.host, tokens: tokens) : pending.email
         if let id = pending.replacing, var record = server(id) {
             record.ownAudioTokens = tokens
-            record.username = pending.email
+            record.username = email
             try await update(record)
             return
         }
-        try await save(ServerRecord(displayName: Self.displayName(pending.host), kind: .ownAudio, host: pending.host, username: pending.email, ownAudioTokens: tokens))
+        try await save(ServerRecord(displayName: Self.displayName(pending.host), kind: .ownAudio, host: pending.host, username: email, ownAudioTokens: tokens))
+    }
+
+    // MARK: Sign in with Apple and Google
+
+    enum OwnAudioSignIn {
+        /// Sign in with Apple: the identity token, and the name Apple gives only the first time.
+        case apple(identityToken: String, fullName: String?)
+        /// Google: the ID token for this app's iOS client.
+        case google(idToken: String)
+
+        var provider: String {
+            switch self {
+            case .apple: "apple"
+            case .google: "google"
+            }
+        }
+    }
+
+    /// An own.audio server added with Apple or Google: the server checks the provider's token
+    /// and hands out its own. As with a password, a second factor leaves `pendingTwoFactor` set.
+    func addOwnAudioServer(address: String, signIn: OwnAudioSignIn) async throws {
+        let (idToken, fullName): (String, String?) = switch signIn {
+        case .apple(let token, let name): (token, name)
+        case .google(let token): (token, nil)
+        }
+        var lastError: Error = SourceError.network
+        for host in Self.candidates(for: address, kind: .ownAudio) {
+            do {
+                let tokens: OwnAudioKit.Tokens
+                do {
+                    tokens = try await OwnAudioClient.signIn(host: host, provider: signIn.provider, idToken: idToken, fullName: fullName, device: Self.ownAudioDevice, session: Self.session)
+                } catch OwnAudioError.twoFactorRequired(let mfaToken, _) {
+                    pendingTwoFactor = PendingTwoFactor(host: host, mfaToken: mfaToken, email: "")
+                    return
+                }
+                let email = await Self.accountEmail(host: host, tokens: tokens)
+                try await save(ServerRecord(displayName: Self.displayName(host), kind: .ownAudio, host: host, username: email, ownAudioTokens: tokens))
+                return
+            } catch let error where Self.isUnreachable(error) {
+                lastError = error
+            }
+        }
+        throw lastError
+    }
+
+    /// The account's email, which the server list shows.
+    private static func accountEmail(host: URL, tokens: OwnAudioKit.Tokens) async -> String {
+        let client = OwnAudioClient(host: host, tokens: OwnAudioKit.TokenSession(tokens), session: session)
+        return (try? await client.me().email) ?? ""
+    }
+
+    /// Which of Apple and Google the own.audio server at `address` accepts, so only their
+    /// buttons show; none for an address where no own.audio server answers.
+    func ownAudioProviders(address: String) async -> Set<String> {
+        for host in Self.candidates(for: address, kind: .ownAudio) {
+            guard let (data, response) = try? await Self.session.data(from: host.appending(path: "api/v1/server")),
+                  (response as? HTTPURLResponse)?.statusCode == 200,
+                  let body = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let auth = (body["features"] as? [String: Any])?["auth"] as? [String: Any]
+            else { continue }
+            return Set(["apple", "google"].filter { auth[$0] as? Bool == true })
+        }
+        return []
     }
 
     func addDemoServer() async throws {

@@ -8,6 +8,12 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Sign in with Apple and Google to an own.audio server, copied from the books app: the buttons show
+  under the address when the server takes them (`/api/v1/server` → `features.auth`), the provider's
+  token goes to the server, a second factor asks for the code as with a password, and the account's
+  email is read back for the server list. Google through the system's web sign-in sheet with PKCE
+  and this app's own iOS client; no Google SDK. UI test: canary shows both, a non-own.audio address
+  neither.
 - The App Store listing in English and Czech (`AppStore/`), review notes, and `scripts/app-store-upload.swift`
   to send it, ported from the books app; the review-notes update is skipped, not fatal, until the review
   contact is filled in. First TestFlight build (22) under `audio.own.podcastplayer`.
