@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Servers, playback, and about.
+/// Servers, downloads, playback, mobile data, and about.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -47,6 +47,28 @@ struct SettingsView: View {
                 } footer: {
                     Text("Shows you follow on this iPhone need no server. A server adds its own shows; a gPodder account keeps this iPhone's in step with your other players.")
                 }
+                Section {
+                    NavigationLink {
+                        DownloadsView()
+                    } label: {
+                        LabeledContent("Downloads", value: ByteCountFormatter.string(fromByteCount: model.downloads.totalBytes, countStyle: .file))
+                    }
+                    .accessibilityIdentifier("settings.downloads")
+                    Toggle("Offline Mode", isOn: Binding(get: { model.settings.offlineMode }, set: { model.setOfflineMode($0) }))
+                        .accessibilityIdentifier("settings.offlineMode")
+                    Toggle("Download on Wi-Fi Only", isOn: $settings.wifiOnlyDownloads)
+                        .accessibilityIdentifier("settings.wifiOnly")
+                    Picker("Keep at Most", selection: $settings.storageCapBytes) {
+                        ForEach(PlaybackSettings.storageCapChoices, id: \.self) { cap in
+                            Text(cap.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) } ?? String(localized: "No Limit")).tag(cap)
+                        }
+                    }
+                    .accessibilityIdentifier("settings.storageCap")
+                } footer: {
+                    Text("Offline Mode shows and plays only what is on this iPhone, as the app does on its own with no network. Over the limit, played episodes go first, then the ones not played for longest; never the one playing. A show can keep its own downloads in Show Settings.")
+                }
+                .onChange(of: settings.wifiOnlyDownloads) { model.applyDownloadSettings() }
+                .onChange(of: settings.storageCapBytes) { model.applyDownloadSettings() }
                 Section("Playback") {
                     Picker("Skip Back", selection: $settings.skipBackwardSecs) {
                         ForEach(PlaybackSettings.skipChoices, id: \.self) { Text("\(Int($0)) s").tag($0) }
@@ -58,6 +80,15 @@ struct SettingsView: View {
                         ForEach([0.75, 1.0, 1.25, 1.5, 1.75, 2.0] as [Float], id: \.self) { Text(String(format: "%.2g×", $0)).tag($0) }
                     }
                     Toggle("Smart Rewind", isOn: $settings.smartRewind)
+                }
+                Section {
+                    Picker("On Mobile Data", selection: $settings.mobileData) {
+                        Text("Stream").tag(PlaybackSettings.MobileData.stream)
+                        Text("Downloaded Only").tag(PlaybackSettings.MobileData.downloadedOnly)
+                    }
+                    .accessibilityIdentifier("settings.mobileData")
+                } footer: {
+                    Text("Downloaded Only plays nothing that is not on this iPhone while on mobile data.")
                 }
                 Section("About") {
                     LabeledContent("Version", value: AppModel.appVersion)

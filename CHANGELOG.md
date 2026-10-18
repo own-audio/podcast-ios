@@ -8,6 +8,32 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Downloads (P7), on the books app's `DownloadManager`: an episode downloads from its page (the
+  arrow beside Play: a ring while it comes, a check when it is here) or from a row's menu, on a
+  background `URLSession` that goes on when the app is in the background or killed. Files live in
+  Application Support, out of iCloud backup, with an extension read from their bytes.
+- The Downloads tab lists every downloaded episode, newest first, grouped by source when there is
+  more than one, each row saying where it came from ("Removed server" once the server is gone);
+  play, open or swipe to remove; Retry N Failed; Remove All with the total size.
+- Rules per show (Show Settings → Downloads): Download New Episodes (the newest 1, 3, 5 or 10,
+  unplayed only — never the back catalogue), Delete When Played, Keep at Most N. They run after
+  every refresh, after a show's settings change and when an episode is played; new downloads count
+  against the limit, and the episode playing is never removed (`DownloadRules`, with tests).
+- Settings → Downloads (with the total size), Offline Mode, Download on Wi-Fi Only (on by default)
+  and Keep at Most (no limit, 1, 2, 5, 10 GB): over the limit, played episodes go first, then the
+  ones not played for longest, never the one playing (`EvictionPolicy`, copied from the books app).
+- On Mobile Data: Stream or Downloaded Only. The books app's third choice, Saver, needs a server that
+  makes a smaller stream; a feed has one file per episode.
+- Offline, episodes that aren't on the phone are greyed out and say so when played; downloaded
+  ones play from the phone, from any source.
+- The listening cache: an episode streamed on Wi-Fi is fetched into a 1 GB cache 45 seconds after
+  it starts, so seeking back and listening again read the disk. Not on mobile data or in Low Data
+  Mode, and never a transcode.
+- Unfollowing a show or removing a server removes its downloads.
+- UI tests (`DownloadFlowTests`): download, list with its source, play in Offline Mode and remove;
+  a show's rule downloads only its newest episode; a download finishes after the app is killed;
+  the downloads settings are there, Wi-Fi Only on by default.
+
 - The "own.audio canary (testing)" button in Add a Server, under the address, in TestFlight and
   development builds only (`TestServers.swift`, copied from the books app).
 

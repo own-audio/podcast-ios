@@ -96,6 +96,11 @@ final class AppModel {
     let settings = PlaybackSettings()
     let network = NetworkMonitor()
     let phone: FeedLibrary
+    let downloads = DownloadManager()
+    /// What streams on Wi-Fi is kept here, so seeking back and listening again read the disk.
+    @ObservationIgnored private var listeningCache: TrackFileCache!
+    @ObservationIgnored private var listeningCacheTask: Task<Void, Never>?
+    static let listeningCacheCapBytes: Int64 = 1 << 30
 
     @ObservationIgnored private var sources: [UUID: any PodcastSource] = [:]
     @ObservationIgnored private var syncs: [UUID: GPodderSync] = [:]
@@ -139,6 +144,23 @@ final class AppModel {
         engine.smartRewind = SmartRewind(isEnabled: settings.smartRewind)
         engine.onPosition = { [weak self] position in self?.positionReported(position) }
         engine.artworkProvider = { [weak self] id in await self?.artwork(for: id) }
+        downloads.wifiOnly = settings.wifiOnlyDownloads
+        downloads.urlProvider = { [weak self] id in
+            guard let self, let item = self.downloads.episodes[id]?.item, let source = self.source(item.source) else { throw SourceError.notFound }
+            let playback = try await source.playback(item.episode.key)
+            // A transcode made for one listen is no file to keep.
+            guard !playback.isHLS else { throw DownloadError.streamOnly }
+            return playback.url
+        }
+        let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("listening-cache", isDirectory: true)
+        if UITestFlags.isUITesting { try? FileManager.default.removeItem(at: cacheDirectory) }
+        listeningCache = TrackFileCache(remoteURL: { [weak self] id in
+            guard let self, let item = await self.nowPlaying, item.id == id, let source = await self.source(item.source) else { throw SourceError.notFound }
+            return try await source.playback(item.episode.key).url
+        }, session: Self.session, cacheDirectory: cacheDirectory)
+        engine.partLocator = { [weak self] id, _ in
+            await self?.listeningCache.existingLocalURL(trackId: id)
+        }
         network.onChange = { [weak self] connected in
             guard connected else { return }
             Task {
@@ -289,6 +311,7 @@ final class AppModel {
         await chooseAddresses()
         await loadServerIcons()
         await loadLibraries()
+        downloads.resume()
         await refresh()
     }
 
@@ -379,6 +402,7 @@ final class AppModel {
         _ = await phone.refresh(showId: nil)
         for source in sources.values { _ = try? await source.refresh(showId: nil) }
         await reloadLists()
+        await applyDownloadRules()
     }
 
     /// After the phone's subscriptions or positions changed: one gPodder sync a few seconds later,
@@ -413,6 +437,7 @@ final class AppModel {
         do {
             try await source(show.source)?.unfollow(showId: show.show.id)
             if nowPlaying?.source == show.source, nowPlaying?.episode.showId == show.show.id { stopPlayback() }
+            downloads.removeAll { $0.source == show.source.id && $0.episode.showId == show.show.id }
             shows.removeAll { $0.id == show.id }
             inbox.removeAll { $0.source == show.source && $0.episode.showId == show.show.id }
             if show.source == .phone { scheduleSync() }
@@ -436,6 +461,7 @@ final class AppModel {
         do {
             try await source(show.source)?.updateSettings(settings, showId: show.show.id)
             await reloadLists()
+            await applyDownloadRules()
         } catch {
             actionError = Self.message(for: error)
         }
@@ -460,6 +486,7 @@ final class AppModel {
             progress[episode.id] = ListeningProgress(positionMs: played ? (progress[episode.id]?.positionMs ?? 0) : 0, played: played)
             if played { inbox.removeAll { $0.id == episode.id } }
             if episode.source == .phone { scheduleSync() }
+            if played { await applyDownloadRules() }
         } catch {
             actionError = Self.message(for: error)
         }
@@ -496,17 +523,25 @@ final class AppModel {
         let show = show(for: item)
         if start == 0, let skip = show?.settings.skipIntroSecs, skip > 0 { start = Int64(skip * 1000) }
         do {
-            let playback = try await source.playback(item.episode.key)
+            let part: SpokenPart
             let duration = item.episode.durationMs ?? 0
+            if let local = downloads.fileURL(item.id) {
+                // The file's extension says what it is.
+                part = SpokenPart(id: "audio", url: local, durationMs: duration)
+                downloads.notePlayed(item.id)
+            } else {
+                if isOffline { throw DownloadError.notOnPhone }
+                if settings.mobileData == .downloadedOnly, network.isExpensive { throw DownloadError.mobileData }
+                let playback = try await source.playback(item.episode.key)
+                part = SpokenPart(id: "audio", url: playback.url, durationMs: duration, isHLS: playback.isHLS, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))
+            }
             let chapters = await chapters(for: item.episode, durationMs: duration)
-            let spoken = SpokenBook(
-                id: item.id, title: item.episode.title, author: show?.title,
-                parts: [SpokenPart(id: "audio", url: playback.url, durationMs: duration, isHLS: playback.isHLS, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))], chapters: chapters
-            )
+            let spoken = SpokenBook(id: item.id, title: item.episode.title, author: show?.title, parts: [part], chapters: chapters)
             nowPlaying = item
-            nowPlayingShow = show
+            nowPlayingShow = show ?? downloads.episodes[item.id]?.show
             engine.load(spoken, at: start, autoplay: true)
             engine.setRate(show?.settings.speed ?? settings.defaultRate)
+            scheduleListeningCache(for: item, part: part)
         } catch {
             actionError = Self.message(for: error)
         }
@@ -526,6 +561,7 @@ final class AppModel {
 
     /// Lets go of the episode everywhere: the engine, the mini player, the lock screen.
     func stopPlayback() {
+        listeningCacheTask?.cancel()
         engine.stop()
         nowPlaying = nil
         nowPlayingShow = nil
@@ -567,6 +603,7 @@ final class AppModel {
         if played { inbox.removeAll { $0.id == position.bookId } }
         Task { _ = try? await source.saveProgress(value, for: key) }
         if ref == .phone, [.pause, .stop, .finished].contains(position.reason) { scheduleSync() }
+        if played, position.reason == .finished { Task { await applyDownloadRules() } }
     }
 
     private func artwork(for id: String) async -> NowPlayingImage? {
@@ -805,6 +842,7 @@ final class AppModel {
         if activeSource?.serverId == id { activeSource = nil }
         serverIcons[id] = nil
         if case .server(id)? = nowPlaying?.source { stopPlayback() }
+        downloads.removeAll { $0.sourceRef?.serverId == id }
         try? await store.remove(id: id)
         servers.removeAll { $0.id == id }
         try? FileManager.default.removeItem(at: serverDirectory(id))
@@ -1159,6 +1197,12 @@ final class AppModel {
     /// What the listener is told when something fails.
     static func message(for error: Error) -> String {
         switch error {
+        case DownloadError.notOnPhone:
+            String(localized: "This episode is not on this iPhone. Download it, or turn Offline Mode off.")
+        case DownloadError.mobileData:
+            String(localized: "On mobile data only downloaded episodes play. You can change this in Settings.")
+        case DownloadError.streamOnly:
+            String(localized: "This episode can't be downloaded: the server only streams it.")
         case SourceError.notAFeed:
             String(localized: "That address is not a podcast feed.")
         case SourceError.signInRejected, AudiobookshelfError.invalidCredentials, GPodderError.unauthorized, OwnAudioError.problem:
@@ -1177,6 +1221,71 @@ final class AppModel {
             String(localized: "The server can't be reached. Check the address and the network.")
         default:
             String(localized: "Something went wrong. Try again.")
+        }
+    }
+}
+
+/// Why an episode can't be downloaded or played from the phone.
+enum DownloadError: Error {
+    case notOnPhone, mobileData, streamOnly
+}
+
+// MARK: - Downloads
+
+extension AppModel {
+    func downloadState(_ item: SourcedEpisode) -> DownloadManager.State? { downloads.state(of: item.id) }
+
+    func isDownloaded(_ item: SourcedEpisode) -> Bool { downloads.isDownloaded(item.id) }
+
+    /// Offline, only what is on the phone plays; the rest is shown greyed out.
+    func canPlay(_ item: SourcedEpisode) -> Bool { !isOffline || isDownloaded(item) }
+
+    func download(_ item: SourcedEpisode) {
+        downloads.download(item, show: show(for: item))
+        applyDownloadSettings()
+    }
+
+    func removeDownload(_ item: SourcedEpisode) {
+        downloads.remove(item.id)
+    }
+
+    /// After Wi-Fi Only or the storage limit changed, and after each new download.
+    func applyDownloadSettings() {
+        downloads.wifiOnly = settings.wifiOnlyDownloads
+        let protected = nowPlaying?.id
+        downloads.enforce(capBytes: settings.storageCapBytes, protected: protected) { [progress] id in progress[id]?.played == true }
+    }
+
+    /// Each show's rules (download the newest, delete when played, keep at most) run against
+    /// its episodes as they are now. Offline nothing is downloaded, but nothing is lost either.
+    func applyDownloadRules() async {
+        guard !isOffline else { return }
+        for show in shows where show.show.settings.hasDownloadRules {
+            guard let episodes = try? await episodes(of: show) else { continue }
+            let items = episodes.map {
+                DownloadRules.Item(id: $0.id, publishedAt: $0.episode.publishedAt ?? $0.episode.firstSeenAt, isPlayed: progress[$0.id]?.played == true, isDownloaded: downloads.episodes[$0.id] != nil)
+            }
+            let protected = nowPlaying.flatMap { progress[$0.id]?.played == true ? nil : $0.id }
+            let plan = DownloadRules.plan(for: items, settings: show.show.settings, protected: protected)
+            for id in plan.remove { downloads.remove(id) }
+            for id in plan.download { if let item = episodes.first(where: { $0.id == id }) { downloads.download(item, show: show.show) } }
+        }
+        applyDownloadSettings()
+    }
+
+    /// Streaming on Wi-Fi, the episode is fetched into the listening cache a little after it
+    /// starts — once the player has its own buffer, so the two never compete at the start. Not
+    /// on mobile data or Low Data Mode, and never a transcode made for one listen.
+    func scheduleListeningCache(for item: SourcedEpisode, part: SpokenPart) {
+        listeningCacheTask?.cancel()
+        listeningCacheTask = nil
+        guard !part.url.isFileURL, !part.isHLS, !network.isExpensive, !network.isConstrained else { return }
+        let cache = listeningCache!
+        Task { await cache.enforce(capBytes: Self.listeningCacheCapBytes) }
+        listeningCacheTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(45))
+            guard let self, !Task.isCancelled, self.nowPlaying?.id == item.id else { return }
+            await cache.prefetch(trackId: item.id)
         }
     }
 }

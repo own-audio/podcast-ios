@@ -32,12 +32,74 @@
         }
       }
     },
+    "%@ on this iPhone.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ v tomto iPhonu."
+          }
+        }
+      }
+    },
     "%@ · %@": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "%@ · %@"
+          }
+        }
+      }
+    },
+    "%lld Episodes": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Episode"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Episodes"
+                }
+              }
+            }
+          }
+        },
+        "cs": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld epizoda"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld epizody"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld epizody"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld epizod"
+                }
+              }
+            }
           }
         }
       }
@@ -333,6 +395,16 @@
         }
       }
     },
+    "Cancel Download": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zrušit stahování"
+          }
+        }
+      }
+    },
     "Chapters": {
       "localizations": {
         "cs": {
@@ -473,6 +545,16 @@
         }
       }
     },
+    "Delete When Played": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smazat po přehrání"
+          }
+        }
+      }
+    },
     "Delete your questions and answers for this episode?": {
       "localizations": {
         "cs": {
@@ -499,6 +581,116 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hotovo"
+          }
+        }
+      }
+    },
+    "Download": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stáhnout"
+          }
+        }
+      }
+    },
+    "Download New Episodes": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahovat nové epizody"
+          }
+        }
+      }
+    },
+    "Download failed": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahování selhalo"
+          }
+        }
+      }
+    },
+    "Download failed, try again": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahování selhalo, zkuste to znovu"
+          }
+        }
+      }
+    },
+    "Download on Wi-Fi Only": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahovat jen přes Wi-Fi"
+          }
+        }
+      }
+    },
+    "Downloaded": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Staženo"
+          }
+        }
+      }
+    },
+    "Downloaded Only": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jen stažené"
+          }
+        }
+      }
+    },
+    "Downloaded Only plays nothing that is not on this iPhone while on mobile data.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jen stažené na mobilních datech nepřehraje nic, co není v tomto iPhonu."
+          }
+        }
+      }
+    },
+    "Downloading": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahuje se"
+          }
+        }
+      }
+    },
+    "Downloading %lld%%": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahuje se %lld %%"
+          }
+        }
+      }
+    },
+    "Downloading… %lld%%": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stahuje se… %lld %%"
           }
         }
       }
@@ -753,6 +945,16 @@
         }
       }
     },
+    "Keep at Most": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ponechat nejvýše"
+          }
+        }
+      }
+    },
     "Keep this iPhone's position (%@)": {
       "localizations": {
         "cs": {
@@ -863,12 +1065,42 @@
         }
       }
     },
+    "New episodes download on their own, the newest first; unplayed ones only. Settings decides whether this waits for Wi-Fi.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nové epizody se stahují samy, nejnovější první, a jen nepřehrané. Zda se čeká na Wi-Fi, určuje Nastavení."
+          }
+        }
+      }
+    },
     "New episodes of the shows you follow appear here.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Zde se objeví nové epizody pořadů, které odebíráte."
+          }
+        }
+      }
+    },
+    "Newest %lld": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nejnovějších %lld"
+          }
+        }
+      }
+    },
+    "No Limit": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bez omezení"
           }
         }
       }
@@ -989,6 +1221,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Režim offline je zapnutý"
+          }
+        }
+      }
+    },
+    "Offline Mode shows and plays only what is on this iPhone, as the app does on its own with no network. Over the limit, played episodes go first, then the ones not played for longest; never the one playing. A show can keep its own downloads in Show Settings.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Režim offline zobrazí a přehraje jen to, co je v tomto iPhonu, stejně jako aplikace sama bez sítě. Nad limitem odcházejí nejdřív přehrané epizody, pak ty nejdéle nepřehrávané; nikdy ta, která hraje. Pořad může mít vlastní pravidla stahování v nastavení pořadu."
+          }
+        }
+      }
+    },
+    "On Mobile Data": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na mobilních datech"
+          }
+        }
+      }
+    },
+    "On mobile data only downloaded episodes play. You can change this in Settings.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na mobilních datech se přehrávají jen stažené epizody. Změnit to můžete v Nastavení."
           }
         }
       }
@@ -1123,6 +1385,46 @@
         }
       }
     },
+    "Remove All Downloads": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstranit všechna stažení"
+          }
+        }
+      }
+    },
+    "Remove All Downloads?": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstranit všechna stažení?"
+          }
+        }
+      }
+    },
+    "Remove Download": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstranit stažení"
+          }
+        }
+      }
+    },
+    "Remove Download?": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Odstranit stažení?"
+          }
+        }
+      }
+    },
     "Remove Server": {
       "localizations": {
         "cs": {
@@ -1169,6 +1471,58 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pokračovat"
+          }
+        }
+      }
+    },
+    "Retry %lld Failed": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Retry %lld Failed"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Retry %lld Failed"
+                }
+              }
+            }
+          }
+        },
+        "cs": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Zkusit znovu %lld neúspěšné"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Zkusit znovu %lld neúspěšná"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Zkusit znovu %lld neúspěšného"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Zkusit znovu %lld neúspěšných"
+                }
+              }
+            }
           }
         }
       }
@@ -1543,6 +1897,16 @@
         }
       }
     },
+    "Stream": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streamovat"
+          }
+        }
+      }
+    },
     "Summarize Episode": {
       "localizations": {
         "cs": {
@@ -1703,6 +2067,16 @@
         }
       }
     },
+    "The server did not send the file.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server soubor neposlal."
+          }
+        }
+      }
+    },
     "The server didn't accept this sign-in. Its owner can allow sign-in with Apple or Google, or use your email and password.": {
       "localizations": {
         "cs": {
@@ -1763,12 +2137,32 @@
         }
       }
     },
+    "This episode can't be downloaded: the server only streams it.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tuto epizodu nejde stáhnout: server ji jen streamuje."
+          }
+        }
+      }
+    },
     "This episode has no transcript to read.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Tato epizoda nemá přepis, ze kterého by šlo vycházet."
+          }
+        }
+      }
+    },
+    "This episode is not on this iPhone. Download it, or turn Offline Mode off.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tato epizoda není v tomto iPhonu. Stáhněte ji, nebo vypněte režim offline."
           }
         }
       }
@@ -1799,6 +2193,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Dnešní limit placené práce je vyčerpaný. Zkuste to zítra."
+          }
+        }
+      }
+    },
+    "Try the Download Again": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zkusit stáhnout znovu"
           }
         }
       }

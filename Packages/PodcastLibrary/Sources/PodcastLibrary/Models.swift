@@ -50,13 +50,44 @@ public struct ShowSettings: Codable, Sendable, Equatable {
     public var skipIntroSecs: Double = 0
     /// nil: the app's speed.
     public var speed: Float?
+    /// Keep the newest this many episodes downloaded; 0 is off.
+    public var autoDownload = 0
+    /// A downloaded episode goes once it is played.
+    public var deleteWhenPlayed = false
+    /// At most this many of the show's episodes on the phone, the oldest going first; nil is no limit.
+    public var keepAtMost: Int?
 
-    public init(inInbox: Bool = true, autoQueue: Bool = false, skipIntroSecs: Double = 0, speed: Float? = nil) {
+    public static let autoDownloadChoices = [0, 1, 3, 5, 10]
+    public static let keepAtMostChoices: [Int?] = [nil, 1, 3, 5, 10]
+
+    public init(inInbox: Bool = true, autoQueue: Bool = false, skipIntroSecs: Double = 0, speed: Float? = nil, autoDownload: Int = 0, deleteWhenPlayed: Bool = false, keepAtMost: Int? = nil) {
         self.inInbox = inInbox
         self.autoQueue = autoQueue
         self.skipIntroSecs = skipIntroSecs
         self.speed = speed
+        self.autoDownload = autoDownload
+        self.deleteWhenPlayed = deleteWhenPlayed
+        self.keepAtMost = keepAtMost
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case inInbox, autoQueue, skipIntroSecs, speed, autoDownload, deleteWhenPlayed, keepAtMost
+    }
+
+    /// Every key is optional, so settings saved by an older version still load.
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        inInbox = try c.decodeIfPresent(Bool.self, forKey: .inInbox) ?? true
+        autoQueue = try c.decodeIfPresent(Bool.self, forKey: .autoQueue) ?? false
+        skipIntroSecs = try c.decodeIfPresent(Double.self, forKey: .skipIntroSecs) ?? 0
+        speed = try c.decodeIfPresent(Float.self, forKey: .speed)
+        autoDownload = try c.decodeIfPresent(Int.self, forKey: .autoDownload) ?? 0
+        deleteWhenPlayed = try c.decodeIfPresent(Bool.self, forKey: .deleteWhenPlayed) ?? false
+        keepAtMost = try c.decodeIfPresent(Int.self, forKey: .keepAtMost)
+    }
+
+    /// Whether any rule asks the downloads of this show to change by themselves.
+    public var hasDownloadRules: Bool { autoDownload > 0 || deleteWhenPlayed || keepAtMost != nil }
 }
 
 public struct Episode: Codable, Sendable, Equatable, Identifiable {

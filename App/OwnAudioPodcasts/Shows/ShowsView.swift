@@ -202,6 +202,26 @@ struct ShowSettingsView: View {
                         Text(String(format: "%.2g×", rate)).tag(rate)
                     }
                 }
+                Section {
+                    Picker("Download New Episodes", selection: $settings.autoDownload) {
+                        ForEach(ShowSettings.autoDownloadChoices, id: \.self) { count in
+                            if count == 0 { Text("Off").tag(0) } else { Text("Newest \(count)").tag(count) }
+                        }
+                    }
+                    .accessibilityIdentifier("showSettings.autoDownload")
+                    Toggle("Delete When Played", isOn: $settings.deleteWhenPlayed)
+                        .accessibilityIdentifier("showSettings.deleteWhenPlayed")
+                    Picker("Keep at Most", selection: $settings.keepAtMost) {
+                        ForEach(ShowSettings.keepAtMostChoices, id: \.self) { limit in
+                            if let limit { Text("\(limit) Episodes").tag(Int?.some(limit)) } else { Text("No Limit").tag(Int?.none) }
+                        }
+                    }
+                    .accessibilityIdentifier("showSettings.keepAtMost")
+                } header: {
+                    Text("Downloads")
+                } footer: {
+                    Text("New episodes download on their own, the newest first; unplayed ones only. Settings decides whether this waits for Wi-Fi.")
+                }
             }
             .navigationTitle("Show Settings")
             .navigationBarTitleDisplayMode(.inline)

@@ -60,10 +60,13 @@ struct EpisodeRow: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(progress?.played == true ? Theme.Colors.muted : Theme.Colors.foreground)
                 .lineLimit(lineLimit)
-            Text(ProgressText.line(episode: episode, progress: progress))
-                .font(.caption)
-                .foregroundStyle(Theme.Colors.muted)
-                .lineLimit(lineLimit == nil ? nil : 1)
+            HStack(spacing: 4) {
+                DownloadBadge(state: model.downloadState(item))
+                Text(ProgressText.line(episode: episode, progress: progress))
+                    .font(.caption)
+                    .foregroundStyle(Theme.Colors.muted)
+                    .lineLimit(lineLimit == nil ? nil : 1)
+            }
         }
     }
 
@@ -106,6 +109,8 @@ struct EpisodeRow: View {
             }
         }
         .padding(.vertical, Theme.Spacing.xs)
+        // Offline, what isn't on the phone can't play.
+        .opacity(model.canPlay(item) ? 1 : 0.45)
         .swipeActions(edge: .leading) {
             Button {
                 Task { await model.markPlayed(item, progress?.played != true) }
@@ -132,6 +137,19 @@ struct EpisodeRow: View {
                 Task { await model.markPlayed(item, progress?.played != true) }
             } label: {
                 progress?.played == true ? Label("Mark as Unplayed", systemImage: "circle") : Label("Mark as Played", systemImage: "checkmark.circle")
+            }
+            switch model.downloadState(item) {
+            case nil:
+                Button { model.download(item) } label: { Label("Download", systemImage: "arrow.down.circle") }
+                    .disabled(model.isOffline)
+            case .failed?:
+                Button { model.removeDownload(item); model.download(item) } label: { Label("Try the Download Again", systemImage: "arrow.clockwise") }
+                    .disabled(model.isOffline)
+                Button(role: .destructive) { model.removeDownload(item) } label: { Label("Remove Download", systemImage: "trash") }
+            case .downloading?:
+                Button(role: .destructive) { model.removeDownload(item) } label: { Label("Cancel Download", systemImage: "xmark.circle") }
+            case .downloaded?:
+                Button(role: .destructive) { model.removeDownload(item) } label: { Label("Remove Download", systemImage: "trash") }
             }
             if inInbox {
                 Button {
@@ -165,6 +183,7 @@ struct PlayButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .disabled(!model.canPlay(item))
         .accessibilityLabel(isPlaying ? "Pause" : "Play")
         .accessibilityIdentifier("play.\(item.episode.id)")
     }
@@ -225,4 +244,89 @@ func linkedText(_ text: String) -> AttributedString {
         attributed[lower..<upper].link = url
     }
     return attributed
+}
+
+/// The download button on an episode's page: an arrow, a ring while downloading, a check when
+/// done. Copied from the books app's.
+struct DownloadButton: View {
+    @Environment(AppModel.self) private var model
+    let item: SourcedEpisode
+    @State private var isConfirmingRemove = false
+
+    var body: some View {
+        let state = model.downloadState(item)
+        Button {
+            switch state {
+            case .downloaded: isConfirmingRemove = true
+            case .downloading: break
+            case .failed: model.removeDownload(item); model.download(item)
+            case nil: model.download(item)
+            }
+        } label: {
+            Group {
+                switch state {
+                case .downloaded:
+                    Image(systemName: "checkmark.circle.fill").font(.title2)
+                case .downloading(let fraction):
+                    ZStack {
+                        Circle().stroke(Theme.Colors.accent.opacity(0.25), lineWidth: 3)
+                        Circle().trim(from: 0, to: max(fraction, 0.02)).stroke(Theme.Colors.accent, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
+                    }
+                    .frame(width: 22, height: 22)
+                case .failed:
+                    Image(systemName: "exclamationmark.arrow.circlepath").font(.title2)
+                case nil:
+                    Image(systemName: "arrow.down.circle").font(.title2)
+                }
+            }
+            .frame(minWidth: Theme.minTarget, minHeight: Theme.minTarget)
+        }
+        .buttonStyle(.bordered)
+        .tint(Theme.Colors.accent)
+        .disabled(model.isOffline && state == nil)
+        .accessibilityIdentifier("episode.download")
+        .accessibilityLabel(label(state))
+        .confirmationDialog("Remove Download?", isPresented: $isConfirmingRemove, titleVisibility: .visible) {
+            Button("Remove Download", role: .destructive) { model.removeDownload(item) }
+                .accessibilityIdentifier("episode.download.remove")
+        }
+    }
+
+    private func label(_ state: DownloadManager.State?) -> String {
+        switch state {
+        case .downloaded: String(localized: "Downloaded")
+        case .downloading(let fraction): String(localized: "Downloading \(Int(fraction * 100))%")
+        case .failed: String(localized: "Download failed, try again")
+        case nil: String(localized: "Download")
+        }
+    }
+}
+
+/// Beside an episode's date: a ring while downloading, an arrow when it is on the phone.
+struct DownloadBadge: View {
+    let state: DownloadManager.State?
+
+    var body: some View {
+        switch state {
+        case .downloaded:
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.caption)
+                .foregroundStyle(Theme.Colors.accent)
+                .accessibilityLabel("Downloaded")
+        case .downloading(let fraction):
+            ZStack {
+                Circle().stroke(Theme.Colors.accent.opacity(0.25), lineWidth: 1.5)
+                Circle().trim(from: 0, to: max(fraction, 0.02)).stroke(Theme.Colors.accent, style: StrokeStyle(lineWidth: 1.5, lineCap: .round)).rotationEffect(.degrees(-90))
+            }
+            .frame(width: 11, height: 11)
+            .accessibilityLabel("Downloading")
+        case .failed:
+            Image(systemName: "exclamationmark.circle")
+                .font(.caption)
+                .foregroundStyle(Theme.Colors.error)
+                .accessibilityLabel("Download failed")
+        case nil:
+            EmptyView()
+        }
+    }
 }

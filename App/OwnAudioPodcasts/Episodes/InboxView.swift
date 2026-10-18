@@ -87,6 +87,7 @@ struct EpisodeView: View {
                             .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
                     }
                     .buttonStyle(.borderedProminent)
+                    .disabled(!model.canPlay(item))
                     .accessibilityIdentifier("episode.play")
                     Button {
                         Task { await model.markPlayed(item, progress?.played != true) }
@@ -96,6 +97,7 @@ struct EpisodeView: View {
                     }
                     .buttonStyle(.bordered)
                     .accessibilityIdentifier("episode.markPlayed")
+                    DownloadButton(item: item)
                 }
                 EpisodeSummarySection(item: item)
                 if !episode.chapters.isEmpty {

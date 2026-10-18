@@ -273,11 +273,14 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   extension (own.audio serves `application/octet-stream`). UI tests pass for feeds,
   Audiobookshelf and own.audio, plus the misuse suite and the large-text pass (rows stack at
   accessibility sizes). OPML import moved to P9.
-- [ ] **P7: Downloads and offline.** Per-episode downloads on the books app's background
+- [x] **P7: Downloads and offline.** Per-episode downloads on the books app's background
   `URLSession`, the per-show rules of decision 7, delete-when-played, the storage cap and
   eviction, Offline Mode and the offline banner, the listening cache, the server's own
   auto-download setting surfaced where a source has it. Tests: a download survives a kill; the
   rules do what they say; offline shows and plays only what is on the phone.
+  *Done 2026-10-18, except the server's own auto-download setting, which moves to P10 with
+  the other server features. Mobile data offers Stream / Downloaded Only (no Saver: a feed has
+  one file).*
 - [ ] **P8: Queue and continuous play.** Play next / play later, the queue sheet with reorder
   and remove, the inbox playing on, "mark played" as episodes finish, skip-the-intro per show
   (a start offset), per-show speed. UI tests.
