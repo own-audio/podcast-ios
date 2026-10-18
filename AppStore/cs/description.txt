@@ -1,0 +1,27 @@
+Přehrávač podcastů pro iPhone a iPad, který nepotřebuje účet ani server: najděte pořad, nebo vložte adresu jeho kanálu, a poslouchejte.
+
+Stvořený pro poslech
+• Rychlost se zachovanou výškou hlasu a vlastní rychlost pro kterýkoli pořad
+• Kapitoly, pokud je pořad má
+• Skok vzad a vpřed o sekundy, které si zvolíte, a chytré přetočení po pauze
+• Časovač spánku
+• Ovládání na zamčené obrazovce a v Ovládacím centru
+
+Nejdřív to nové
+• Nové epizody ukazují nepřehrané epizody ze všech vašich pořadů, od nejnovějších
+• Stránka každého pořadu s jeho epizodami; poznámky ke každé epizodě s funkčními odkazy
+• Hledání pořadu podle názvu, nebo přidání podle adresy kanálu
+
+Vaše místo zůstane
+• Pozice v každé epizodě se ukládá nejdřív v iPhonu, takže výpadek signálu nikdy neztratí vaše místo
+
+S vlastním serverem
+Pokud ho máte, přidejte ho a vaše pořady i pozice vás budou sledovat mezi zařízeními:
+• own.audio: podcastová knihovna vaší rodiny
+• Audiobookshelf: vaše knihovny podcastů
+• Synchronizační služby gPodder, například gpodder.net a podfetch
+Přidat můžete několik serverů najednou; přepínač v Nových epizodách vybírá, který vidíte.
+
+Soukromí už od návrhu: žádný účet u nás, žádná analytika, žádné reklamy, žádné sledování. Aplikace mluví jen s kanály a servery, které si zvolíte.
+
+Česky a anglicky. Zdarma a open source pod licencí MPL-2.0. Vytvořilo own.audio.

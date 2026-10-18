@@ -1,0 +1,5 @@
+No account or server is needed to try the app. On the welcome screen, tap "Add a Show" and search for a show by name (for example "Planet Money"), or choose "Add a Feed by Address" and paste https://feeds.npr.org/510289/podcast.xml. Follow it and play an episode: speed, chapters (where the show has them), skip intervals and the sleep timer are in the player.
+
+Server features: "Add a Server" on the welcome screen, or in Settings. The public own.audio demo server is https://demo.own.audio, account guest@demo.own.audio, password own-audio-demo; it holds public-domain and Creative Commons shows. Audiobookshelf and gPodder servers would need a server of the reviewer's own; the app works the same way with each.
+
+The app is free and open source (MPL-2.0): https://github.com/own-audio/podcast-ios

@@ -1,0 +1,1 @@
+podcast,podcasty,rss,kanál,přehrávač,audiobookshelf,gpodder,vlastní server,kapitoly,časovač

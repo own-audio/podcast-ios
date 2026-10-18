@@ -8,6 +8,10 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- The App Store listing in English and Czech (`AppStore/`), review notes, and `scripts/app-store-upload.swift`
+  to send it, ported from the books app; the review-notes update is skipped, not fatal, until the review
+  contact is filled in. First TestFlight build (22) under `audio.own.podcastplayer`.
+
 - The repository: licence, the plan (`IMPLEMENTATION_PLAN.md`), the agent contract (`CLAUDE.md`).
 - The skeleton (P0): the app (`audio.own.podcastplayer`, "own.podcast") launching to a first
   screen in English and Czech; the podcast blue as the accent; the icon (the own.audio family
