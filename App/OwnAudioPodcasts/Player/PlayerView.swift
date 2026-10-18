@@ -184,6 +184,13 @@ struct PlayerView: View {
                     Image(systemName: "list.bullet").font(.title3)
                 } action: { sheet = .chapters }
             }
+            VStack(spacing: Theme.Spacing.xs) {
+                AirPlayRouteButton().frame(width: 28, height: 24)
+                Text("AirPlay").font(.caption2).foregroundStyle(Theme.Colors.foreground)
+            }
+            .frame(minWidth: 56, minHeight: Theme.minTarget)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("player.airplay")
         }
         .padding(.top, Theme.Spacing.sm)
     }

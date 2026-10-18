@@ -8,6 +8,46 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- The Up Next widget (small: one episode; medium: three): the episode in the player, then the
+  ones under way, then the newest new episodes, with pictures and time left. It reads a snapshot
+  the app writes into the App Group `group.audio.own.podcastplayer`; a tap plays the episode.
+  Copied from the books app's Continue Listening widget.
+- The Live Activity on the lock screen and in the Dynamic Island while an episode plays: picture,
+  title, chapter, progress, time left, and back / play-pause / forward buttons that work without
+  opening the app. Unlike the books app's, the skip icons follow the chosen intervals.
+- Siri and Shortcuts: "Continue listening in own.podcast" (the episode in the player, else the last
+  one, else one under way, else the newest) and "Play ‹show› in own.podcast", in English and Czech.
+- Links into the app: `ownpodcast://play/<episode>` from the widget and the Live Activity;
+  `feed://`, `podcast://` and `pcast://` from web pages and other apps open Add a Feed with the
+  address filled in.
+- CarPlay: New Episodes, Downloads and Shows, with pictures and progress; the system's Now Playing
+  with a speed button and the chapters behind Up Next. Copied from the books app. The CarPlay
+  entitlement is set for simulator builds only until Apple grants it for this app; device and
+  TestFlight builds sign without it.
+- UI tests (`PlatformTests`): a `feed://` link opens Add a Feed filled in and follows; a play link
+  reaches the app. The widget, the Live Activity, Siri and CarPlay need a device to try.
+
+- Family and Devices on an own.audio server's page, copied from the books app: the household's
+  members (you first), its storage by kind and its prepaid credit; admins invite with a code, a QR
+  code or the share sheet and can withdraw an invitation; Join Another Family with a code. Devices
+  lists every device signed in to the account, this iPhone first; swipe to sign one out, or Sign
+  Out Everywhere. `HouseholdSource` in PodcastLibrary, with live tests.
+- Live updates from own.audio: while the app is on screen and online, each own.audio server's
+  `/events` stream is followed and a change reads the lists again, so a position or a show changed
+  on another device shows here without pulling to refresh. Reopened with a growing wait when the
+  connection ends; stopped in the background, in Offline Mode and in Low Data Mode. Live test: a
+  change on the server comes through the stream within seconds.
+- UI test: the server page leads to Family (you among the members) and Devices (this device marked).
+
+- The last episode comes back after a relaunch: in the mini player, paused where it was, also when
+  iOS ended the app in the background. Stop and the end of an episode clear it; offline, an episode
+  that isn't downloaded is left out quietly. UI test: played, paused, killed, started again.
+- An AirPlay button among the player's tools (`AirPlayRouteButton`, copied from the music app,
+  coloured for a player that follows light and dark).
+- Chapters read from the audio file itself (an MP3's ID3 chapter frames, an M4A's chapter track)
+  when the feed has none, as the books app does — from a download at once, from a stream within
+  six seconds or not at all.
+
 - Positions meant for a server wait on disk until the server has them (`PendingProgress`, copied
   from the books app, with tests): listening offline, a dead server or a killed app no longer loses
   where you got to. They are sent oldest first on every refresh — at launch, when the network comes

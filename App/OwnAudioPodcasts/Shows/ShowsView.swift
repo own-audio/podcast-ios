@@ -245,7 +245,12 @@ struct ShowSettingsView: View {
 struct AddFeedView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
-    @State private var address = ""
+    @State private var address: String
+
+    /// `address` filled in when a `feed://` or `podcast://` link opened the app.
+    init(address: String = "") {
+        _address = State(initialValue: address)
+    }
     @State private var target: SourceRef = .phone
     @State private var isWorking = false
     @State private var error: String?

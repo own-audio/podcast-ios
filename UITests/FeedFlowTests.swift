@@ -43,6 +43,7 @@ final class FeedFlowTests: XCTestCase {
         let started = Date()
         while elapsed.label == "0:00", Date().timeIntervalSince(started) < 30 { RunLoop.current.run(until: Date().addingTimeInterval(0.5)) }
         XCTAssertNotEqual(elapsed.label, "0:00", "the episode plays")
+        XCTAssertTrue(app.descendants(matching: .any)["player.airplay"].exists, "the AirPlay picker is in the player, as in the music app")
 
         let before = seconds(elapsed.label)
         app.buttons["player.skipForward"].tap()
@@ -77,6 +78,46 @@ final class FeedFlowTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Offline Mode is on"].waitForExistence(timeout: 5))
         toggle.tap()
         XCTAssertFalse(app.staticTexts["Offline Mode is on"].waitForExistence(timeout: 3))
+    }
+
+    /// The episode in the player when the app went away comes back in the mini player, paused
+    /// where it was; Stop clears it.
+    func testLastEpisodeBackAfterARelaunch() {
+        var app = launch(["-debugFeedURL", feed])
+        let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 30))
+        play.tap()
+        XCTAssertTrue(app.buttons["miniPlayer"].waitForExistence(timeout: 15))
+        app.buttons["miniPlayer"].tap()
+        let elapsed = app.staticTexts["player.elapsed"]
+        XCTAssertTrue(elapsed.waitForExistence(timeout: 10))
+        let started = Date()
+        while elapsed.label == "0:00", Date().timeIntervalSince(started) < 30 { RunLoop.current.run(until: Date().addingTimeInterval(0.5)) }
+        app.buttons["player.skipForward"].tap()
+        RunLoop.current.run(until: Date().addingTimeInterval(1))
+        app.buttons["player.playPause"].tap()
+        let before = seconds(elapsed.label)
+        XCTAssertGreaterThanOrEqual(before, 25)
+        RunLoop.current.run(until: Date().addingTimeInterval(1))
+        app.terminate()
+
+        // Started again, without the reset that clears everything.
+        app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let mini = app.buttons["miniPlayer"]
+        XCTAssertTrue(mini.waitForExistence(timeout: 30), "the last episode is back in the mini player")
+        XCTAssertEqual(app.buttons["miniPlayer.playPause"].label, "Play", "paused, not playing by itself")
+        mini.tap()
+        let again = app.staticTexts["player.elapsed"]
+        XCTAssertTrue(again.waitForExistence(timeout: 10))
+        XCTAssertGreaterThanOrEqual(seconds(again.label), before - 2, "where it was: \(again.label)")
+
+        app.buttons["player.stop"].tap()
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.buttons["home.settings"].waitForExistence(timeout: 30))
+        XCTAssertFalse(app.buttons["miniPlayer"].waitForExistence(timeout: 5), "Stop clears it")
     }
 
     private func seconds(_ clock: String) -> Int {

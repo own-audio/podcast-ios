@@ -5,6 +5,7 @@ import SwiftUI
 /// Downloads, Search — with the mini player above the tab bar and the full player as a cover.
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
     @State private var isShowingPlayer = false
     @State private var tab: AppTab = .inbox
 
@@ -21,6 +22,16 @@ struct RootView: View {
             }
         }
         .task { await model.load() }
+        .onChange(of: scenePhase) { _, phase in model.setForeground(phase == .active) }
+        .onOpenURL { url in
+            Task {
+                if !model.hasLoaded { await model.load() }
+                await model.open(url)
+            }
+        }
+        .sheet(isPresented: Binding(get: { model.pendingFeedAddress != nil && model.hasLoaded }, set: { if !$0 { model.pendingFeedAddress = nil } })) {
+            AddFeedView(address: model.pendingFeedAddress ?? "")
+        }
         .fullScreenCover(isPresented: $isShowingPlayer) { PlayerView() }
         .alert("That Didn't Work", isPresented: Binding(get: { model.actionError != nil }, set: { if !$0 { model.actionError = nil } })) {
             Button("OK", role: .cancel) {}

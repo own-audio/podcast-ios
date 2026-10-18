@@ -24,6 +24,7 @@ targets:
     platform: iOS
     sources:
       - path: App/OwnAudioPodcasts
+      - path: Shared
     info:
       path: App/OwnAudioPodcasts/Info.plist
       properties:
@@ -35,6 +36,20 @@ targets:
         # Only standard HTTPS, which is exempt; saves answering the export question per build.
         ITSAppUsesNonExemptEncryption: false
         UIApplicationSupportsIndirectInputEvents: true
+        NSSupportsLiveActivities: true
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+          UISceneConfigurations:
+            CPTemplateApplicationSceneSessionRoleApplication:
+              - UISceneConfigurationName: CarPlay
+                UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).CarPlaySceneDelegate
+        # The widget's and the Live Activity's way in (ownpodcast://play/<episode id>), and the
+        # links web pages and other apps use to hand over a feed.
+        CFBundleURLTypes:
+          - CFBundleURLName: audio.own.podcastplayer
+            CFBundleURLSchemes: [ownpodcast]
+          - CFBundleURLName: audio.own.podcastplayer.feed
+            CFBundleURLSchemes: [feed, podcast, pcast]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationPortrait
@@ -58,12 +73,18 @@ targets:
         CODE_SIGN_STYLE: Automatic
         # No DEVELOPMENT_TEAM here: this repo is public. Simulator builds don't need one; for a
         # device, pick your team in Xcode (it is not saved into project.yml).
+        # CarPlay needs an entitlement Apple grants per app; until it is granted for this one,
+        # only simulator builds carry it, so device and TestFlight builds still sign.
+        CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]: App/OwnAudioPodcasts/OwnAudioPodcasts-Simulator.entitlements
     entitlements:
       path: App/OwnAudioPodcasts/OwnAudioPodcasts.entitlements
       properties:
         # Sign in with Apple for own.audio servers (AUTH__APPLE__CLIENT_IDS must list this app).
         com.apple.developer.applesignin: [Default]
+        # Shared with the widget: the Up Next snapshot and the Live Activity's picture.
+        com.apple.security.application-groups: [group.audio.own.podcastplayer]
     dependencies:
+      - target: OwnAudioPodcastsWidgets
       - package: PlayerEngine
         product: PlayerCore
       - package: PlayerEngine
@@ -73,6 +94,32 @@ targets:
       - package: AudiobookshelfKit
       - package: OwnAudioKit
       - package: GPodderKit
+  OwnAudioPodcastsWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Widgets
+      - path: Shared
+    info:
+      path: Widgets/Info.plist
+      properties:
+        CFBundleDisplayName: own.podcast
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: audio.own.podcastplayer.widgets
+        SWIFT_VERSION: "6.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        CODE_SIGN_STYLE: Automatic
+    entitlements:
+      path: Widgets/OwnAudioPodcastsWidgets.entitlements
+      properties:
+        com.apple.security.application-groups: [group.audio.own.podcastplayer]
   OwnAudioPodcastsUITests:
     type: bundle.ui-testing
     platform: iOS

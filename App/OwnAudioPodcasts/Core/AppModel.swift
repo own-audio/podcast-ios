@@ -108,6 +108,17 @@ final class AppModel {
     @ObservationIgnored private let directory: URL
     /// Positions meant for a server, on disk until the server has them.
     @ObservationIgnored private let pending: PendingProgress
+    @ObservationIgnored var liveUpdates: [UUID: Task<Void, Never>] = [:]
+    @ObservationIgnored var liveActivity: LiveActivityController?
+    /// Small JPEGs for the widget and the Live Activity, by picture address.
+    @ObservationIgnored var smallPictures: [URL: Data] = [:]
+    @ObservationIgnored var widgetTask: Task<Void, Never>?
+    /// A `feed://` or `podcast://` link opened the app: Add a Feed shows with it filled in.
+    var pendingFeedAddress: String?
+    @ObservationIgnored var reloadTask: Task<Void, Never>?
+    @ObservationIgnored var isInForeground = true
+    /// How many times a server's live update read the lists again (for the UI tests).
+    private(set) var liveReloads = 0
     @ObservationIgnored private var syncTask: Task<Void, Never>?
 
     /// The hosted service's edge refuses requests with no User-Agent.
@@ -164,7 +175,9 @@ final class AppModel {
         engine.partLocator = { [weak self] id, _ in
             await self?.listeningCache.existingLocalURL(trackId: id)
         }
+        liveActivity = LiveActivityController(model: self)
         network.onChange = { [weak self] connected in
+            self?.followLibraryChanges()
             guard connected else { return }
             Task {
                 await self?.chooseAddresses()
@@ -180,6 +193,7 @@ final class AppModel {
 
     func setOfflineMode(_ on: Bool) {
         settings.offlineMode = on
+        followLibraryChanges()
         Task {
             await reloadLists()
             if !on { await refresh() }
@@ -315,7 +329,9 @@ final class AppModel {
         await loadServerIcons()
         await loadLibraries()
         downloads.resume()
+        await restoreLastPlayed()
         await refresh()
+        followLibraryChanges()
     }
 
     /// For UI tests and screenshots: `-debugFeedURL`, and `-debugServerKind` (ownAudio,
@@ -356,6 +372,8 @@ final class AppModel {
                 syncs[record.id] = GPodderSync(client: client, library: phone, device: Self.gpodderDevice, directory: serverDirectory(record.id))
             }
         }
+        // The live streams hold the old sources' clients.
+        if hasLoaded { followLibraryChanges() }
     }
 
     private static var gpodderDevice: String { "own-audio-podcasts-" + installationId.prefix(8) }
@@ -392,6 +410,7 @@ final class AppModel {
         inbox = allInbox.sorted { ($0.episode.publishedAt ?? $0.episode.firstSeenAt) > ($1.episode.publishedAt ?? $1.episode.firstSeenAt) }
         progress = allProgress
         unreachable = failing
+        scheduleWidgetUpdate()
     }
 
     /// Syncs gPodder accounts, asks every feed and server for new episodes, and reads the lists
@@ -514,7 +533,9 @@ final class AppModel {
     /// Another device got somewhere else in the episode; asked, never applied silently.
     var pendingResume: PendingResume?
 
-    func play(_ item: SourcedEpisode, startAt: Int64? = nil) async {
+    /// `autoplay` false loads it paused (the last episode, back after a relaunch); `quietly`
+    /// shows no error when it can't load.
+    func play(_ item: SourcedEpisode, startAt: Int64? = nil, autoplay: Bool = true, quietly: Bool = false) async {
         guard let source = source(item.source) else { return }
         let local = progress[item.id]
         var start: Int64
@@ -545,15 +566,17 @@ final class AppModel {
                 let playback = try await source.playback(item.episode.key)
                 part = SpokenPart(id: "audio", url: playback.url, durationMs: duration, isHLS: playback.isHLS, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))
             }
-            let chapters = await chapters(for: item.episode, durationMs: duration)
+            let chapters = await chapters(for: item.episode, durationMs: duration, part: part)
             let spoken = SpokenBook(id: item.id, title: item.episode.title, author: show?.title, parts: [part], chapters: chapters)
             nowPlaying = item
             nowPlayingShow = show ?? downloads.episodes[item.id]?.show
-            engine.load(spoken, at: start, autoplay: true)
+            engine.load(spoken, at: start, autoplay: autoplay)
             engine.setRate(show?.settings.speed ?? settings.defaultRate)
             scheduleListeningCache(for: item, part: part)
+            saveLastPlayed(item, positionMs: start)
+            scheduleWidgetUpdate()
         } catch {
-            actionError = Self.message(for: error)
+            if !quietly { actionError = Self.message(for: error) }
         }
     }
 
@@ -575,6 +598,8 @@ final class AppModel {
         engine.stop()
         nowPlaying = nil
         nowPlayingShow = nil
+        forgetLastPlayed()
+        scheduleWidgetUpdate()
     }
 
     func setRate(_ rate: Float) {
@@ -589,11 +614,23 @@ final class AppModel {
 
     /// The feed's chapters: inline ones, else the linked JSON document. Times past the end are
     /// dropped; the last runs to the end of the episode.
-    private func chapters(for episode: Episode, durationMs: Int64) async -> [SpokenChapter] {
+    private func chapters(for episode: Episode, durationMs: Int64, part: SpokenPart) async -> [SpokenChapter] {
         var marks = episode.chapters.filter(\.isInTableOfContents).map { ($0.startMs, $0.endMs, $0.title) }
         if marks.isEmpty, let url = episode.chaptersURL, !isOffline,
            let (data, _) = try? await Self.session.data(from: url), let parsed = try? Chapters.parse(data) {
             marks = parsed.filter(\.isInTableOfContents).map { ($0.startMs, $0.endMs, $0.title) }
+        }
+        if marks.isEmpty, !part.isHLS, part.url.isFileURL || !isOffline {
+            // The file's own marks (an MP3's ID3 CHAP frames, an M4A's chapter track), as the
+            // books app reads them; from a stream it costs a request, so a few seconds at most.
+            let embedded = await withTaskGroup(of: [SpokenChapter].self) { group -> [SpokenChapter] in
+                group.addTask { await EmbeddedChapters.read([part]) }
+                group.addTask { try? await Task.sleep(for: .seconds(6)); return [] }
+                let first = await group.next() ?? []
+                group.cancelAll()
+                return first
+            }
+            marks = embedded.map { ($0.startMs, $0.endMs > $0.startMs ? $0.endMs : nil, $0.title) }
         }
         marks.sort { $0.0 < $1.0 }
         // Unknown length: an hour past the last start stands in until the file says.
@@ -610,6 +647,13 @@ final class AppModel {
         let played = position.finished || ListeningProgress.reachedEnd(positionMs: position.positionMs, durationMs: engine.durationMs)
         let value = ListeningProgress(positionMs: position.positionMs, played: played, updatedAt: position.at)
         progress[position.bookId] = value
+        liveActivity?.tick()
+        if [.pause, .stop, .finished].contains(position.reason) { scheduleWidgetUpdate() }
+        if position.reason == .finished {
+            forgetLastPlayed()
+        } else if let item = nowPlaying, item.id == position.bookId {
+            saveLastPlayed(item, positionMs: position.positionMs)
+        }
         if played { inbox.removeAll { $0.id == position.bookId } }
         if ref == .phone {
             Task { _ = try? await source.saveProgress(value, for: key) }
@@ -862,6 +906,7 @@ final class AppModel {
         servers.removeAll { $0.id == id }
         try? FileManager.default.removeItem(at: serverDirectory(id))
         rebuildSources()
+        followLibraryChanges()
         await reloadLists()
     }
 
@@ -869,6 +914,7 @@ final class AppModel {
         try await store.add(record)
         servers.append(record)
         rebuildSources()
+        followLibraryChanges()
         Task {
             await loadServerIcons()
             await loadLibraries()
@@ -1340,4 +1386,100 @@ extension AppModel {
     }
 
     var pendingProgressCount: Int { pending.all().count }
+}
+
+// MARK: - The last episode, back after a relaunch
+
+/// What was in the player when the app went away: shown again in the mini player, paused where
+/// it was, so a relaunch (or iOS ending the app in the background) doesn't lose it. Stop and
+/// the end of an episode clear it.
+private struct LastPlayed: Codable {
+    let source: String
+    let episode: Episode
+    let show: Show?
+    var positionMs: Int64
+}
+
+extension AppModel {
+    private var lastPlayedURL: URL {
+        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("podcasts", isDirectory: true).appendingPathComponent("last-played.json")
+    }
+
+    func saveLastPlayed(_ item: SourcedEpisode, positionMs: Int64) {
+        let last = LastPlayed(source: item.source.id, episode: item.episode, show: nowPlayingShow ?? show(for: item), positionMs: positionMs)
+        guard let data = try? JSONEncoder().encode(last) else { return }
+        try? data.write(to: lastPlayedURL, options: .atomic)
+    }
+
+    func forgetLastPlayed() {
+        try? FileManager.default.removeItem(at: lastPlayedURL)
+    }
+
+    /// Paused at its position; nothing at all if it can't load now (offline and not downloaded).
+    func restoreLastPlayed() async {
+        guard nowPlaying == nil, let data = try? Data(contentsOf: lastPlayedURL),
+              let last = try? JSONDecoder().decode(LastPlayed.self, from: data), let ref = SourceRef(id: last.source) else { return }
+        let item = SourcedEpisode(source: ref, episode: last.episode)
+        await play(item, startAt: last.positionMs, autoplay: false, quietly: true)
+        if nowPlaying?.id == item.id, nowPlayingShow == nil { nowPlayingShow = last.show }
+    }
+}
+
+// MARK: - Family, devices and live updates (own.audio)
+
+extension AppModel {
+    func householdSource(_ serverId: UUID) -> (any HouseholdSource)? {
+        sources[serverId] as? any HouseholdSource
+    }
+
+    /// Runs `work`, and shows what went wrong if it fails.
+    func perform(_ work: @escaping () async throws -> Void) {
+        Task {
+            do { try await work() } catch { actionError = Self.message(for: error) }
+        }
+    }
+
+    /// While the app is on screen and online, each own.audio server's `/events` stream is
+    /// followed; a change there reads the lists again, a moment later so a burst of changes is
+    /// read once. The stream ends with its connection, so it is reopened, waiting longer after
+    /// each failure. In the background it stops.
+    func followLibraryChanges() {
+        for task in liveUpdates.values { task.cancel() }
+        liveUpdates = [:]
+        guard hasLoaded, isInForeground, !isOffline, !network.isConstrained else { return }
+        for server in servers where server.kind == .ownAudio {
+            guard let source = householdSource(server.id) else { continue }
+            liveUpdates[server.id] = Task { [weak self] in
+                var wait: Duration = .seconds(2)
+                while !Task.isCancelled {
+                    do {
+                        for try await _ in source.libraryChanges() {
+                            wait = .seconds(2)
+                            self?.scheduleReload()
+                        }
+                    } catch {}
+                    try? await Task.sleep(for: wait)
+                    wait = min(wait * 2, .seconds(120))
+                }
+            }
+        }
+    }
+
+    private func scheduleReload() {
+        reloadTask?.cancel()
+        reloadTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled, let self else { return }
+            await self.reloadLists()
+            self.liveReloads += 1
+        }
+    }
+
+    func setForeground(_ foreground: Bool) {
+        guard foreground != isInForeground else { return }
+        isInForeground = foreground
+        followLibraryChanges()
+        if foreground { Task { await refresh() } }
+    }
 }

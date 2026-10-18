@@ -293,9 +293,17 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   invites — copied from the books app), server-side storing of episodes, and **translation**:
   on hosted servers with the module, quote an episode in a language, start, follow the job,
   play the translated episode (decision 9). Live tests against a hosted server, quoting only.
+  *Brought forward 2026-10-18 for parity with the books and music apps: the Family screen
+  (members, storage, credit, invites, joining) and Devices, on an own.audio server's page, and
+  live updates over `/events`. Still to do here: sharing a show with the family, server-side
+  storing, the server's auto-download setting (from P7), translation.*
 - [ ] **P11: Platform.** CarPlay (New Episodes, Queue, Shows, Now Playing with chapters), the
   widget (new episodes / up next), the Live Activity, Siri ("Play *show* in own.podcast",
   "What's new in own.podcast"), iPad split view — each copied from the books app and adapted.
+  *Mostly brought forward 2026-10-18 for parity: CarPlay (New Episodes, Downloads, Shows, Now
+  Playing with chapters; no Queue list until the queue has a screen), the Up Next widget, the
+  Live Activity, Siri ("Continue listening", "Play ‹show›"). Still to do: "What's new" in Siri,
+  iPad split view, the CarPlay entitlement for this app, trying it all on a device.*
 - [ ] **P12: Polish, accessibility, tests, release.** Dynamic Type, VoiceOver labels, Reduce
   Motion, both colour schemes, the Czech re-read, performance with 300 shows and 20 000
   episodes, app size measured, screenshots from the UI test pipeline, App Store texts in

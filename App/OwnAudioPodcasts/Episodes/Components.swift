@@ -330,3 +330,34 @@ struct DownloadBadge: View {
         }
     }
 }
+
+/// Something a screen loads: still coming, here, or failed with a message to show. Copied from
+/// the books app.
+enum LoadState<Value> {
+    case loading
+    case loaded(Value)
+    case failed(String)
+}
+
+struct LoadStateView<Value, Content: View>: View {
+    let state: LoadState<Value>
+    let retry: () -> Void
+    @ViewBuilder let content: (Value) -> Content
+
+    var body: some View {
+        switch state {
+        case .loading:
+            ProgressView().frame(maxWidth: .infinity, minHeight: 120)
+        case .failed(let message):
+            ContentUnavailableView {
+                Label("Couldn't Load", systemImage: "exclamationmark.triangle")
+            } description: {
+                Text(message)
+            } actions: {
+                Button("Try Again") { retry() }.accessibilityIdentifier("load.retry")
+            }
+        case .loaded(let value):
+            content(value)
+        }
+    }
+}

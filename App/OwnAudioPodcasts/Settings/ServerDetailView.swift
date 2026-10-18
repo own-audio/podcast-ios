@@ -84,6 +84,27 @@ struct ServerDetailView: View {
                     }
                 }
 
+                if server.kind == .ownAudio {
+                    Section {
+                        NavigationLink {
+                            HouseholdView(serverId: server.id)
+                        } label: {
+                            Label("Family", systemImage: "person.3")
+                        }
+                        .accessibilityIdentifier("serverDetail.family")
+                        NavigationLink {
+                            DevicesView(serverId: server.id)
+                        } label: {
+                            Label("Devices", systemImage: "iphone.gen3")
+                        }
+                        .accessibilityIdentifier("serverDetail.devices")
+                    } header: {
+                        Text("Account")
+                    } footer: {
+                        Text("Who is in the family, its storage and credit, invitations; and every device signed in to this account.")
+                    }
+                }
+
                 if server.kind == .gpodder {
                     Section {
                         Button {

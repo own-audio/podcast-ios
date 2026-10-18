@@ -186,7 +186,7 @@ public actor OwnAudioPodcastSource: PodcastSource {
         )
     }
 
-    private func translating<T>(_ work: () async throws -> T) async throws -> T {
+    func translating<T>(_ work: () async throws -> T) async throws -> T {
         do {
             return try await work()
         } catch let error as OwnAudioError {

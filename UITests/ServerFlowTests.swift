@@ -276,6 +276,45 @@ final class ServerFlowTests: XCTestCase {
         app.buttons["player.stop"].tap()
     }
 
+    /// An own.audio server's page leads to its Family (members, storage) and Devices (this iPhone
+    /// marked first), as the books app's Settings do.
+    func testFamilyAndDevices() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["OWNAUDIO_HOST"], let user = env["OWNAUDIO_EMAIL"], let password = env["OWNAUDIO_ACCOUNT_PASSWORD"] else {
+            throw XCTSkip("OWNAUDIO_HOST is not set")
+        }
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+        app.launch()
+        let settings = app.buttons["home.settings"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 40))
+        let name = URL(string: host)?.host() ?? host
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "settings.server.\(name)")).firstMatch
+        for _ in 0..<3 where !row.exists {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            if settings.isHittable { settings.tap() }
+            _ = row.waitForExistence(timeout: 5)
+        }
+        row.tap()
+
+        let family = app.buttons["serverDetail.family"]
+        XCTAssertTrue(family.waitForExistence(timeout: 10))
+        family.tap()
+        XCTAssertTrue(app.staticTexts["Members"].waitForExistence(timeout: 20) || app.staticTexts["MEMBERS"].exists, "the household's members")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label ENDSWITH '(you)'")).firstMatch.exists, "you among them")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        let devices = app.buttons["serverDetail.devices"]
+        XCTAssertTrue(devices.waitForExistence(timeout: 10))
+        devices.tap()
+        XCTAssertTrue(app.staticTexts["This device"].waitForExistence(timeout: 20), "this iPhone is marked")
+        // Below every device; a test account signed in by many runs has a long list.
+        let everywhere = app.buttons["devices.signOutEverywhere"]
+        for _ in 0..<15 where !everywhere.exists { app.swipeUp() }
+        XCTAssertTrue(everywhere.exists)
+    }
+
     /// A server's page in Settings: it answers and accepts the sign-in, its addresses are listed,
     /// one can be added, and the server can be renamed.
     func testServerPage() throws {

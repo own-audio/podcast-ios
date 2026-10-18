@@ -208,6 +208,71 @@ cs = {
  "own.audio": "own.audio",
  "own.audio demo": "Demo own.audio",
  "own.audio canary (testing)": "own.audio canary (testování)",
+ "AirPlay": "AirPlay",
+ "%@": "%@",
+ "Action": "Akce",
+ "Chapter %lld": "Kapitola %lld",
+ "Continue Listening": "Pokračovat v poslechu",
+ "Control Playback": "Ovládat přehrávání",
+ "Follow a show on your iPhone": "Odebírejte pořad v iPhonu",
+ "Goes on with the episode you were listening to.": "Pokračuje v epizodě, kterou jste poslouchali.",
+ "No chapters": "Žádné kapitoly",
+ "No new episodes": "Žádné nové epizody",
+ "No shows yet": "Zatím žádné pořady",
+ "Nothing downloaded": "Nic není staženo",
+ "Nothing here yet": "Zatím tu nic není",
+ "Play ${show}": "Přehrát ${show}",
+ "Play a Show": "Přehrát pořad",
+ "Play or Pause": "Přehrát nebo pozastavit",
+ "Plays a show you follow: the episode you are in, or its newest.": "Přehraje pořad, který odebíráte: rozposlouchanou epizodu, nebo jeho nejnovější.",
+ "Show": "Pořad",
+ "That episode can't play right now.": "Tuto epizodu teď nejde přehrát.",
+ "That episode is not here any more.": "Tato epizoda tu už není.",
+ "There is nothing to play; follow a show in own.podcast first.": "Není co přehrát; nejdřív v own.podcast začněte odebírat pořad.",
+ "You don't follow that show any more.": "Tento pořad už neodebíráte.",
+ "%@ (you)": "%@ (vy)",
+ "A Month at Today's Storage": "Měsíc při dnešním úložišti",
+ "Admin": "Správce",
+ "An invitation is a code for one person. They sign in to this server and enter it, or open its link.": "Pozvánka je kód pro jednoho člověka. Přihlásí se k tomuto serveru a zadá ho, nebo otevře její odkaz.",
+ "Audiobooks": "Audioknihy",
+ "Balance": "Zůstatek",
+ "Code": "Kód",
+ "Couldn't Load": "Nepodařilo se načíst",
+ "Credit": "Kredit",
+ "Devices": "Zařízení",
+ "Enter the code from the invitation.": "Zadejte kód z pozvánky.",
+ "Family": "Rodina",
+ "Invitation": "Pozvánka",
+ "Invitations": "Pozvánky",
+ "Invite Someone": "Pozvat někoho",
+ "Invited": "Čeká na přihlášení",
+ "Join": "Připojit",
+ "Join Another Family": "Připojit se k jiné rodině",
+ "Join Another Family…": "Připojit se k jiné rodině…",
+ "Last used %@ ago": "Naposledy použito před %@",
+ "Lasts About": "Vydrží asi",
+ "Leave this family and join the other one?": "Opustit tuto rodinu a připojit se k té druhé?",
+ "Members": "Členové",
+ "Music": "Hudba",
+ "Podcasts": "Podcasty",
+ "QR code of the invitation": "QR kód pozvánky",
+ "Scanned or typed in, it lets one person join your family.": "Naskenovaná nebo opsaná umožní jednomu člověku připojit se k vaší rodině.",
+ "Share Invitation": "Sdílet pozvánku",
+ "Sign Out": "Odhlásit",
+ "Sign Out Everywhere": "Odhlásit všude",
+ "Sign Out Everywhere?": "Odhlásit všude?",
+ "Signed in %@": "Přihlášeno %@",
+ "Storage": "Úložiště",
+ "Storage is paid from the family's prepaid credit, day by day; the family's admin tops it up.": "Úložiště se platí z předplaceného kreditu rodiny, den po dni; dobíjí ho správce rodiny.",
+ "Swipe a device to sign it out. Signing out everywhere ends every session, this iPhone's too, and asks for a fresh sign-in.": "Přejetím zařízení odhlásíte. Odhlášení všude ukončí všechny relace včetně tohoto iPhonu a vyžádá si nové přihlášení.",
+ "The credit has run out: the family's admin can top it up.": "Kredit došel: správce rodiny ho může dobít.",
+ "This device": "Toto zařízení",
+ "Try Again": "Zkusit znovu",
+ "What its members share appears instead of what this family shares.": "Místo toho, co sdílí tato rodina, uvidíte, co sdílejí členové té druhé.",
+ "Withdraw": "Zrušit",
+ "With a code from that family's admin. You then leave this one.": "S kódem od správce té rodiny. Z této pak odejdete.",
+ "The shows the family shares on this server are there for everyone in it, each listening from their own position.": "Pořady, které rodina na tomto serveru sdílí, má k dispozici každý její člen, každý se svou vlastní pozicí.",
+ "Who is in the family, its storage and credit, invitations; and every device signed in to this account.": "Kdo je v rodině, její úložiště a kredit, pozvánky; a každé zařízení přihlášené k tomuto účtu.",
  "%@ on this iPhone.": "%@ v tomto iPhonu.",
  "Cancel Download": "Zrušit stahování",
  "Delete When Played": "Smazat po přehrání",
@@ -241,6 +306,8 @@ cs = {
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {
+ "%lld days": {"en": {"one": "%lld day", "other": "%lld days"}, "cs": {"one": "%lld den", "few": "%lld dny", "many": "%lld dne", "other": "%lld dní"}},
+ "%lld members": {"en": {"one": "%lld member", "other": "%lld members"}, "cs": {"one": "%lld člen", "few": "%lld členové", "many": "%lld člena", "other": "%lld členů"}},
  "%lld Episodes": {"en": {"one": "%lld Episode", "other": "%lld Episodes"}, "cs": {"one": "%lld epizoda", "few": "%lld epizody", "many": "%lld epizody", "other": "%lld epizod"}},
  "Retry %lld Failed": {"en": {"one": "Retry %lld Failed", "other": "Retry %lld Failed"}, "cs": {"one": "Zkusit znovu %lld neúspěšné", "few": "Zkusit znovu %lld neúspěšná", "many": "Zkusit znovu %lld neúspěšného", "other": "Zkusit znovu %lld neúspěšných"}},
 }
@@ -248,7 +315,7 @@ def unit(v): return {"stringUnit": {"state": "translated", "value": v}}
 strings = {}
 for key, value in cs.items():
     strings[key] = {"localizations": {"cs": unit(value)}}
-    if key in ("own.audio", "Audiobookshelf", "", "123456", "https://example.com/feed.xml", "https://podcasts.example.com", "http://192.168.1.20:8080"): strings[key]["shouldTranslate"] = False
+    if key in ("own.audio", "Audiobookshelf", "", "123456", "https://example.com/feed.xml", "https://podcasts.example.com", "http://192.168.1.20:8080", "AirPlay"): strings[key]["shouldTranslate"] = False
 for key, forms in plurals.items():
     strings[key] = {"localizations": {lang: {"variations": {"plural": {k: unit(v) for k, v in f.items()}}} for lang, f in forms.items()}}
 catalog = {"sourceLanguage": "en", "strings": dict(sorted(strings.items())), "version": "1.0"}
@@ -259,4 +326,32 @@ info = {"sourceLanguage": "en", "version": "1.0", "strings": {
     "NSLocalNetworkUsageDescription": {"localizations": {"en": unit("Connects to the podcast server on your local network."), "cs": unit("Připojuje se k podcastovému serveru ve vaší místní síti.")}},
 }}
 json.dump(info, open("App/OwnAudioPodcasts/InfoPlist.xcstrings", "w"), ensure_ascii=False, indent=2)
+# Siri phrases (AppShortcutsProvider); ${applicationName} and ${show} are the placeholders.
+shortcuts = {
+    "Continue listening in ${applicationName}": "Pokračuj v poslechu v ${applicationName}",
+    "Continue my podcast in ${applicationName}": "Pokračuj v mém podcastu v ${applicationName}",
+    "Resume my podcast in ${applicationName}": "Pusť dál můj podcast v ${applicationName}",
+    "Play ${show} in ${applicationName}": "Přehraj ${show} v ${applicationName}",
+    "Listen to ${show} in ${applicationName}": "Pusť ${show} v ${applicationName}",
+}
+json.dump({"sourceLanguage": "en", "version": "1.0", "strings": {k: {"localizations": {"cs": unit(v)}} for k, v in shortcuts.items()}},
+          open("App/OwnAudioPodcasts/AppShortcuts.xcstrings", "w"), ensure_ascii=False, indent=2)
+# The widget extension's own strings.
+widget = {
+    "%@ left": "zbývá %@",
+    "Up Next": "Na řadě",
+    "Nothing new yet": "Zatím nic nového",
+    "Pause": "Pozastavit",
+    "Play": "Přehrát",
+    "Skip back": "Přeskočit zpět",
+    "Skip forward": "Přeskočit vpřed",
+    "Action": "Akce",
+    "Control Playback": "Ovládat přehrávání",
+    "Play or Pause": "Přehrát nebo pozastavit",
+    "Skip Back": "Přeskočit zpět",
+    "Skip Forward": "Přeskočit vpřed",
+    "The episode you are in and the newest ones, a tap away.": "Rozposlouchaná epizoda a ty nejnovější na jedno klepnutí.",
+}
+json.dump({"sourceLanguage": "en", "version": "1.0", "strings": {k: {"localizations": {"cs": unit(v)}} for k, v in widget.items()}},
+          open("Widgets/Localizable.xcstrings", "w"), ensure_ascii=False, indent=2)
 print(len(strings), "keys")
