@@ -1066,6 +1066,12 @@ final class AppModel {
         if kind == .ownAudio {
             let bare = text.lowercased().replacingOccurrences(of: "https://", with: "").replacingOccurrences(of: "http://", with: "")
             if ["own.audio", "www.own.audio", "app.own.audio"].contains(bare) { return [URL(string: "https://api.own.audio")!] }
+            // The web console's address typed instead of the server's: app-canary.own.audio is
+            // served by api-canary.own.audio. The console answers every path with its page, so
+            // without this the app finds no server there and offers no sign-in.
+            if bare.hasPrefix("app-"), bare.hasSuffix(".own.audio"), !bare.contains("/") {
+                return [URL(string: "https://api-" + bare.dropFirst(4))!]
+            }
         }
         guard !text.isEmpty else { return [] }
         if text.hasPrefix("http://") || text.hasPrefix("https://") { return URL(string: text).map { [$0] } ?? [] }

@@ -8,6 +8,8 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- An own.audio console address (`app-canary.own.audio`) typed into Add a Server reaches its server
+  (`api-canary.own.audio`), so sign-in and the Apple and Google buttons work with it.
 - Sign in with Apple and Google to an own.audio server, copied from the books app: the buttons show
   under the address when the server takes them (`/api/v1/server` → `features.auth`), the provider's
   token goes to the server, a second factor asks for the code as with a password, and the account's

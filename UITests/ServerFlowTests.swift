@@ -68,7 +68,8 @@ final class ServerFlowTests: XCTestCase {
         let field = app.textFields["addServer.address"]
         XCTAssertTrue(field.waitForExistence(timeout: 10))
         field.tap()
-        field.typeText("https://api-canary.own.audio")
+        // The console's address, as people type it: the app knows the server is at api-canary.
+        field.typeText("app-canary.own.audio")
         XCTAssertTrue(app.buttons["addServer.apple"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.buttons["addServer.google"].exists)
         field.clearAndType("https://feeds.npr.org")
