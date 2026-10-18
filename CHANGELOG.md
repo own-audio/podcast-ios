@@ -70,3 +70,5 @@ All notable changes to own.audio Podcasts. The format follows
 - Audiobookshelf episodes in a format the phone can't play (WebM/Opus from YouTube downloads,
   Ogg) play through the server's transcoder (an HLS play session) instead of failing with
   "Cannot Open"; a failed open logs what the server answered.
+- gPodder accounts (podfetch) are in the source switch too: choosing one shows this iPhone's shows
+  that are on the account.

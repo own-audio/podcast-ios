@@ -39,6 +39,9 @@ public actor GPodderSync {
         state = (try? JSONDecoder().decode(State.self, from: Data(contentsOf: file))) ?? State()
     }
 
+    /// The feed URLs the account and this phone agreed on at the last sync: the account's shows.
+    public func accountFeeds() -> Set<String> { state.syncedFeeds }
+
     public func register(caption: String) async throws {
         try await client.registerDevice(id: device, caption: caption)
     }

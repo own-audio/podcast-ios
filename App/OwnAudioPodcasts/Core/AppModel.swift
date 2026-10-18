@@ -164,10 +164,25 @@ final class AppModel {
     /// own.audio and Audiobookshelf server. A gPodder account syncs this iPhone's shows and is
     /// not one.
     var switchableSources: [SourceRef] {
-        let mine = serversInOrder.filter { $0.kind != .gpodder }
-        // own.audio first, always; then this iPhone, then the other servers.
-        return mine.filter { $0.kind == .ownAudio }.map { .server($0.id) } + [.phone]
-            + mine.filter { $0.kind != .ownAudio }.map { .server($0.id) }
+        // own.audio first, always; then this iPhone, then the other servers and gPodder accounts.
+        serversInOrder.filter { $0.kind == .ownAudio }.map { .server($0.id) } + [.phone]
+            + serversInOrder.filter { $0.kind != .ownAudio }.map { .server($0.id) }
+    }
+
+    /// Each gPodder account's shows, as of its last sync: the phone's shows it holds.
+    private(set) var gpodderFeeds: [UUID: Set<String>] = [:]
+
+    private func noteAccountFeeds() async {
+        for (id, sync) in syncs { gpodderFeeds[id] = await sync.accountFeeds() }
+    }
+
+    /// Whether an item of `source` belongs on the switch's `active` choice. A gPodder account
+    /// holds no library of its own: its choice shows the phone's shows that are on the account.
+    private func matches(_ source: SourceRef, showFeed: URL?, active: SourceRef) -> Bool {
+        if case .server(let id) = active, server(id)?.kind == .gpodder {
+            return source == .phone && showFeed.map { gpodderFeeds[id]?.contains($0.absoluteString) == true } == true
+        }
+        return source == active
     }
 
     /// Servers as every list shows them: own.audio first, then Audiobookshelf, then gPodder
@@ -188,12 +203,12 @@ final class AppModel {
 
     var visibleInbox: [SourcedEpisode] {
         guard let activeSource else { return inbox }
-        return inbox.filter { $0.source == activeSource }
+        return inbox.filter { matches($0.source, showFeed: show(for: $0)?.feedURL, active: activeSource) }
     }
 
     var visibleShows: [SourcedShow] {
         guard let activeSource else { return shows }
-        return shows.filter { $0.source == activeSource }
+        return shows.filter { matches($0.source, showFeed: $0.show.feedURL, active: activeSource) }
     }
 
     func brand(_ ref: SourceRef) -> ServerBrand {
@@ -238,6 +253,7 @@ final class AppModel {
         // A source remembered from before that is gone now would filter everything away.
         if let active = activeSource, !switchableSources.contains(active) { activeSource = nil }
         rebuildSources()
+        await noteAccountFeeds()
         await addFromLaunchArguments()
         await reloadLists()
         hasLoaded = true
@@ -326,6 +342,7 @@ final class AppModel {
         isRefreshing = true
         defer { isRefreshing = false }
         for (id, sync) in syncs where (try? await sync.sync()) != nil { lastSyncs[id] = Date() }
+        await noteAccountFeeds()
         _ = await phone.refresh(showId: nil)
         for source in sources.values { _ = try? await source.refresh(showId: nil) }
         await reloadLists()
@@ -632,6 +649,7 @@ final class AppModel {
         Task { await loadServerIcons() }
         if record.kind == .gpodder, let sync = syncs[record.id] {
             _ = try? await sync.sync()
+            await noteAccountFeeds()
         }
         await reloadLists()
     }
@@ -900,6 +918,7 @@ final class AppModel {
         guard let sync = syncs[id] else { return }
         try await sync.sync()
         lastSyncs[id] = Date()
+        await noteAccountFeeds()
         await reloadLists()
     }
 
