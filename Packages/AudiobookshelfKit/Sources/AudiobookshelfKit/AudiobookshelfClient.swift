@@ -353,4 +353,4 @@ extension JSONEncoder {
 
 /// Requests that fail, and why: the errors thrown say only "network" or "decoding". The path
 /// alone is logged, never the query, which can carry a token.
-let networkLog = Logger(subsystem: "audio.own.bookplayer", category: "network.audiobookshelf")
+let networkLog = Logger(subsystem: "audio.own.podcastplayer", category: "network.audiobookshelf")

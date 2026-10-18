@@ -9,17 +9,20 @@ megabytes.
 In development; the plan is in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
 
 - Opens on what is new: unplayed episodes across your shows, newest first
+- Up Next across every source, then New Episodes play on
 - Speed with pitch correction (per show too), chapters, skip buttons, smart rewind, skip the
-  intro, sleep timer
+  intro, sleep timer; the last episode is back after a relaunch
 - Downloads with rules per show (the newest few, delete when played, keep at most), a storage
-  limit, and an Offline Mode; the player on the lock screen
-- Search Apple's podcast directory and follow by feed address
-- Several servers at once, each reached at the fastest of its addresses; iPad
-- With own.audio: summaries of an episode, and questions about it
+  limit, and an Offline Mode; positions wait on the phone until a server has them
+- Search Apple's podcast directory and your own shows; follow by feed address or a `feed://` link
+- Several servers at once, each reached at the fastest of its addresses; iPad with a sidebar
+- CarPlay, a widget, the Live Activity, Siri, AirPlay and the player on the lock screen
+- With own.audio: the family, signed-in devices, live updates, summaries of an episode and
+  questions about it
 - English and Czech
 
-Coming, in the order of the plan: a queue, OPML import and
-export, CarPlay, a widget, and with own.audio a family library and translated episodes.
+Coming, in the order of the plan: OPML import and export, the Podcast Index, and with own.audio
+shows shared with the family and translated episodes.
 
 Made by [own.audio](https://www.own.audio). Free, no account needed, no tracking.
 

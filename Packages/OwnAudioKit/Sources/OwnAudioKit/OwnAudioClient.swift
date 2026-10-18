@@ -353,4 +353,4 @@ public struct Empty: Codable, Sendable {
 
 /// Requests that fail, and why: the errors thrown say only "network" or "decoding". The path
 /// alone is logged, never the query, which can carry a sign-in.
-let networkLog = Logger(subsystem: "audio.own.bookplayer", category: "network.ownaudio")
+let networkLog = Logger(subsystem: "audio.own.podcastplayer", category: "network.ownaudio")

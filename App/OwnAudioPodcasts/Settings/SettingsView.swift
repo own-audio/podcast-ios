@@ -96,6 +96,8 @@ struct SettingsView: View {
                     LabeledContent("Version", value: AppModel.appVersion)
                     Link("Source Code (MPL-2.0)", destination: URL(string: "https://github.com/own-audio/podcast-ios")!)
                     Link("Privacy", destination: URL(string: "https://github.com/own-audio/podcast-ios/blob/main/PRIVACY.md")!)
+                    NavigationLink("Logs") { LogsView() }
+                        .accessibilityIdentifier("settings.logs")
                 }
             }
             .navigationTitle("Settings")

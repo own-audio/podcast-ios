@@ -8,6 +8,19 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Settings → Logs: what the app logged since it started (failed requests, playback trouble,
+  sync), to read and to share as a text file with a bug report. Read on the phone from the
+  system's log store; nothing is sent anywhere unless shared. UI test.
+- Background refresh: iOS may wake the app about once an hour to ask feeds and servers for new
+  episodes, so New Episodes is current when it opens and a show's download rule can fetch the
+  newest on Wi-Fi. iOS decides whether it runs; it can't be started from a test.
+
+### Fixed
+
+- The README lists the queue, CarPlay, the widget, the Live Activity and Siri, which now ship.
+- The Audiobookshelf and own.audio clients logged under the books app's name
+  (`audio.own.bookplayer`, from the copy); they log as this app now.
+
 - Up Next (P8): one queue across every source, kept on the phone with each episode and its show,
   so it lists and plays offline (`UpNext`, with tests). Play Next and Play Later from an episode's
   menu and its page; a mark on queued rows; the Up Next sheet from the player to play one now,

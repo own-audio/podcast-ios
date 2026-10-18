@@ -1,8 +1,13 @@
 import SwiftUI
 
-/// Hands the background download session's events back to the app (iOS relaunches it when a
-/// download finishes while it was gone).
+/// Registers the background refresh, and hands the background download session's events back to
+/// the app (iOS relaunches it when a download finishes while it was gone).
 final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        BackgroundRefresh.register()
+        return true
+    }
+
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
         Task { @MainActor in
             guard identifier == DownloadManager.sessionIdentifier else { return completionHandler() }

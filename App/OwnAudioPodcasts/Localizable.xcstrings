@@ -1460,6 +1460,16 @@
         }
       }
     },
+    "Logs": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Záznamy"
+          }
+        }
+      }
+    },
     "Long": {
       "localizations": {
         "cs": {
@@ -1686,6 +1696,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nic staženo"
+          }
+        }
+      }
+    },
+    "Nothing Logged Yet": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zatím nic nezaznamenáno"
           }
         }
       }
@@ -2302,6 +2322,16 @@
         }
       }
     },
+    "Share Log": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sdílet záznam"
+          }
+        }
+      }
+    },
     "Shared with family": {
       "localizations": {
         "cs": {
@@ -2818,6 +2848,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aplikace sama zjistí, co na adrese odpovídá: own.audio, Audiobookshelf, nebo synchronizační server gPodder, například podfetch."
+          }
+        }
+      }
+    },
+    "The app writes here when something goes wrong.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplikace sem zapisuje, když se něco nepovede."
           }
         }
       }
@@ -3402,6 +3442,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Demo own.audio"
+          }
+        }
+      }
+    },
+    "own.podcast log": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Záznam own.podcast"
           }
         }
       }

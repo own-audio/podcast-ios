@@ -1491,6 +1491,7 @@ extension AppModel {
         guard foreground != isInForeground else { return }
         isInForeground = foreground
         followLibraryChanges()
+        if !foreground { BackgroundRefresh.schedule() }
         if foreground { Task { await refresh() } }
     }
 }

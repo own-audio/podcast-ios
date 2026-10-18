@@ -132,6 +132,23 @@ final class DownloadFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons["miniPlayer"].waitForExistence(timeout: 15), "and the episode plays")
     }
 
+    /// Settings → Logs: the app's own log, here after playing something, with Share.
+    func testLogsInSettings() {
+        let app = launch()
+        let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 30))
+        play.tap()
+        XCTAssertTrue(app.buttons["miniPlayer"].waitForExistence(timeout: 15))
+        app.buttons["miniPlayer.playPause"].tap()
+        app.buttons["home.settings"].tap()
+        let logs = app.buttons["settings.logs"].firstMatch
+        for _ in 0..<6 where !logs.isHittable { app.swipeUp() }
+        logs.tap()
+        XCTAssertTrue(app.navigationBars["Logs"].waitForExistence(timeout: 10))
+        let share = app.buttons["logs.share"].firstMatch, empty = app.staticTexts["Nothing Logged Yet"]
+        XCTAssertTrue(waitUntil(timeout: 10) { share.exists || empty.exists }, "the log, or that there is none yet")
+    }
+
     /// The downloads settings, in Settings, as in the books app.
     func testDownloadSettings() {
         let app = launch()
