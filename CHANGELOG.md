@@ -18,6 +18,7 @@ All notable changes to own.audio Podcasts. The format follows
   Apple's podcast genres, each opening Apple's top shows in your country, and search is Apple's;
   there are no suggestions, since Apple doesn't publish which shows are alike.
 - Similar Shows under a show's page and a found show's page, where the catalogue knows them.
+- Category tiles carry no list chevron; Add a Show points to Discover for finding a show by name.
 - `ShowCatalogue` in PodcastLibrary with two catalogues, `OwnAudioShowCatalogue`
   (`/api/v1/podcasts/discover/*`, `/podcasts/search` in OwnAudioKit) and `AppleShowCatalogue`
   (genre charts, one lookup per page for the feed addresses), with tests; a live test against a

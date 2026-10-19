@@ -332,7 +332,7 @@ struct AddFeedView: View {
                 } header: {
                     Text("Feed Address")
                 } footer: {
-                    Text("The RSS address a show publishes. To find a show by name, use Search.")
+                    Text("The RSS address a show publishes. To find a show by name, use Discover.")
                 }
                 if model.followTargets.count > 1 {
                     Picker("Follow On", selection: $target) {

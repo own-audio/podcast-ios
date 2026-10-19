@@ -1,80 +1,56 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "Continue listening in ${applicationName}" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Pokračuj v poslechu v ${applicationName}"
-          }
-        },
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "Continue listening in ${applicationName}",
-              "Continue my podcast in ${applicationName}",
-              "Resume my podcast in ${applicationName}"
-            ]
+  "sourceLanguage": "en",
+  "version": "1.0",
+  "strings": {
+    "Continue listening in ${applicationName}": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokračuj v poslechu v ${applicationName}"
           }
         }
       }
     },
-    "Continue my podcast in ${applicationName}" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pokračuj v mém podcastu v ${applicationName}"
+    "Continue my podcast in ${applicationName}": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pokračuj v mém podcastu v ${applicationName}"
           }
         }
       }
     },
-    "Listen to ${show} in ${applicationName}" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pusť ${show} v ${applicationName}"
+    "Resume my podcast in ${applicationName}": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pusť dál můj podcast v ${applicationName}"
           }
         }
       }
     },
-    "Play ${show} in ${applicationName}" : {
-      "extractionState" : "extracted_with_value",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Přehraj ${show} v ${applicationName}"
-          }
-        },
-        "en" : {
-          "stringSet" : {
-            "state" : "new",
-            "values" : [
-              "Play ${show} in ${applicationName}",
-              "Listen to ${show} in ${applicationName}"
-            ]
+    "Play ${show} in ${applicationName}": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Přehraj ${show} v ${applicationName}"
           }
         }
       }
     },
-    "Resume my podcast in ${applicationName}" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pusť dál můj podcast v ${applicationName}"
+    "Listen to ${show} in ${applicationName}": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pusť ${show} v ${applicationName}"
           }
         }
       }
     }
-  },
-  "version" : "1.0"
+  }
 }

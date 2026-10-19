@@ -184,7 +184,7 @@ cs = {
  "Stops in": "Zastaví se za",
  "That Didn't Work": "Nepovedlo se",
  "That address is not a podcast feed.": "Tato adresa není podcastový kanál.",
- "The RSS address a show publishes. To find a show by name, use Search.": "Adresa RSS, kterou pořad zveřejňuje. Pořad podle názvu najdete v Hledání.",
+ "The RSS address a show publishes. To find a show by name, use Discover.": "Adresa RSS, kterou pořad zveřejňuje. Pořad podle názvu najdete v Objevování.",
  "The episodes can't be loaded right now.": "Epizody teď nelze načíst.",
  "The name or password is wrong.": "Jméno nebo heslo není správné.",
  "The podcast libraries of an Audiobookshelf server, with its downloaded episodes and positions.": "Podcastové knihovny serveru Audiobookshelf s jeho staženými epizodami a pozicemi.",

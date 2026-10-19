@@ -126,6 +126,8 @@ struct DiscoverHome: View {
                         ForEach(categories) { category in
                             NavigationLink(value: category) { CategoryTile(category: category) }
                                 .buttonStyle(.plain)
+                                // The tile is the link; a list chevron beside each would eat the width.
+                                .navigationLinkIndicatorVisibility(.hidden)
                                 .accessibilityIdentifier("discover.category.\(category.key)")
                         }
                     }

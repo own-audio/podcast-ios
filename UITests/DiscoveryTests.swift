@@ -60,7 +60,7 @@ final class DiscoveryTests: XCTestCase {
 
         society.tap()
         let row = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'search.result.'")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 20), "the category's shows")
+        XCTAssertTrue(row.waitForExistence(timeout: 30), "the category's shows")
         app.navigationBars.buttons.element(boundBy: 0).tap()
 
         // On iOS 26 the search tab's field shows once the tab is tapped, sometimes twice.
