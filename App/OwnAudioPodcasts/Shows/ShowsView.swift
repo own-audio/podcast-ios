@@ -39,7 +39,8 @@ struct ShowsView: View {
                                         Text(Mojibake.repair(show.show.title))
                                             .font(.caption.weight(.medium))
                                             .foregroundStyle(Theme.Colors.foreground)
-                                            .lineLimit(2)
+                                            // Two lines always, so a row of tiles lines up at the top.
+                                            .lineLimit(2, reservesSpace: true)
                                             .multilineTextAlignment(.leading)
                                     }
                                 }

@@ -3,27 +3,35 @@ import PodcastLibrary
 import SwiftUI
 
 /// A show's or an episode's picture, square, with the mark of the app while it loads or when
-/// there is none.
+/// there is none. Loaded through `ArtworkLoader` rather than `AsyncImage`, which inside a
+/// resizing grid can cancel its own load and never try again, and keeps nothing for offline.
 struct ArtworkView: View {
     let url: URL?
     var size: CGFloat = 56
     var radius: CGFloat = 8
+    @State private var image: UIImage?
+
+    /// A few fixed sizes, so a grid laying itself out doesn't fetch the same picture again.
+    private var pixels: Int { size <= 64 ? 192 : size <= 160 ? 480 : 900 }
 
     var body: some View {
-        AsyncImage(url: url, transaction: Transaction(animation: .easeOut(duration: Theme.coverCrossfade))) { phase in
-            if let image = phase.image {
-                image.resizable().scaledToFill()
+        ZStack {
+            if let image {
+                Image(uiImage: image).resizable().scaledToFill()
             } else {
-                ZStack {
-                    Theme.Colors.backgroundAlt
-                    Image(systemName: "mic").font(.system(size: size * 0.35)).foregroundStyle(Theme.Colors.muted)
-                }
+                Theme.Colors.backgroundAlt
+                Image(systemName: "mic").font(.system(size: max(size * 0.35, 10))).foregroundStyle(Theme.Colors.muted)
             }
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: radius, style: .continuous).stroke(Theme.Colors.border, lineWidth: 0.5))
         .accessibilityHidden(true)
+        .task(id: url.map { ArtworkLoader.key($0) + "@\(pixels)" }) {
+            guard let url else { image = nil; return }
+            let loaded = await ArtworkLoader.shared.image(url, pixels: pixels)
+            withAnimation(.easeOut(duration: Theme.coverCrossfade)) { image = loaded }
+        }
     }
 }
 

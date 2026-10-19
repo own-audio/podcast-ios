@@ -35,6 +35,12 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Fixed
 
+- Show pictures from an own.audio server were missing in the Shows grid. Pictures now load through
+  `ArtworkLoader` (memory and disk, at the size drawn, keyed without own.audio's weekly-changing
+  signature) instead of SwiftUI's `AsyncImage`, which inside a resizing grid could cancel its own
+  load and never try again, and kept nothing for offline. Pictures seen once show offline too.
+- The Shows grid lines up at the top of each row: a one-line title no longer pushes its tile down.
+
 - The README lists the queue, CarPlay, the widget, the Live Activity and Siri, which now ship.
 - The Audiobookshelf and own.audio clients logged under the books app's name
   (`audio.own.bookplayer`, from the copy); they log as this app now.
