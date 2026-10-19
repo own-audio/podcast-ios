@@ -50,7 +50,8 @@ targets:
           - CFBundleURLName: audio.own.podcastplayer
             CFBundleURLSchemes: [ownpodcast]
           - CFBundleURLName: audio.own.podcastplayer.feed
-            CFBundleURLSchemes: [feed, podcast, pcast]
+            # Not pcast: App Store Connect refuses it as reserved for Apple's own app.
+            CFBundleURLSchemes: [feed, podcast]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationPortrait

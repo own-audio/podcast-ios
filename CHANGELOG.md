@@ -35,6 +35,9 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Fixed
 
+- The app no longer registers the `pcast://` scheme, which App Store Connect refuses as reserved;
+  `feed://` and `podcast://` links still open Add a Feed.
+
 - Show pictures from an own.audio server were missing in the Shows grid. Pictures now load through
   `ArtworkLoader` (memory and disk, at the size drawn, keyed without own.audio's weekly-changing
   signature) instead of SwiftUI's `AsyncImage`, which inside a resizing grid could cancel its own
