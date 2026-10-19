@@ -35,6 +35,9 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Fixed
 
+- The player's tools share the row's width: with chapters there are five, and at fixed gaps they
+  were wider than an iPhone.
+
 - The app no longer registers the `pcast://` scheme, which App Store Connect refuses as reserved;
   `feed://` and `podcast://` links still open Add a Feed.
 

@@ -173,7 +173,8 @@ struct PlayerView: View {
     private var tools: some View {
         let engine = model.engine
         let sleeping = engine.sleepTimer.isActive || engine.stopsAtEndOfChapter
-        return HStack(spacing: Theme.Spacing.xxl) {
+        // The tools share the width: up to five fixed-gap tools are wider than a phone.
+        return HStack(spacing: 0) {
             tool(id: "player.speed", label: String(localized: "Speed \(String(format: "%.2g", engine.rate))"), caption: "Speed", tinted: engine.rate != 1) {
                 Text(String(format: "%.2g×", engine.rate)).font(.subheadline.weight(.semibold).monospacedDigit())
             } action: { sheet = .speed }
@@ -192,7 +193,7 @@ struct PlayerView: View {
                 AirPlayRouteButton().frame(width: 28, height: 24)
                 Text("AirPlay").font(.caption2).foregroundStyle(Theme.Colors.foreground)
             }
-            .frame(minWidth: 56, minHeight: Theme.minTarget)
+            .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("player.airplay")
         }
@@ -206,7 +207,7 @@ struct PlayerView: View {
                 Text(caption).font(.caption2)
             }
             .foregroundStyle(tinted ? Theme.Colors.accent : Theme.Colors.foreground)
-            .frame(minWidth: 56, minHeight: Theme.minTarget)
+            .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

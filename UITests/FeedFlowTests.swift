@@ -44,6 +44,13 @@ final class FeedFlowTests: XCTestCase {
         while elapsed.label == "0:00", Date().timeIntervalSince(started) < 30 { RunLoop.current.run(until: Date().addingTimeInterval(0.5)) }
         XCTAssertNotEqual(elapsed.label, "0:00", "the episode plays")
         XCTAssertTrue(app.descendants(matching: .any)["player.airplay"].exists, "the AirPlay picker is in the player, as in the music app")
+        // With chapters there are five tools; every one must sit inside the screen.
+        let screen = app.windows.firstMatch.frame
+        for id in ["player.speed", "player.sleep", "player.chapters", "player.upNext", "player.airplay"] {
+            let tool = app.descendants(matching: .any)[id].firstMatch
+            XCTAssertTrue(tool.exists, id)
+            XCTAssertTrue(screen.contains(tool.frame), "\(id) is on screen: \(tool.frame) in \(screen)")
+        }
 
         let before = seconds(elapsed.label)
         app.buttons["player.skipForward"].tap()
