@@ -96,9 +96,9 @@ final class LibraryFlowTests: XCTestCase {
         let app = launch()
         XCTAssertTrue(app.buttons["home.offlineMode"].firstMatch.waitForExistence(timeout: 30))
         app.buttons["home.offlineMode"].firstMatch.tap()
-        tab(app, "Search").tap()
+        tab(app, "Discover").tap()
         let field = app.searchFields.firstMatch
-        for _ in 0..<3 where !field.exists { tab(app, "Search").tap(); _ = field.waitForExistence(timeout: 3) }
+        for _ in 0..<3 where !field.exists { tab(app, "Discover").tap(); _ = field.waitForExistence(timeout: 3) }
         field.tap()
         field.typeText("podcasting")
         XCTAssertTrue(app.descendants(matching: .any)["search.mine.Podcasting 2.0"].waitForExistence(timeout: 10), "your own show, with no network")

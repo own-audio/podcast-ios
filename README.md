@@ -14,7 +14,9 @@ In development; the plan is in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   intro, sleep timer; the last episode is back after a relaunch
 - Downloads with rules per show (the newest few, delete when played, keep at most), a storage
   limit, and an Offline Mode; positions wait on the phone until a server has them
-- Search Apple's podcast directory and your own shows; follow by feed address or a `feed://` link
+- Discover: categories to browse, search, and shows like the ones you follow — from an own.audio
+  server's catalogue where it has one, else Apple's charts and search; follow by feed address or
+  a `feed://` link
 - Several servers at once, each reached at the fastest of its addresses; iPad with a sidebar
 - CarPlay, a widget, the Live Activity, Siri, AirPlay and the player on the lock screen
 - With own.audio: the family, signed-in devices, live updates, summaries of an episode and

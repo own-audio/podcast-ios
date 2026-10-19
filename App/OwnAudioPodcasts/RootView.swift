@@ -89,7 +89,7 @@ struct RootView: View {
                     .miniPlayerInset { isShowingPlayer = true }
             }
             .accessibilityIdentifier("tab.downloads")
-            Tab("Search", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
+            Tab("Discover", systemImage: "magnifyingglass", value: AppTab.search, role: .search) {
                 NavigationStack { SearchView().appDestinations() }
                     .miniPlayerInset { isShowingPlayer = true }
             }
@@ -104,6 +104,7 @@ extension View {
         navigationDestination(for: SourcedShow.self) { ShowView(show: $0) }
             .navigationDestination(for: SourcedEpisode.self) { EpisodeView(item: $0) }
             .navigationDestination(for: ShowSearchResult.self) { SearchResultView(result: $0) }
+            .navigationDestination(for: CatalogueCategory.self) { CategoryView(category: $0) }
     }
 
     fileprivate func miniPlayerInset(onTap: @escaping () -> Void) -> some View {

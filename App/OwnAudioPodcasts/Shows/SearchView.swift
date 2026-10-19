@@ -2,8 +2,10 @@ import FeedKit
 import PodcastLibrary
 import SwiftUI
 
-/// Finds what you already have — your shows and their episodes, from every source, offline too —
-/// and new shows by name through Apple's podcast directory, to follow one.
+/// Discover: before anything is typed, following by address, shows like the ones followed and
+/// the categories to browse (`DiscoverHome`); once something is typed, what you already have —
+/// your shows and their episodes, offline too — and new shows from the catalogue: an own.audio
+/// server's where one has it, else Apple's podcast directory.
 struct SearchView: View {
     @Environment(AppModel.self) private var model
     @State private var term = ""
@@ -31,6 +33,9 @@ struct SearchView: View {
 
     var body: some View {
         List {
+            if needle.isEmpty {
+                DiscoverHome()
+            }
             if !myShows.isEmpty {
                 Section("Your Shows") {
                     ForEach(myShows) { show in
@@ -52,30 +57,23 @@ struct SearchView: View {
                     ForEach(myEpisodes) { item in EpisodeRow(item: item) }
                 }
             }
-            if !results.isEmpty {
-                Section(hasLibraryMatches ? "From Apple Podcasts" : "") {
-                    ForEach(results) { result in
-                        NavigationLink(value: result) {
-                            HStack(spacing: Theme.Spacing.md) {
-                                ArtworkView(url: result.imageURL, size: 56)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(result.title).font(.subheadline.weight(.semibold)).lineLimit(2)
-                                    if let author = result.author { Text(author).font(.caption).foregroundStyle(Theme.Colors.muted).lineLimit(1) }
-                                }
-                            }
-                        }
-                        .accessibilityIdentifier("search.result.\(result.title)")
-                    }
+            if !needle.isEmpty, !results.isEmpty {
+                Section {
+                    ForEach(results) { result in ShowResultRow(result: result) }
+                } header: {
+                    Text("From \(model.catalogueName)")
                 }
             }
         }
-        .listStyle(.plain)
+        .listStyle(.insetGrouped)
+        .refreshable {
+            model.suggestions = nil
+            await model.loadSuggestions()
+        }
         .overlay {
             switch state {
-            case _ where hasLibraryMatches:
+            case _ where hasLibraryMatches || needle.isEmpty:
                 EmptyView()
-            case .idle where results.isEmpty:
-                ContentUnavailableView("Search for Shows", systemImage: "magnifyingglass", description: Text("Find a show by its name or its host."))
             case .searching where results.isEmpty:
                 ProgressView()
             case .done where results.isEmpty:
@@ -86,7 +84,7 @@ struct SearchView: View {
                 EmptyView()
             }
         }
-        .navigationTitle("Search")
+        .navigationTitle("Discover")
         .searchable(text: $term, prompt: "Shows and Episodes")
         .onSubmit(of: .search) { Task { await search() } }
         .task(id: term) {
@@ -168,6 +166,7 @@ struct SearchResultView: View {
                 }
                 if let error { Text(error).foregroundStyle(Theme.Colors.error) }
             }
+            SimilarShowsSection(feedURL: result.feedURL)
         }
         .navigationTitle(result.title)
             // The source on the switch, when it takes new shows.

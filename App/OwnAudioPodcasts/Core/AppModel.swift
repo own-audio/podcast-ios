@@ -118,6 +118,10 @@ final class AppModel {
     /// Small JPEGs for the widget and the Live Activity, by picture address.
     @ObservationIgnored var smallPictures: [URL: Data] = [:]
     @ObservationIgnored var widgetTask: Task<Void, Never>?
+    /// The own.audio server whose podcast catalogue Discover uses; nil means Apple's directory.
+    var catalogueServerId: UUID?
+    /// "More like your shows", once asked; nil until then.
+    var suggestions: [Suggestion]?
     /// A `feed://` or `podcast://` link opened the app: Add a Feed shows with it filled in.
     var pendingFeedAddress: String?
     @ObservationIgnored var reloadTask: Task<Void, Never>?
@@ -339,6 +343,7 @@ final class AppModel {
         await restoreLastPlayed()
         await refresh()
         followLibraryChanges()
+        await findCatalogue()
     }
 
     /// For UI tests and screenshots: `-debugFeedURL`, and `-debugServerKind` (ownAudio,
@@ -379,8 +384,11 @@ final class AppModel {
                 syncs[record.id] = GPodderSync(client: client, library: phone, device: Self.gpodderDevice, directory: serverDirectory(record.id))
             }
         }
-        // The live streams hold the old sources' clients.
-        if hasLoaded { followLibraryChanges() }
+        // The live streams and the catalogue hold the old sources' clients.
+        if hasLoaded {
+            followLibraryChanges()
+            Task { await findCatalogue() }
+        }
     }
 
     private static var gpodderDevice: String { "own-audio-podcasts-" + installationId.prefix(8) }
@@ -684,7 +692,7 @@ final class AppModel {
     // MARK: - Searching
 
     func search(_ term: String) async throws -> [ShowSearchResult] {
-        try await ITunesShowSearch(session: Self.session).search(term)
+        try await showCatalogue.search(term)
     }
 
     // MARK: - Servers

@@ -12,6 +12,9 @@
 #   GPODDER_HOST=http://…                # a gPodder API server (podfetch, own.audio,
 #   GPODDER_USERNAME=…                   # gpodder.net); the tests use a device of their own and remove
 #   GPODDER_PASSWORD=…                   # the feed they add
+#   CATALOGUE_HOST=https://…            # an own.audio server with the podcast catalogue (its
+#   CATALOGUE_EMAIL=…                    # metadata service), for Discover: categories, search,
+#   CATALOGUE_PASSWORD=…                 # shows like yours; reads only
 #   PODFETCH_HOST=https://…              # a podfetch server, and a user that is not its admin
 #   PODFETCH_TEST_USERNAME=…             # (podfetch refuses its admin through gPodder): the
 #   PODFETCH_TEST_PASSWORD=…             # add-server form recognises it by itself
@@ -43,7 +46,7 @@ FIXTURES_PID=$!
 trap 'kill $FIXTURES_PID 2>/dev/null || true' EXIT
 export TEST_RUNNER_LOCAL_FEED_URL="http://127.0.0.1:8765/feed.xml"
 # XCTest hands TEST_RUNNER_-prefixed variables to the tests without the prefix.
-for name in AUDIOBOOKSHELF_HOST AUDIOBOOKSHELF_USERNAME AUDIOBOOKSHELF_PASSWORD OWNAUDIO_HOST OWNAUDIO_EMAIL OWNAUDIO_ACCOUNT_PASSWORD GPODDER_HOST GPODDER_USERNAME GPODDER_PASSWORD PODFETCH_HOST PODFETCH_TEST_USERNAME PODFETCH_TEST_PASSWORD; do
+for name in CATALOGUE_HOST CATALOGUE_EMAIL CATALOGUE_PASSWORD AUDIOBOOKSHELF_HOST AUDIOBOOKSHELF_USERNAME AUDIOBOOKSHELF_PASSWORD OWNAUDIO_HOST OWNAUDIO_EMAIL OWNAUDIO_ACCOUNT_PASSWORD GPODDER_HOST GPODDER_USERNAME GPODDER_PASSWORD PODFETCH_HOST PODFETCH_TEST_USERNAME PODFETCH_TEST_PASSWORD; do
   [[ -n "${!name:-}" ]] && export "TEST_RUNNER_$name=${!name}"
 done
 xcodebuild test -project OwnAudioPodcasts.xcodeproj -scheme OwnAudioPodcasts -destination "id=$SIM" \

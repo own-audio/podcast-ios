@@ -8,6 +8,23 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Discover (the Search tab, renamed): following by address, "More Like Your Shows", and categories
+  to browse. With an own.audio server that has the podcast catalogue (a self-hosted Podcast Index
+  mirror behind its metadata service), the categories carry how many shows still publish in each,
+  a category lists its shows a page at a time, search asks the server, and suggestions come from
+  shows like the ones you follow — each saying which one brought it up, from what you follow and
+  never from what you play; nothing typed leaves the server, and what the household follows is left
+  out. Without such a server (none at all, or one without the metadata service), the categories are
+  Apple's podcast genres, each opening Apple's top shows in your country, and search is Apple's;
+  there are no suggestions, since Apple doesn't publish which shows are alike.
+- Similar Shows under a show's page and a found show's page, where the catalogue knows them.
+- `ShowCatalogue` in PodcastLibrary with two catalogues, `OwnAudioShowCatalogue`
+  (`/api/v1/podcasts/discover/*`, `/podcasts/search` in OwnAudioKit) and `AppleShowCatalogue`
+  (genre charts, one lookup per page for the feed addresses), with tests; a live test against a
+  server with the catalogue (`CATALOGUE_*`).
+- UI tests (`DiscoveryTests`): Apple's genres, a chart and a show to follow with no server; counted
+  categories, suggestions, a category's shows and the server's search with the catalogue.
+
 - Settings → Logs: what the app logged since it started (failed requests, playback trouble,
   sync), to read and to share as a text file with a bug report. Read on the phone from the
   system's log store; nothing is sent anywhere unless shared. UI test.

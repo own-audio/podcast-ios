@@ -178,6 +178,9 @@ struct ShowView: View {
                     ProgressView().frame(maxWidth: .infinity)
                 }
             }
+            if let feed = show.show.feedURL {
+                SimilarShowsSection(feedURL: feed)
+            }
         }
         .listStyle(.plain)
         .refreshable {

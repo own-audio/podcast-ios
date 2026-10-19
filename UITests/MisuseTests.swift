@@ -209,7 +209,7 @@ final class MisuseTests: XCTestCase {
     private func openSearch(_ app: XCUIApplication) -> XCUIElement {
         let field = app.searchFields.firstMatch
         for _ in 0..<3 where !field.exists {
-            let tab = tabButton(app, "Search")
+            let tab = tabButton(app, "Discover")
             if tab.exists { tab.tap() }
             if field.waitForExistence(timeout: 3) { break }
         }

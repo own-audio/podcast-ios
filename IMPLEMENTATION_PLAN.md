@@ -292,8 +292,10 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   trending/categories only where a source offers them. OPML import (Files app, share sheet)
   and export; subscribing to a feed URL typed or pasted; `podcast://`, `feed://` and
   `ownpodcast://` links.
-  *Links done 2026-10-18, and Search also finds your own shows and episodes. Still to do: the
-  Podcast Index, the server's search, OPML.*
+  *Links done 2026-10-18, and Search also finds your own shows and episodes. Discover done
+  2026-10-19: the own.audio catalogue (categories with counts, browse, search, More Like Your
+  Shows, Similar Shows) where a server has it, else Apple's genre charts and search. Still to do:
+  the Podcast Index with the listener's own key, OPML.*
 - [ ] **P10: own.audio extras.** The family (shows shared with the household, members,
   invites — copied from the books app), server-side storing of episodes, and **translation**:
   on hosted servers with the module, quote an episode in a language, start, follow the job,
