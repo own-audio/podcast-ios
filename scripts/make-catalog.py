@@ -60,7 +60,7 @@ cs = {
  "Save": "Uložit",
  "Server": "Server",
  "Sign In": "Přihlásit",
- "Sign In Again": "Přihlásit znovu",
+ "Sign In Again": "Přihlásit se znovu",
  "Signed in as %@.": "Přihlášeno jako %@.",
  "Sync": "Synchronizace",
  "Sync Now": "Synchronizovat",
@@ -149,8 +149,8 @@ cs = {
  "Played": "Přehráno",
  "Playing": "Hraje",
  "Privacy": "Soukromí",
- "Remove": "Odstranit",
- "Remove %@?": "Odstranit %@?",
+ "Remove": "Odebrat",
+ "Remove %@?": "Odebrat %@?",
  "Remove from New Episodes": "Odebrat z nových epizod",
  "Removed server": "Odebraný server",
  "Resume": "Pokračovat",
@@ -364,6 +364,9 @@ cs = {
  "This episode can't be downloaded: the server only streams it.": "Tuto epizodu nejde stáhnout: server ji jen streamuje.",
  "This episode is not on this iPhone. Download it, or turn Offline Mode off.": "Tato epizoda není v tomto iPhonu. Stáhněte ji, nebo vypněte režim offline.",
  "Try the Download Again": "Zkusit stáhnout znovu",
+ "Streaming": "Streamování",
+ "Source Code and Licence": "Zdrojový kód a licence",
+ "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen se servery, které přidáte.",
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {

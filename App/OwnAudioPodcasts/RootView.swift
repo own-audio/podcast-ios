@@ -95,6 +95,20 @@ struct RootView: View {
             }
             .accessibilityIdentifier("tab.search")
         }
+        .searchOpensWithItsTab()
+    }
+}
+
+private extension View {
+    /// iOS 27 no longer puts the search field into the Discover tab by itself: the tab opened
+    /// with no field at all. Selecting the tab now opens the field, on iOS 26 as well.
+    @ViewBuilder
+    func searchOpensWithItsTab() -> some View {
+        if #available(iOS 26, *) {
+            tabViewSearchActivation(.searchTabSelection)
+        } else {
+            self
+        }
     }
 }
 

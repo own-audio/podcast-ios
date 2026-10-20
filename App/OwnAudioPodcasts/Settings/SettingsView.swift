@@ -89,19 +89,25 @@ struct SettingsView: View {
                         Text("Downloaded Only").tag(PlaybackSettings.MobileData.downloadedOnly)
                     }
                     .accessibilityIdentifier("settings.mobileData")
+                } header: {
+                    Text("Streaming")
                 } footer: {
                     Text("Downloaded Only plays nothing that is not on this iPhone while on mobile data.")
                 }
-                Section("About") {
+                Section {
                     LabeledContent("Version", value: AppModel.appVersion)
-                    Link("Source Code (MPL-2.0)", destination: URL(string: "https://github.com/own-audio/podcast-ios")!)
+                    Link("Source Code and Licence", destination: URL(string: "https://github.com/own-audio/podcast-ios")!)
                     Link("Privacy", destination: URL(string: "https://github.com/own-audio/podcast-ios/blob/main/PRIVACY.md")!)
-                    NavigationLink("Logs") { LogsView() }
+                    // Tinted like the links above it.
+                    NavigationLink { LogsView() } label: { Text("Logs").foregroundStyle(.tint) }
                         .accessibilityIdentifier("settings.logs")
+                } header: {
+                    Text("About")
+                } footer: {
+                    Text("own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.")
                 }
             }
             .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.accessibilityIdentifier("settings.done") } }
             .onChange(of: settings.skipForwardSecs) { model.applyPlaybackSettings() }
             .onChange(of: settings.skipBackwardSecs) { model.applyPlaybackSettings() }

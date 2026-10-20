@@ -2315,7 +2315,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odstranit"
+            "value": "Odebrat"
           }
         }
       }
@@ -2325,7 +2325,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odstranit %@?"
+            "value": "Odebrat %@?"
           }
         }
       }
@@ -2717,7 +2717,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Přihlásit znovu"
+            "value": "Přihlásit se znovu"
           }
         }
       }
@@ -2922,6 +2922,16 @@
         }
       }
     },
+    "Source Code and Licence": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zdrojový kód a licence"
+          }
+        }
+      }
+    },
     "Speed": {
       "localizations": {
         "cs": {
@@ -3018,6 +3028,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Streamovat"
+          }
+        }
+      }
+    },
+    "Streaming": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streamování"
           }
         }
       }
@@ -3785,6 +3805,16 @@
         }
       },
       "shouldTranslate": false
+    },
+    "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen se servery, které přidáte."
+          }
+        }
+      }
     },
     "own.audio canary (testing)": {
       "localizations": {

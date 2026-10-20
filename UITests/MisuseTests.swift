@@ -101,8 +101,10 @@ final class MisuseTests: XCTestCase {
             let tab = tabButton(app, ["Shows", "Downloads", "New Episodes"][round % 3])
             if tab.exists { tab.tap() }
         }
-        let search = openSearch(app)
+        _ = openSearch(app)
         for text in ["%", "' OR 1=1 --", "😀🎙️", "<script>alert(1)</script>", "\\", "   ", String(repeating: "podcast ", count: 30), "../../etc/passwd"] {
+            // On iOS 27 the field can fold away between searches; found again each round.
+            let search = app.searchFields.firstMatch.exists ? app.searchFields.firstMatch : openSearch(app)
             search.tap()
             if let current = search.value as? String, !current.isEmpty, current != search.placeholderValue {
                 search.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count))

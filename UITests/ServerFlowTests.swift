@@ -361,7 +361,12 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertTrue(nameField.waitForExistence(timeout: 5))
         let current = (nameField.value as? String) ?? ""
         nameField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count + 2) + "Demo")
-        app.alerts.buttons["Save"].tap()
+        // On iOS 27 a tap right after typing can miss the alert's button: wait for it, and tap
+        // it by position if the alert is still up.
+        let save = app.alerts.firstMatch.buttons["Save"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        save.tap()
+        if app.alerts.firstMatch.exists { app.alerts.firstMatch.buttons.element(boundBy: 1).tap() }
         XCTAssertTrue(app.navigationBars["Demo"].waitForExistence(timeout: 5), "renamed")
     }
 

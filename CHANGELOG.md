@@ -6,6 +6,23 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Fixed on iOS 27
+
+- The Discover tab had no search field on iOS 27: iOS no longer put the field into the tab by
+  itself, so there was nothing to type into. Selecting the tab now opens the field, with the
+  keyboard (`tabViewSearchActivation(.searchTabSelection)`), on iOS 26 as well.
+
+- UI test fix: the rename alert's Save could be missed right after typing on iOS 27; the test
+  waits for it.
+
+### Settings the same in all three apps
+
+- Settings matches the books and music apps: On Mobile Data under Streaming; About with
+  Version, Source Code and Licence, Privacy and Logs (in the links' colour) and the same footer;
+  a large title.
+- Czech: "Odebrat" for Remove, "Odebrat ‹name›?" for removing a server, "Přihlásit se znovu"
+  for Sign In Again, as in the other apps.
+
 ### Added
 
 - Discover (the Search tab, renamed): following by address, "More Like Your Shows", and categories
