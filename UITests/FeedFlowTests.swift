@@ -63,7 +63,7 @@ final class FeedFlowTests: XCTestCase {
             XCTAssertTrue(app.buttons["speed.preset.\(preset)"].waitForExistence(timeout: 3), "preset \(preset)")
         }
         app.buttons["speed.preset.1.5"].tap()
-        XCTAssertEqual(app.staticTexts["speed.value"].label, "1.50×")
+        XCTAssertEqual(app.staticTexts["speed.value"].label, "1.5×", "no trailing zero")
         app.buttons["Done"].firstMatch.tap()
 
         app.buttons["player.sleep"].tap()

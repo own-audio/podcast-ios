@@ -264,7 +264,7 @@ struct ShowSettingsView: View {
                 Picker("Speed", selection: Binding(get: { settings.speed ?? 0 }, set: { settings.speed = $0 == 0 ? nil : $0 })) {
                     Text("As in Settings").tag(Float(0))
                     ForEach([0.75, 1.0, 1.25, 1.5, 1.75, 2.0] as [Float], id: \.self) { rate in
-                        Text(String(format: "%.2g×", rate)).tag(rate)
+                        Text(rate.speedText).tag(rate)
                     }
                 }
                 Section {

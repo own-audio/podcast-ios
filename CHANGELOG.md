@@ -6,6 +6,12 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The speed shows as the listener reads it, everywhere (player, speed sheet, Settings, show settings):
+  "1.75×" instead of "1.8×" (`%.2g` kept two digits), "1.5×" instead of "1.50×", and with the
+  phone's decimal sign ("0,75×" in Czech).
+
 ### Fixed on iOS 27
 
 - The Discover tab had no search field on iOS 27: iOS no longer put the field into the tab by
