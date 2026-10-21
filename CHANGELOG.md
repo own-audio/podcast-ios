@@ -6,6 +6,14 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Tests
+
+- CarPlay unit tests (`UnitTests/CarPlayContentTests`, a new unit-test target hosted by the app):
+  the start list, New Episodes (playable only, at most 100), Downloads (finished, newest first),
+  a show's episodes, a row's progress bar, the rate button's steps and how a list is built. What
+  CarPlay shows moved out of the scene delegate into `CarPlayContent` so it can be tested without
+  a car; a row of an episode not started no longer shows an empty bar.
+
 ### Fixed
 
 - The speed shows as the listener reads it, everywhere (player, speed sheet, Settings, show settings):

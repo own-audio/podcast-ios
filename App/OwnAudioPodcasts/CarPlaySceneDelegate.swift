@@ -16,8 +16,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
     private var interfaceController: CPInterfaceController?
     private var model: AppModel { AppModel.shared }
 
-    /// CarPlay's guidelines ask for short lists; the system also caps them.
-    private static let maxItems = 100
+    private static var maxItems: Int { CarPlayContent.maxItems }
     private static let title = "own.podcast"
 
     func templateApplicationScene(
@@ -46,25 +45,23 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
     // MARK: - Root
 
     private func showRoot() {
-        guard !model.isEmpty else {
+        let entries = CarPlayContent.rootEntries(hasShows: !model.isEmpty)
+        guard !entries.isEmpty else {
             let item = CPListItem(text: String(localized: "Follow a show on your iPhone"), detailText: nil)
             item.isEnabled = false
             interfaceController?.setRootTemplate(CPListTemplate(title: Self.title, sections: [CPListSection(items: [item])]), animated: true) { _, _ in }
             return
         }
-        let entries: [(String, String, () async -> Void)] = [
-            (String(localized: "New Episodes"), "tray", { [weak self] in self?.pushNewEpisodes() }),
-            (String(localized: "Downloads"), "arrow.down.circle", { [weak self] in self?.pushDownloads() }),
-            (String(localized: "Shows"), "square.grid.2x2", { [weak self] in self?.pushShows() }),
-        ]
-        let items = entries.map { text, symbol, action -> CPListItem in
-            let item = CPListItem(text: text, detailText: nil, image: UIImage(systemName: symbol))
+        let items = entries.map { entry -> CPListItem in
+            let item = CPListItem(text: entry.title, detailText: nil, image: UIImage(systemName: entry.symbol))
             item.accessoryType = .disclosureIndicator
-            item.handler = { _, completion in
-                Task {
-                    await action()
-                    completion()
+            item.handler = { [weak self] _, completion in
+                switch entry {
+                case .newEpisodes: self?.pushNewEpisodes()
+                case .downloads: self?.pushDownloads()
+                case .shows: self?.pushShows()
                 }
+                completion()
             }
             return item
         }
@@ -75,14 +72,13 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
 
     /// Offline, only what is on the phone.
     private func pushNewEpisodes() {
-        let episodes = model.inbox.filter(model.canPlay)
+        let episodes = CarPlayContent.newEpisodes(model.inbox, canPlay: model.canPlay)
         pushEpisodeList(episodes, title: String(localized: "New Episodes"), emptyText: String(localized: "No new episodes"))
     }
 
     /// From the download index alone, so it works with no signal.
     private func pushDownloads() {
-        let entries = model.downloads.episodes.values.filter(\.isComplete).sorted { ($0.finishedAt ?? $0.startedAt) > ($1.finishedAt ?? $1.startedAt) }
-        pushEpisodeList(entries.compactMap(\.item), title: String(localized: "Downloads"), emptyText: String(localized: "Nothing downloaded"))
+        pushEpisodeList(CarPlayContent.downloads(Array(model.downloads.episodes.values)), title: String(localized: "Downloads"), emptyText: String(localized: "Nothing downloaded"))
     }
 
     private func pushShows() {
@@ -92,9 +88,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
             item.handler = { [weak self] _, completion in
                 Task {
                     guard let self else { completion(); return }
-                    let episodes = ((try? await self.model.episodes(of: show)) ?? [])
-                        .sorted { ($0.episode.publishedAt ?? .distantPast) > ($1.episode.publishedAt ?? .distantPast) }
-                        .filter(self.model.canPlay)
+                    let episodes = CarPlayContent.showEpisodes((try? await self.model.episodes(of: show)) ?? [], canPlay: self.model.canPlay)
                     self.pushEpisodeList(episodes, title: show.show.title, emptyText: String(localized: "Nothing here yet"))
                     completion()
                 }
@@ -109,8 +103,8 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
             let show = model.show(for: episode) ?? model.downloads.episodes[episode.id]?.show
             let item = CPListItem(text: episode.episode.title, detailText: show?.title)
             item.isPlaying = model.nowPlaying?.id == episode.id
-            if let progress = model.progress(of: episode), let duration = episode.episode.durationMs, duration > 0, !progress.played {
-                item.playbackProgress = CGFloat(min(Double(progress.positionMs) / Double(duration), 1))
+            if let progress = CarPlayContent.progress(model.progress(of: episode), durationMs: episode.episode.durationMs) {
+                item.playbackProgress = progress
             }
             item.handler = { [weak self] _, completion in
                 Task {
@@ -149,9 +143,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
 
     /// 1× → 1.25× → … → 2× → 0.75× → 1×, the steps of the phone's speed settings.
     private func cycleRate() {
-        let rates: [Float] = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
-        let current = model.engine.rate
-        model.setRate(rates.first { $0 > current + 0.01 } ?? rates[0])
+        model.setRate(CarPlayContent.nextRate(after: model.engine.rate))
     }
 
     private func pushChapters() {
@@ -181,9 +173,7 @@ final class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegat
     }
 
     private func push(title: String, items: [CPListItem], emptyText: String) {
-        let template = CPListTemplate(title: title, sections: [CPListSection(items: items)])
-        template.emptyViewTitleVariants = [emptyText]
-        interfaceController?.pushTemplate(template, animated: true) { _, _ in }
+        interfaceController?.pushTemplate(CarPlayContent.listTemplate(title: title, items: items, emptyText: emptyText), animated: true) { _, _ in }
     }
 
     /// The row appears at once; its picture fills in when loaded.
