@@ -9,18 +9,36 @@ public struct SpokenPart: Sendable, Equatable, Identifiable {
     public var durationMs: Int64
     /// An HLS playlist rather than a file (a server transcoding on the fly).
     public let isHLS: Bool
+    /// The link is the original file and answers Range, so it can stream through the
+    /// look-ahead window (`StreamWindow`); a transcode made as it goes can't.
+    public let streamsByRange: Bool
     /// The file's type (`audio/mpeg`) when the source knows it. A server that streams from an
     /// address with no extension and calls the file `application/octet-stream` leaves AVPlayer
-    /// unable to open it without this.
+    /// unable to open it without this; the window also answers the player with it when the
+    /// first bytes don't tell.
     public let contentType: String?
 
-    public init(id: String, url: URL, durationMs: Int64, isHLS: Bool = false, contentType: String? = nil) {
+    public init(id: String, url: URL, durationMs: Int64, isHLS: Bool = false, streamsByRange: Bool = false, contentType: String? = nil) {
         self.id = id
         self.url = url
         self.durationMs = durationMs
         self.isHLS = isHLS
+        self.streamsByRange = streamsByRange && !isHLS
         self.contentType = contentType
     }
+
+    /// A part with no copy on the phone and no link yet (a partly downloaded book started with
+    /// no network): the engine asks the app's locator and refresher when its turn comes.
+    public static func unresolved(id: String, durationMs: Int64) -> SpokenPart {
+        var components = URLComponents()
+        components.scheme = unresolvedScheme
+        components.path = id
+        return SpokenPart(id: id, url: components.url ?? URL(string: "\(unresolvedScheme):part")!, durationMs: durationMs)
+    }
+
+    public static let unresolvedScheme = "spoken-unresolved"
+
+    public var isUnresolved: Bool { url.scheme == Self.unresolvedScheme }
 }
 
 public struct SpokenChapter: Sendable, Equatable, Identifiable {

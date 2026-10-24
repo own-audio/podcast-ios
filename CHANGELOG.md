@@ -6,6 +6,28 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The player engine from own.audio Books' offline work (`own-audio/book-ios`, "a file on the
+  phone plays from the phone", "the next minutes are kept on the phone", "a gap in the signal
+  waits"), ported by hand with the file names kept: `StreamWindow`, `PartCacheFile`,
+  `ByteRanges`, `SignalWait`, and their changes to `SpokenEngine`, `BookTimeline` and
+  `SpokenBook`. Podcasts' own engine changes stay: the content-type override for addresses with
+  no extension, the length taken from the file when the feed gives none or a wrong one, and the
+  open-failure log. A streamed episode can play through the look-ahead window (the next minutes
+  on disk, fetched with HTTP Range), a copy that arrives while it plays is used at the next
+  pause or seek, and a gap in the signal waits ("No signal — waiting") and plays on by itself
+  when the network returns. The app turns it on in the next change.
+- For podcast hosts, the window remembers where an enclosure's redirects end (the chain of
+  measurement prefixes to a CDN) and fetches the following chunks there directly, so the
+  prefixes are not asked again for every chunk (which is slow and counts each chunk as a
+  download); when that address refuses (401/403/404/410, a signed CDN link that ran out) the
+  next chunk goes through the enclosure's link again. Range survives cross-host redirects, and
+  a host that ignores Range, answers with no length (`Content-Range: bytes 0-1/*`) or a type
+  the player can't be told streams directly, as before. Tests: `StreamWindowTests` (as in
+  Books, plus a redirect to another host, an expired CDN address, a `*` length and an episode
+  with no known length), `SignalWaitTests`, `LocalCopyTests`.
+
 ### Battery
 
 - No full refresh each time the app comes back or the network changes. Pulling Control Center or

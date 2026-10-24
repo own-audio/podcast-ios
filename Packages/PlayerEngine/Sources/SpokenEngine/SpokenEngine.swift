@@ -65,7 +65,16 @@ public final class SpokenEngine {
     public var partLocator: (@Sendable (_ bookId: String, _ partId: String) async -> URL?)?
     /// How much of a streamed file the player keeps fetched ahead. Three minutes: a stall on a
     /// slow server passes unheard, and the memory is a few megabytes of compressed speech.
-    public var forwardBufferSecs: Double = 180
+    public var forwardBufferSecs: Double = 180 { didSet { window?.playerAheadSecs = forwardBufferSecs } }
+    /// Keeps the next minutes of a streamed file on disk, so a gap in the signal goes unheard;
+    /// nil streams as `AVPlayer` does on its own.
+    public var window: StreamWindow? { didSet { connectWindow() } }
+    /// While a part streams through the window: how much of what follows the playhead is on
+    /// disk, in book time. Nil otherwise.
+    public private(set) var savedAheadMs: Int64?
+    /// Paused because the network ran out, not by the listener: "No signal — waiting". It
+    /// plays on by itself when the signal returns, unless the listener paused meanwhile.
+    public private(set) var isWaitingForSignal = false
     public var artworkProvider: (@Sendable (_ bookId: String) async -> NowPlayingImage?)?
     public var tickIntervalSecs: TimeInterval = 10
 
@@ -76,12 +85,35 @@ public final class SpokenEngine {
     private var timeObserver: Any?
     private var endObserver: NSObjectProtocol?
     private var statusObservation: NSKeyValueObservation?
+    private var bufferObservation: NSKeyValueObservation?
+    /// The item has played everything it had: known at once, while the player's own stall
+    /// state can take seconds to follow.
+    private var bufferEmpty = false
     private var timeControlObservation: NSKeyValueObservation?
     private var pausedAt: Date?
     private var playingSince: Date?
     private var listenedSinceTickMs: Int64 = 0
     private var lastTickAt = Date()
     private var refreshing = false
+    /// The link or file the current item was made from. When the timeline names another one
+    /// (a download finished meanwhile), the item is made again at the next pause or seek.
+    private(set) var loadedURL: URL?
+    /// Moving to another part waits for the app's locator; meanwhile the old item's time and
+    /// end mean nothing, and only the last of several quick moves is loaded.
+    private var switchingPart = false
+    private var loadGeneration = 0
+    /// Parts the window could not play (Range ignored, an unknown type): streamed directly.
+    private(set) var directOnly: Set<String> = []
+    private var signal = SignalWait() {
+        didSet { if isWaitingForSignal != signal.isWaiting { isWaitingForSignal = signal.isWaiting } }
+    }
+    /// The window could not fetch what the player asked for.
+    private var windowStarvedNow = false
+    /// The player wants to play and has nothing to play (any reason).
+    private var isStalled = false
+    private var playerWaiting = false
+    private var networkUp = true
+    private var reloadRetry: Task<Void, Never>?
     private var artwork: NowPlayingImage?
     /// Where to start once the length is known, for a book loaded without one: until then every
     /// position clamps to 0.
@@ -104,9 +136,13 @@ public final class SpokenEngine {
         observeTime()
         observeAudioSession()
         timeControlObservation = player.observe(\.timeControlStatus, options: [.new]) { [weak self] player, _ in
-            let waiting = player.timeControlStatus == .waitingToPlayAtSpecifiedRate && player.reasonForWaitingToPlay == .toMinimizeStalls
+            let stalled = player.timeControlStatus == .waitingToPlayAtSpecifiedRate
+            let waiting = stalled && player.reasonForWaitingToPlay == .toMinimizeStalls
             Task { @MainActor [weak self] in
-                guard let self, self.isBuffering != waiting else { return }
+                guard let self else { return }
+                self.playerWaiting = stalled
+                self.updateStalled()
+                guard self.isBuffering != waiting else { return }
                 self.isBuffering = waiting
                 if waiting { self.log.info("buffering at \(self.positionMs, privacy: .public) ms") }
             }
@@ -124,6 +160,9 @@ public final class SpokenEngine {
         stopsAtEndOfChapter = false
         startOnceLengthKnownMs = book.timeline.parts.contains { $0.durationMs == 0 } && positionMs > 0 ? positionMs : nil
         self.positionMs = book.timeline.clamp(positionMs)
+        loadGeneration += 1
+        switchingPart = false
+        resetSignal()
         artwork = nil
         if let provider = artworkProvider {
             let id = book.id
@@ -139,6 +178,16 @@ public final class SpokenEngine {
 
     public func play() {
         guard book != nil else { return }
+        if signal.isWaiting {
+            let action = signal.handle(.userPlayed)
+            if action == .reloadNow {
+                apply(action)
+                updateNowPlaying()
+                return
+            }
+            windowStarvedNow = false
+            window?.networkReturned()
+        }
         if let pausedAt {
             let rewind = smartRewind.rewindMs(pausedFor: Date().timeIntervalSince(pausedAt))
             if rewind > 0 { seek(to: positionMs - rewind, report: false) }
@@ -150,15 +199,23 @@ public final class SpokenEngine {
         isPlaying = true
         playingSince = Date()
         lastTickAt = Date()
+        updateStalled()
         updateNowPlaying()
     }
 
     public func pause() {
+        // Paused while waiting for a signal: it stays paused when the signal returns.
+        _ = signal.handle(.userPaused)
         guard isPlaying else { return }
         player.pause()
         isPlaying = false
         pausedAt = Date()
         flushListening(reason: .pause)
+        updateStalled()
+        // A copy that arrived while this part played is used from here on, while it is quiet.
+        if let index = currentIndex, !switchingPart, hasNewerCopy(index) {
+            loadPart(at: positionMs, thenPlay: false)
+        }
         updateNowPlaying()
     }
 
@@ -176,6 +233,12 @@ public final class SpokenEngine {
         book = nil
         isBuffering = false
         currentIndex = nil
+        loadedURL = nil
+        switchingPart = false
+        loadGeneration += 1
+        resetSignal()
+        window?.update(key: nil, offsetMs: 0, durationMs: 0, next: nil)
+        savedAheadMs = nil
         pausedAt = nil
         sleepTimer.cancel()
         stopsAtEndOfChapter = false
@@ -199,10 +262,11 @@ public final class SpokenEngine {
         let clamped = book.timeline.clamp(target)
         let chapterBefore = book.timeline.chapterIndex(at: positionMs)
         positionMs = clamped
-        if index == currentIndex, player.currentItem != nil {
+        if index == currentIndex, !switchingPart, player.currentItem != nil, !hasNewerCopy(index) {
+            updateWindow(index: index, offsetMs: offset)
             player.seek(to: CMTime(value: offset, timescale: 1000), toleranceBefore: .zero, toleranceAfter: .zero)
         } else {
-            loadPart(at: clamped, thenPlay: isPlaying)
+            switchPart(to: index)
         }
         if report { flushListening(reason: book.timeline.chapterIndex(at: clamped) != chapterBefore ? .chapter : .seek) }
         updateNowPlaying()
@@ -240,17 +304,67 @@ public final class SpokenEngine {
 
     // MARK: - Parts
 
+    /// A local copy of a part arrived (a download finished): the timeline names it from now on.
+    /// A part still to come plays from it; the part playing now switches at the next pause or
+    /// seek, never mid-sentence.
+    public func useLocalCopy(partId: String, at url: URL) {
+        guard let book, let index = book.timeline.index(ofPart: partId), book.timeline.parts[index].url != url else { return }
+        self.book = book.replacing(partId: partId, with: url)
+        guard index == currentIndex, !isPlaying, !switchingPart, !refreshing else { return }
+        // Waiting for a signal for this very part: the copy ends the wait.
+        let resumes = signal.isWaiting && signal.resumes
+        resetSignal()
+        loadPart(at: positionMs, thenPlay: resumes)
+    }
+
+    /// Another part (a seek, or the one before ended): the app's locator is asked for a copy on
+    /// the phone first. `currentIndex` moves at once, so a report made meanwhile names the
+    /// right part.
+    private func switchPart(to index: Int) {
+        loadGeneration += 1
+        let generation = loadGeneration
+        currentIndex = index
+        switchingPart = true
+        player.pause()
+        prepare(partIndex: index) { [weak self] in
+            guard let self, self.loadGeneration == generation, self.book != nil else { return }
+            self.switchingPart = false
+            self.loadPart(at: self.positionMs, thenPlay: self.isPlaying)
+        }
+    }
+
     private func loadPart(at bookPositionMs: Int64, thenPlay: Bool) {
         guard let book, let (index, offset) = book.timeline.locate(bookPositionMs) else { return }
         let part = book.timeline.parts[index]
         currentIndex = index
         isLoading = true
         errorMessage = nil
-        var options: [String: Any] = [:]
-        if let type = part.contentType, !part.isHLS, !part.url.isFileURL, part.url.pathExtension.isEmpty {
-            options[AVURLAssetOverrideMIMETypeKey] = type
+        loadedURL = part.url
+        if part.isUnresolved {
+            // Nothing to play from yet: straight to the app for a link.
+            player.replaceCurrentItem(with: nil)
+            Task { await recover(from: "This part is not on this device.", thenPlay: thenPlay) }
+            return
         }
-        let asset = AVURLAsset(url: part.url, options: options)
+        let key = windowKey(book.id, part.id)
+        let asset: AVURLAsset
+        if let window, usesWindow(part, key: key) {
+            // The window must know where the player starts before the player asks for bytes.
+            updateWindow(index: index, offsetMs: offset)
+            let bookId = book.id, partId = part.id
+            asset = window.asset(key: key, url: part.url, typeHint: part.contentType) { [weak self] in
+                guard let self else { throw CancellationError() }
+                return try await self.freshLink(bookId: bookId, partId: partId)
+            }
+        } else {
+            window?.update(key: nil, offsetMs: 0, durationMs: 0, next: nil)
+            savedAheadMs = nil
+            var options: [String: Any] = [:]
+            if let type = part.contentType, !part.isHLS, !part.url.isFileURL, part.url.pathExtension.isEmpty {
+                options[AVURLAssetOverrideMIMETypeKey] = type
+            }
+            asset = AVURLAsset(url: part.url, options: options)
+        }
         let item = AVPlayerItem(asset: asset)
         // Speech keeps its pitch at any speed; the other algorithms are for music.
         item.audioTimePitchAlgorithm = .timeDomain
@@ -273,7 +387,24 @@ public final class SpokenEngine {
         updateNowPlaying()
     }
 
+    private func updateStalled() {
+        let stalled = playerWaiting || (bufferEmpty && isPlaying && !isLoading)
+        guard stalled != isStalled else { return }
+        isStalled = stalled
+        window?.setStalled(stalled)
+        checkSignal()
+    }
+
     private func observe(_ item: AVPlayerItem) {
+        bufferEmpty = false
+        bufferObservation = item.observe(\.isPlaybackBufferEmpty, options: [.new]) { [weak self] item, _ in
+            let empty = item.isPlaybackBufferEmpty
+            Task { @MainActor [weak self] in
+                guard let self, self.player.currentItem === item else { return }
+                self.bufferEmpty = empty
+                self.updateStalled()
+            }
+        }
         if let endObserver { NotificationCenter.default.removeObserver(endObserver) }
         endObserver = NotificationCenter.default.addObserver(forName: AVPlayerItem.didPlayToEndTimeNotification, object: item, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.partEnded() }
@@ -295,10 +426,11 @@ public final class SpokenEngine {
                 Logger(subsystem: "audio.own.player", category: "spoken").error("open failed: \(address, privacy: .public) at \(failedAt, privacy: .public) http=\(event?.errorStatusCode ?? 0, privacy: .public) \(event?.errorComment ?? "", privacy: .public) underlying=\(underlying, privacy: .public)")
             }
             Task { @MainActor [weak self] in
-                guard let self, self.player.currentItem === item else { return }
+                guard let self, self.player.currentItem === item, !self.switchingPart else { return }
                 switch status {
                 case .readyToPlay:
                     self.isLoading = false
+                    self.updateStalled()
                     await self.adoptLength(of: item)
                 case .failed: await self.recover(from: message ?? "The file could not be played.")
                 default: break
@@ -316,7 +448,10 @@ public final class SpokenEngine {
         let part = book.timeline.parts[index]
         let actual = Int64((duration.seconds * 1000).rounded())
         guard abs(actual - part.durationMs) > 2000 else { return }
-        self.book = book.replacing(partId: part.id, durationMs: actual)
+        self.book = self.book?.replacing(partId: part.id, durationMs: actual)
+        // The window estimates bytes per second from the length: tell it the real one.
+        let now = player.currentTime()
+        if now.isNumeric { updateWindow(index: index, offsetMs: Int64((now.seconds * 1000).rounded())) }
         if let start = startOnceLengthKnownMs {
             startOnceLengthKnownMs = nil
             seek(to: start, report: false)
@@ -326,16 +461,14 @@ public final class SpokenEngine {
 
     /// The part played to its end: the next one, or the book is finished.
     private func partEnded() {
-        guard let book, let index = currentIndex else { return }
+        guard let book, let index = currentIndex, !switchingPart else { return }
         if index + 1 < book.timeline.parts.count {
             positionMs = book.timeline.starts[index + 1]
             if sleepTimer.consumeEndOfItem() {
                 // "End of item" for a book is the book, not the file; the timer stays armed.
                 sleepTimer.startUntilEndOfItem()
             }
-            prepare(partIndex: index + 1) { [weak self] in
-                self?.loadPart(at: self?.positionMs ?? 0, thenPlay: self?.isPlaying ?? false)
-            }
+            switchPart(to: index + 1)
         } else {
             positionMs = book.timeline.durationMs
             isPlaying = false
@@ -349,8 +482,8 @@ public final class SpokenEngine {
     }
 
     /// A link that failed: one fresh link from the app, the same position again; otherwise the
-    /// error is shown.
-    private func recover(from message: String) async {
+    /// error is shown — the app's own words when it gave a reason (no network, say).
+    private func recover(from message: String, thenPlay: Bool? = nil) async {
         guard let book, let index = currentIndex, let partRefresher, !refreshing else {
             isLoading = false
             isPlaying = false
@@ -365,15 +498,235 @@ public final class SpokenEngine {
         do {
             let url = try await partRefresher(book.id, part.id)
             guard self.book?.id == book.id else { return }
-            self.book = book.replacing(partId: part.id, with: url)
-            loadPart(at: positionMs, thenPlay: isPlaying)
+            self.book = self.book?.replacing(partId: part.id, with: url)
+            loadPart(at: positionMs, thenPlay: thenPlay ?? isPlaying)
+        } catch where SpokenEngine.isNetworkUnavailable(error) {
+            // No network to bring a link: wait for one rather than fail.
+            log.info("part failed with no network; waiting for a signal")
+            signalLost(.reload, wasPlaying: thenPlay ?? isPlaying)
         } catch {
             isLoading = false
             isPlaying = false
-            errorMessage = message
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? message
             log.error("part failed and no fresh link came: \(message, privacy: .public)")
             updateNowPlaying()
         }
+    }
+
+    // MARK: - The look-ahead window
+
+    private func windowKey(_ bookId: String, _ partId: String) -> String { bookId + "#" + partId }
+
+    private func usesWindow(_ part: SpokenPart, key: String) -> Bool {
+        window != nil && part.streamsByRange && !part.url.isFileURL && !part.isUnresolved && !directOnly.contains(key)
+    }
+
+    /// The timeline names a file on the phone that the current item was not made from.
+    private func hasNewerCopy(_ index: Int) -> Bool {
+        guard let book, book.timeline.parts.indices.contains(index) else { return false }
+        let url = book.timeline.parts[index].url
+        return url.isFileURL && loadedURL != url
+    }
+
+    private func connectWindow() {
+        window?.playerAheadSecs = forwardBufferSecs
+        window?.onUnsupported = { [weak self] key in
+            Task { @MainActor [weak self] in self?.windowRefused(key) }
+        }
+        window?.onStarved = { [weak self] key, starved in
+            Task { @MainActor [weak self] in self?.windowStarved(key, starved) }
+        }
+    }
+
+    private func windowRefused(_ key: String) {
+        guard directOnly.insert(key).inserted, let book, let index = currentIndex,
+              windowKey(book.id, book.timeline.parts[index].id) == key, !switchingPart else { return }
+        loadPart(at: positionMs, thenPlay: isPlaying)
+    }
+
+    private func windowStarved(_ key: String, _ starved: Bool) {
+        guard let book, let index = currentIndex, windowKey(book.id, book.timeline.parts[index].id) == key else { return }
+        log.info("window \(starved ? "starved" : "fed again", privacy: .public) at \(self.positionMs, privacy: .public) ms")
+        windowStarvedNow = starved
+        if starved {
+            checkSignal()
+        } else {
+            apply(signal.handle(.fed))
+        }
+    }
+
+    // MARK: - Riding out a gap in the signal
+
+    /// The network as the app sees it. Back: whatever waits for it is tried now.
+    public func networkChanged(isConnected: Bool) {
+        networkUp = isConnected
+        if isConnected {
+            window?.networkReturned()
+            apply(signal.handle(.networkReturned))
+        } else {
+            checkSignal()
+        }
+    }
+
+    /// The player stalls with nothing to play: through the window when the window can't fetch,
+    /// otherwise (a stream the player fetches itself) when there is no network. Either way the
+    /// item is intact and is held, waiting.
+    private func checkSignal() {
+        guard isPlaying, isStalled, !switchingPart, let book, let index = currentIndex else { return }
+        let part = book.timeline.parts[index]
+        guard !part.url.isFileURL else { return }
+        if usesWindow(part, key: windowKey(book.id, part.id)) {
+            if windowStarvedNow { signalLost(.hold, wasPlaying: true) }
+        } else if !networkUp {
+            signalLost(.hold, wasPlaying: true)
+        }
+    }
+
+    private func signalLost(_ way: SignalWait.Way, wasPlaying: Bool) {
+        isLoading = false
+        errorMessage = nil
+        apply(signal.handle(.lost(way, wasPlaying: wasPlaying)))
+        if signal.way == .reload {
+            // A failed item plays nothing: paused, and loaded again when there is a link.
+            if isPlaying {
+                player.pause()
+                isPlaying = false
+                pausedAt = pausedAt ?? Date()
+            }
+            if reloadRetry == nil { startReloading(now: false) }
+        }
+        updateNowPlaying()
+    }
+
+    private func apply(_ action: SignalWait.Action) {
+        switch action {
+        case .none:
+            break
+        case .pause:
+            log.info("no signal at \(self.positionMs, privacy: .public) ms: waiting")
+            guard isPlaying else { break }
+            // The position is saved as at a pause, and the wait is not counted as listening.
+            // The item itself is held, not paused: a paused audio app is suspended in the
+            // background, and the player plays on by itself once bytes come.
+            flushListening(reason: .pause)
+            pausedAt = Date()
+        case .resume:
+            log.info("signal back: playing on at \(self.positionMs, privacy: .public) ms")
+            // The window says again if it still can't fetch.
+            windowStarvedNow = false
+            window?.networkReturned()
+            play()
+        case .reloadNow:
+            startReloading(now: true)
+        case .nudgeWindow:
+            windowStarvedNow = false
+            window?.networkReturned()
+        }
+        if signal.way != .reload {
+            reloadRetry?.cancel()
+            reloadRetry = nil
+        }
+    }
+
+    private func resetSignal() {
+        _ = signal.handle(.reset)
+        windowStarvedNow = false
+        reloadRetry?.cancel()
+        reloadRetry = nil
+    }
+
+    /// A fresh link and the part again, 2 s doubling to 30 s apart while there is no network.
+    private func startReloading(now: Bool) {
+        reloadRetry?.cancel()
+        reloadRetry = Task { [weak self] in
+            var attempt = now ? 0 : 1
+            while !Task.isCancelled {
+                if attempt > 0 { try? await Task.sleep(for: .seconds(StreamWindow.retryDelay(attempt: attempt))) }
+                guard !Task.isCancelled, let self, self.signal.way == .reload else { return }
+                if await self.reloadAfterSignalLoss() { return }
+                attempt += 1
+            }
+        }
+    }
+
+    /// True when the wait is over, one way or the other.
+    private func reloadAfterSignalLoss() async -> Bool {
+        guard let book, let index = currentIndex else { return true }
+        let part = book.timeline.parts[index]
+        let thenPlay = signal.resumes
+        var url = part.url
+        if !url.isFileURL, let partRefresher {
+            do {
+                url = try await partRefresher(book.id, part.id)
+            } catch where SpokenEngine.isNetworkUnavailable(error) {
+                return false
+            } catch {
+                resetSignal()
+                errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                updateNowPlaying()
+                return true
+            }
+        }
+        guard self.book?.id == book.id, currentIndex == index, signal.way == .reload else { return true }
+        self.book = self.book?.replacing(partId: part.id, with: url)
+        _ = signal.handle(.reloaded)
+        reloadRetry = nil
+        windowStarvedNow = false
+        log.info("signal back: part \(part.id, privacy: .public) loaded again at \(self.positionMs, privacy: .public) ms")
+        if thenPlay, let pausedAt {
+            positionMs = book.timeline.clamp(positionMs - smartRewind.rewindMs(pausedFor: Date().timeIntervalSince(pausedAt)))
+            self.pausedAt = nil
+        }
+        loadPart(at: positionMs, thenPlay: thenPlay)
+        return true
+    }
+
+    /// Where the playhead is, for the window's prefetcher; and how much is saved ahead of it.
+    private func updateWindow(index: Int, offsetMs: Int64) {
+        guard let window, let book, book.timeline.parts.indices.contains(index) else { savedAheadMs = nil; return }
+        let part = book.timeline.parts[index]
+        let key = windowKey(book.id, part.id)
+        guard usesWindow(part, key: key) else {
+            savedAheadMs = nil
+            return
+        }
+        var next: (key: String, durationMs: Int64)?
+        var nextPart: SpokenPart?
+        if index + 1 < book.timeline.parts.count {
+            let candidate = book.timeline.parts[index + 1]
+            nextPart = candidate
+            let nextKey = windowKey(book.id, candidate.id)
+            if usesWindow(candidate, key: nextKey) {
+                let bookId = book.id, partId = candidate.id
+                window.register(key: nextKey, url: candidate.url, typeHint: candidate.contentType) { [weak self] in
+                    guard let self else { throw CancellationError() }
+                    return try await self.freshLink(bookId: bookId, partId: partId)
+                }
+                next = (nextKey, candidate.durationMs)
+            }
+        }
+        window.update(key: key, offsetMs: offsetMs, durationMs: part.durationMs, next: next)
+        guard let saved = window.savedAhead(key: key, offsetMs: offsetMs, durationMs: part.durationMs) else {
+            savedAheadMs = nil
+            return
+        }
+        var total = saved.ms
+        if saved.toEnd, let nextPart {
+            if nextPart.url.isFileURL {
+                total += nextPart.durationMs
+            } else if let next, let more = window.savedAhead(key: next.key, offsetMs: 0, durationMs: next.durationMs) {
+                total += more.ms
+            }
+        }
+        if savedAheadMs.map({ abs($0 - total) >= 1000 }) ?? true { savedAheadMs = total }
+    }
+
+    /// A new link for a part from the app, kept in the timeline; the item playing goes on.
+    private func freshLink(bookId: String, partId: String) async throws -> URL {
+        guard let partRefresher else { throw URLError(.userAuthenticationRequired) }
+        let url = try await partRefresher(bookId, partId)
+        if book?.id == bookId { book = book?.replacing(partId: partId, with: url) }
+        return url
     }
 
     /// Before a part is loaded: a copy on the phone if the app has one, else a fresh link when
@@ -408,10 +761,16 @@ public final class SpokenEngine {
     }
 
     private func timeAdvanced(to time: CMTime) {
-        guard let book, let index = currentIndex, time.isNumeric, isPlaying else { return }
+        guard let book, let index = currentIndex, time.isNumeric, isPlaying, !switchingPart else { return }
         let offset = Int64((time.seconds * 1000).rounded())
         let before = positionMs
         positionMs = book.timeline.position(partIndex: index, offsetMs: offset)
+        updateWindow(index: index, offsetMs: offset)
+        // A held player that moves again has its bytes: the wait is over.
+        if signal.way == .hold, positionMs > before {
+            apply(signal.handle(.fed))
+            return
+        }
         if stopsAtEndOfChapter {
             let end = book.timeline.endOfChapter(at: before)
             if positionMs >= end - 250 {
@@ -433,7 +792,7 @@ public final class SpokenEngine {
         guard let book, let index = currentIndex else { return }
         if let since = playingSince {
             listenedSinceTickMs += Int64(Date().timeIntervalSince(since) * 1000)
-            playingSince = isPlaying ? Date() : nil
+            playingSince = isPlaying && !signal.isWaiting ? Date() : nil
         }
         let part = book.timeline.parts[index]
         let position = Position(
@@ -446,6 +805,18 @@ public final class SpokenEngine {
         onPosition?(position)
     }
 
+    // MARK: - Network
+
+    /// An error that means "no network" rather than "the server said no": the app marks its
+    /// own such errors with `NetworkUnavailable`.
+    public nonisolated static func isNetworkUnavailable(_ error: Error) -> Bool {
+        if error is NetworkUnavailable { return true }
+        if let error = error as? URLError { return StreamWindow.isUnreachable(error) }
+        let ns = error as NSError
+        if ns.domain == NSURLErrorDomain { return StreamWindow.isUnreachable(URLError(URLError.Code(rawValue: ns.code))) }
+        return false
+    }
+
     // MARK: - Lock screen
 
     private func updateNowPlaying() {
@@ -454,7 +825,7 @@ public final class SpokenEngine {
         nowPlaying.update(
             title: book.title, artist: book.author, album: currentChapter?.title,
             duration: Double(book.timeline.durationMs) / 1000, elapsedTime: Double(positionMs) / 1000,
-            rate: isPlaying ? rate : 0, artwork: artwork,
+            rate: isPlaying && !signal.isWaiting ? rate : 0, artwork: artwork,
             hasNextTrack: hasChapters && book.timeline.nextChapterStart(from: positionMs) != nil,
             hasPreviousTrack: hasChapters
         )
