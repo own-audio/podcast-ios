@@ -22,7 +22,14 @@ struct RootView: View {
             }
         }
         .task { await model.load() }
-        .onChange(of: scenePhase) { _, phase in model.setForeground(phase == .active) }
+        .onChange(of: scenePhase) { _, phase in
+            // Inactive is Control Center, a notification, Face ID: the app is still on screen.
+            switch phase {
+            case .active: model.setForeground(true)
+            case .background: model.setForeground(false)
+            default: break
+            }
+        }
         .onOpenURL { url in
             Task {
                 if !model.hasLoaded { await model.load() }

@@ -6,6 +6,17 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Battery
+
+- No full refresh each time the app comes back or the network changes. Pulling Control Center or
+  a notification down, or Face ID, no longer counts as leaving the app (only the background
+  does). The app's own refreshes (launch, coming back, a new network, the background task) wait
+  15 minutes after the last one and don't run in the background while an episode plays; a pull
+  to refresh always runs. Automatic refreshes let Audiobookshelf keep a feed it read in the last
+  ten minutes instead of fetching every feed again. Positions waiting for a server are still sent
+  when a refresh is skipped. Tests: `RefreshPolicyTests`, and the Audiobookshelf source's
+  automatic and asked-for refresh.
+
 ### Removed
 
 - The Live Activity. The lock screen showed two players while an episode played: iOS's own Now

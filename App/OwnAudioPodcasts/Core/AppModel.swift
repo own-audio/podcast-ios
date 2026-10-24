@@ -78,6 +78,7 @@ struct SourcedEpisode: Identifiable, Hashable, Sendable {
 final class AppModel {
     static let shared = AppModel()
     nonisolated static let upNextLog = Logger(subsystem: "audio.own.podcastplayer", category: "upNext")
+    nonisolated static let refreshLog = Logger(subsystem: "audio.own.podcastplayer", category: "refresh")
 
     private(set) var hasLoaded = false
     private(set) var servers: [ServerRecord] = []
@@ -128,6 +129,8 @@ final class AppModel {
     /// How many times a server's live update read the lists again (for the UI tests).
     private(set) var liveReloads = 0
     @ObservationIgnored private var syncTask: Task<Void, Never>?
+    /// When the last full refresh started, for `RefreshPolicy`'s interval.
+    @ObservationIgnored private var lastRefreshAt: Date?
 
     /// The hosted service's edge refuses requests with no User-Agent.
     static let session: URLSession = {
@@ -190,7 +193,7 @@ final class AppModel {
             guard connected else { return }
             Task {
                 await self?.chooseAddresses()
-                await self?.refresh()
+                await self?.refreshIfDue()
             }
         }
     }
@@ -339,7 +342,7 @@ final class AppModel {
         await loadLibraries()
         downloads.resume()
         await restoreLastPlayed()
-        await refresh()
+        await refreshIfDue()
         followLibraryChanges()
         await findCatalogue()
     }
@@ -427,16 +430,34 @@ final class AppModel {
     }
 
     /// Syncs gPodder accounts, asks every feed and server for new episodes, and reads the lists
-    /// again. Offline it does nothing.
+    /// again: what a pull to refresh does. Offline it does nothing.
     func refresh() async {
+        await refresh(.asked)
+    }
+
+    /// The same when the app does it by itself, if `RefreshPolicy` says it is due. When it is
+    /// not, positions still waiting for a server are sent.
+    func refreshIfDue() async {
+        await refresh(.automatic)
+    }
+
+    private func refresh(_ trigger: RefreshPolicy.Trigger) async {
         guard !isOffline, !isRefreshing else { return }
+        let inBackground = UIApplication.shared.applicationState == .background
+        guard RefreshPolicy.shouldRun(trigger, lastRun: lastRefreshAt, now: Date(), inBackground: inBackground, isPlaying: engine.isPlaying) else {
+            Self.refreshLog.debug("automatic refresh skipped")
+            if pendingProgressCount > 0 { await sendPendingProgress() }
+            return
+        }
+        lastRefreshAt = Date()
         isRefreshing = true
         defer { isRefreshing = false }
         await sendPendingProgress()
         for (id, sync) in syncs where (try? await sync.sync()) != nil { lastSyncs[id] = Date() }
         await noteAccountFeeds()
         _ = await phone.refresh(showId: nil)
-        for source in sources.values { _ = try? await source.refresh(showId: nil) }
+        let force = RefreshPolicy.forcesFeeds(trigger)
+        for source in sources.values { _ = try? await source.refresh(showId: nil, force: force) }
         await reloadLists()
         await applyDownloadRules()
         queueNewEpisodes()
@@ -1497,7 +1518,7 @@ extension AppModel {
         isInForeground = foreground
         followLibraryChanges()
         if !foreground { BackgroundRefresh.schedule() }
-        if foreground { Task { await refresh() } }
+        if foreground { Task { await refreshIfDue() } }
     }
 }
 

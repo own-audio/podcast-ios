@@ -43,6 +43,10 @@ public protocol PodcastSource: Sendable {
 
     /// Asks every show (or one) for new episodes; returns those that are new to the listener.
     func refresh(showId: String?) async throws -> [Episode]
+    /// The same, saying whether the listener asked (`force`) or the app does it by itself: an
+    /// automatic refresh may answer from a source's own short-lived cache instead of asking
+    /// every feed again.
+    func refresh(showId: String?, force: Bool) async throws -> [Episode]
 
     func progress(_ key: EpisodeKey) async throws -> ListeningProgress?
     func allProgress() async throws -> [EpisodeKey: ListeningProgress]
@@ -63,6 +67,12 @@ public protocol PodcastSource: Sendable {
 
     /// Where to play an episode from right now.
     func playback(_ key: EpisodeKey) async throws -> Playback
+}
+
+public extension PodcastSource {
+    func refresh(showId: String?, force: Bool) async throws -> [Episode] {
+        try await refresh(showId: showId)
+    }
 }
 
 /// How to play one episode: a URL the player can open (a file on the source, or the

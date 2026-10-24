@@ -19,7 +19,7 @@ enum BackgroundRefresh {
             nonisolated(unsafe) let refresh = task
             let work = Task { @MainActor in
                 let model = AppModel.shared
-                if !model.hasLoaded { await model.load() } else { await model.refresh() }
+                if !model.hasLoaded { await model.load() } else { await model.refreshIfDue() }
                 log.info("refreshed in the background")
                 refresh.setTaskCompleted(success: true)
             }

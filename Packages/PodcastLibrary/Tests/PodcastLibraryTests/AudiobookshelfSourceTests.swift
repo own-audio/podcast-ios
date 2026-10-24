@@ -100,6 +100,21 @@ struct AudiobookshelfSourceTests {
         #expect(try await abs.progress(feedKey)?.positionMs == 5_000)
     }
 
+    @Test("an automatic refresh keeps a feed read in the last ten minutes; one the listener asks for reads it again")
+    func refreshForce() async throws {
+        let mock = await server()
+        let abs = source(mock)
+        _ = try await abs.episodes(showId: "show1")
+        func feedReads() async -> Int { await mock.requestLog().filter { $0.url?.path == "/feed.xml" }.count }
+        #expect(await feedReads() == 1)
+        _ = try await abs.refresh(showId: nil, force: false)
+        #expect(await feedReads() == 1, "read a moment ago: not asked again")
+        _ = try await abs.refresh(showId: nil)
+        #expect(await feedReads() == 2, "a pull to refresh asks the feed")
+        _ = try await abs.refresh(showId: nil, force: true)
+        #expect(await feedReads() == 3)
+    }
+
     @Test("an account that may not upload cannot add shows, and nobody removes them from a player")
     func permissions() async throws {
         let abs = source(await server())

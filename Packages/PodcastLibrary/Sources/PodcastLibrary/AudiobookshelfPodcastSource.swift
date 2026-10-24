@@ -145,6 +145,12 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
     /// The feeds of one show, or of every show with a feed, asked again; returns the episodes
     /// first seen now.
     public func refresh(showId: String?) async throws -> [Episode] {
+        try await refresh(showId: showId, force: true)
+    }
+
+    /// `force` false keeps a feed asked in the last ten minutes as it was: the app's automatic
+    /// refreshes (coming back to the app, a new network) don't fetch every feed again.
+    public func refresh(showId: String?, force: Bool) async throws -> [Episode] {
         let started = now()
         var shows: [PodcastItem]
         if let showId {
@@ -156,7 +162,7 @@ public actor AudiobookshelfPodcastSource: PodcastSource {
         var fresh: [Episode] = []
         for item in shows {
             let serverEpisodes = showId == nil ? [] : (item.media.episodes ?? [])
-            let feedOnly = await feedOnlyEpisodes(item, serverEpisodes: serverEpisodes, force: true)
+            let feedOnly = await feedOnlyEpisodes(item, serverEpisodes: serverEpisodes, force: force)
             let server = serverEpisodes.map { episode($0, showId: item.id) }
             fresh += await store.observe(server + feedOnly, showId: item.id).filter { $0.firstSeenAt >= started }
         }
