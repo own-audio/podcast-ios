@@ -158,7 +158,7 @@ public actor OwnAudioPodcastSource: PodcastSource {
     /// The server's signed stream (its stored copy, or the publisher's file through it).
     public func playback(_ key: EpisodeKey) async throws -> Playback {
         let info = try await translating { try await client.playbackInfo(kind: "episode", id: key.episodeId, capabilities: PlaybackCapabilities()) }
-        return Playback(url: info.url, isServerFile: true)
+        return Playback(url: info.url, isServerFile: true, isTranscode: info.decision == "transcode")
     }
 
     // MARK: - Mapping

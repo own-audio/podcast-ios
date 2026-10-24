@@ -58,6 +58,8 @@ final class DownloadManager: NSObject {
     var wifiOnly = true { didSet { if wifiOnly != oldValue { restart() } } }
     /// What the app asks for an episode's file URL; the session can't, it only knows ids.
     var urlProvider: ((_ id: String) async throws -> URL)?
+    /// An episode's file is on the phone now, so the player can switch to it if it is playing.
+    var onFileReady: ((_ id: String, _ url: URL) -> Void)?
     /// Called when a session reports that its background work is done, so the app can tell
     /// iOS (`handleEventsForBackgroundURLSession`); by session identifier.
     var backgroundCompletions: [String: () -> Void] = [:]
@@ -267,6 +269,7 @@ final class DownloadManager: NSObject {
         episodes[id] = entry
         states[id] = .downloaded
         saveIndex()
+        onFileReady?(id, destination)
     }
 
     // MARK: - Index

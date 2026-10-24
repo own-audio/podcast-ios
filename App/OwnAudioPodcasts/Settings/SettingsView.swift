@@ -89,11 +89,19 @@ struct SettingsView: View {
                         Text("Downloaded Only").tag(PlaybackSettings.MobileData.downloadedOnly)
                     }
                     .accessibilityIdentifier("settings.mobileData")
+                    Picker("Keep Ahead", selection: $settings.lookAheadMinutes) {
+                        ForEach(PlaybackSettings.lookAheadChoices, id: \.self) { Text("\($0) min").tag($0) }
+                    }
+                    .accessibilityIdentifier("settings.lookAhead")
                 } header: {
                     Text("Streaming")
                 } footer: {
-                    Text("Downloaded Only plays nothing that is not on this iPhone while on mobile data.")
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        Text("Downloaded Only plays nothing that is not on this iPhone while on mobile data.")
+                        Text("While an episode streams, its next minutes are kept on this iPhone, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.")
+                    }
                 }
+                .onChange(of: settings.lookAheadMinutes) { model.applyPlaybackSettings() }
                 Section {
                     LabeledContent("Version", value: AppModel.appVersion)
                     Link("Source Code and Licence", destination: URL(string: "https://github.com/own-audio/podcast-ios")!)

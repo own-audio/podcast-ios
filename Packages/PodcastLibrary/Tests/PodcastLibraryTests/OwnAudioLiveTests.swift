@@ -30,6 +30,11 @@ struct OwnAudioLiveTests {
         request.setValue("own.audio Podcasts tests", forHTTPHeaderField: "User-Agent")
         let (_, response) = try await URLSession.shared.data(for: request)
         #expect([200, 206].contains((response as? HTTPURLResponse)?.statusCode ?? 0), "the signed stream answers")
+        if !playback.isTranscode {
+            // The original file, as the look-ahead window fetches it: a range with a length.
+            let range = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Range") ?? ""
+            #expect((response as? HTTPURLResponse)?.statusCode == 206 && Int64(range.split(separator: "/").last ?? "") != nil, "Content-Range with a length: \(range)")
+        }
         let before = try await client.progress(.episode, id: episode.id)
         let saved = try await source.saveProgress(ListeningProgress(positionMs: 61_000, played: false, updatedAt: Date()), for: episode.key)
         #expect(saved.positionMs == 61_000)

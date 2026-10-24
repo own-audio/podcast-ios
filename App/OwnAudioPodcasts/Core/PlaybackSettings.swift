@@ -34,7 +34,15 @@ final class PlaybackSettings {
         storageCapBytes = defaults.object(forKey: "downloads.capBytes") as? Int64
         mobileData = MobileData(rawValue: defaults.string(forKey: "playback.mobileData") ?? "") ?? .stream
         continueWithNewEpisodes = defaults.object(forKey: "playback.continueWithNew") as? Bool ?? true
+        lookAheadMinutes = defaults.object(forKey: "playback.lookAheadMinutes") as? Int ?? 10
     }
+
+    /// While streaming, how many minutes ahead of the playhead are kept on the phone, on any
+    /// network: a tunnel or a gap in the signal shorter than that goes unheard.
+    var lookAheadMinutes: Int { didSet { defaults.set(lookAheadMinutes, forKey: "playback.lookAheadMinutes") } }
+    static let lookAheadChoices = [5, 10, 15]
+    /// With Low Data Mode on, the window is the smallest choice whatever was picked.
+    static let constrainedLookAheadMinutes = 5
 
     /// When Up Next is empty, the newest new episode plays on.
     var continueWithNewEpisodes: Bool { didSet { defaults.set(continueWithNewEpisodes, forKey: "playback.continueWithNew") } }

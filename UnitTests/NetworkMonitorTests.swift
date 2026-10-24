@@ -38,6 +38,23 @@ struct NetworkMonitorTests {
         #expect(calls.values == [true])
     }
 
+    @Test("losing the network and getting it back is told at once, before the debounce")
+    func connectivityAtOnce() async throws {
+        let (monitor, calls) = monitor()
+        let flips = Calls()
+        monitor.onConnectivity = { flips.values.append($0) }
+        monitor.pathChanged(connected: true, expensive: false, constrained: false, interfaces: ["wifi-en0"])
+        monitor.pathChanged(connected: true, expensive: true, constrained: false, interfaces: ["cellular-pdp_ip0"])
+        #expect(flips.values.isEmpty, "Wi-Fi to mobile data is no loss")
+        monitor.pathChanged(connected: false, expensive: false, constrained: false, interfaces: [])
+        #expect(flips.values == [false], "at once")
+        monitor.pathChanged(connected: true, expensive: true, constrained: false, interfaces: ["cellular-pdp_ip0"])
+        #expect(flips.values == [false, true])
+        #expect(calls.values.isEmpty, "the debounced call still waits")
+        try await Task.sleep(for: .milliseconds(500))
+        #expect(calls.values == [true])
+    }
+
     @Test("in the background only waiting positions go out; on screen the full round")
     func response() {
         #expect(NetworkChangeResponse.decide(connected: false, inBackground: false, hasPendingPositions: true) == .nothing)

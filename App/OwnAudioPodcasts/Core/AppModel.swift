@@ -104,6 +104,17 @@ final class AppModel {
     @ObservationIgnored private var listeningCache: TrackFileCache!
     @ObservationIgnored private var listeningCacheTask: Task<Void, Never>?
     static let listeningCacheCapBytes: Int64 = 1 << 30
+    nonisolated static let listeningCacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("listening-cache", isDirectory: true)
+    /// The next minutes of a streamed episode, on disk (`StreamWindow`), on any network; shares
+    /// the listening cache's cap.
+    let streamWindow = StreamWindow(
+        directory: FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("listening-window", isDirectory: true),
+        session: AppModel.session
+    )
+    /// Episodes with a whole copy in the listening cache: offline they play like downloads.
+    private(set) var cachedEpisodeIds: Set<String> = []
+    /// An episode is one file; the player knows it by this part id.
+    nonisolated static let episodePartId = "audio"
 
     @ObservationIgnored private var sources: [UUID: any PodcastSource] = [:]
     @ObservationIgnored private var syncs: [UUID: GPodderSync] = [:]
@@ -184,17 +195,43 @@ final class AppModel {
             guard !playback.isHLS else { throw DownloadError.streamOnly }
             return playback.url
         }
-        let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("listening-cache", isDirectory: true)
-        if UITestFlags.isUITesting { try? FileManager.default.removeItem(at: cacheDirectory) }
+        let cacheDirectory = Self.listeningCacheDirectory
+        if UITestFlags.isUITesting {
+            try? FileManager.default.removeItem(at: cacheDirectory)
+            streamWindow.clear()
+        }
         listeningCache = TrackFileCache(remoteURL: { [weak self] id in
             guard let self, let item = await self.nowPlaying, item.id == id, let source = await self.source(item.source) else { throw SourceError.notFound }
             return try await source.playback(item.episode.key).url
         }, session: Self.session, cacheDirectory: cacheDirectory)
+        engine.window = streamWindow
+        applyLookAhead()
+        // The one locator, for play and for the player's own asking before it loads a file.
         engine.partLocator = { [weak self] id, _ in
-            await self?.listeningCache.existingLocalURL(trackId: id)
+            guard let self else { return nil }
+            return await self.partLocator.locate(id).localURL
         }
+        engine.partRefresher = { [weak self] id, _ in
+            guard let self else { throw CancellationError() }
+            return try await self.freshEpisodeURL(id)
+        }
+        downloads.onFileReady = { [weak self] id, url in
+            guard let self, self.engine.book?.id == id else { return }
+            self.engine.useLocalCopy(partId: Self.episodePartId, at: url)
+        }
+        network.onConnectivity = { [weak self] connected in
+            guard let self, !connected else { return }
+            // Lost: the player is told at once, so a stalled stream waits rather than fails.
+            // Back: once it has settled (`onChange`).
+            self.engine.networkChanged(isConnected: false)
+            Task { await self.refreshCachedIds() }
+        }
+        Task { await refreshCachedIds() }
         network.onChange = { [weak self] connected in
             guard let self else { return }
+            self.applyLookAhead()
+            // An episode waiting for a signal plays on (with a fresh link if it needs one).
+            self.engine.networkChanged(isConnected: connected)
             self.followLibraryChanges()
             let inBackground = UIApplication.shared.applicationState == .background
             if inBackground, connected { self.positionReporter.flush() }
@@ -609,22 +646,20 @@ final class AppModel {
         do {
             let part: SpokenPart
             let duration = item.episode.durationMs ?? 0
-            let downloaded = downloads.fileURL(item.id)
-            let cached = downloaded == nil ? await listeningCache.existingLocalURL(trackId: item.id) : nil
-            switch Self.locate(downloaded: downloaded, cached: cached) {
+            switch await partLocator.locate(item.id) {
             case .downloaded(let local):
                 // The file's extension says what it is.
-                part = SpokenPart(id: "audio", url: local, durationMs: duration)
+                part = SpokenPart(id: Self.episodePartId, url: local, durationMs: duration)
                 downloads.notePlayed(item.id)
             case .cached(let local):
                 // Streamed before on Wi-Fi and kept: no request, and it plays offline too. The
                 // cache names the file by what its bytes are.
-                part = SpokenPart(id: "audio", url: local, durationMs: duration)
+                part = SpokenPart(id: Self.episodePartId, url: local, durationMs: duration)
             case .stream:
                 if isOffline { throw DownloadError.notOnPhone }
                 if settings.mobileData == .downloadedOnly, network.isExpensive { throw DownloadError.mobileData }
                 let playback = try await source.playback(item.episode.key)
-                part = SpokenPart(id: "audio", url: playback.url, durationMs: duration, isHLS: playback.isHLS, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))
+                part = PartLocator.streamedPart(playback, durationMs: duration, contentType: item.episode.audioType ?? Self.audioType(forExtension: item.episode.audioURL?.pathExtension))
             }
             let chapters = await chapters(for: item.episode, durationMs: duration, part: part)
             let spoken = SpokenBook(id: item.id, title: item.episode.title, author: show?.title, parts: [part], chapters: chapters)
@@ -640,15 +675,27 @@ final class AppModel {
         }
     }
 
-    enum EpisodeFile: Equatable {
-        case downloaded(URL), cached(URL), stream
+    /// Downloads first, then the listening cache, then the stream; asked every time.
+    var partLocator: PartLocator {
+        let downloads = downloads
+        let cache = listeningCache!
+        return PartLocator(
+            downloaded: { id in downloads.fileURL(id) },
+            cached: { id in await cache.existingLocalURL(trackId: id) }
+        )
     }
 
-    /// Where an episode plays from: its download, else the listening cache, else the stream.
-    nonisolated static func locate(downloaded: URL?, cached: URL?) -> EpisodeFile {
-        if let downloaded { return .downloaded(downloaded) }
-        if let cached { return .cached(cached) }
-        return .stream
+    /// A new link for the episode playing, when the player's has run out or failed. Offline it
+    /// says why instead: no network makes the player wait for one; Offline Mode is a message.
+    private func freshEpisodeURL(_ id: String) async throws -> URL {
+        if isOfflineByChoice { throw PartNotOnPhone() }
+        if !network.isConnected { throw NoSignal() }
+        guard let item = nowPlaying, item.id == id, let source = source(item.source) else { throw SourceError.notFound }
+        do {
+            return try await source.playback(item.episode.key).url
+        } catch SourceError.network, OwnAudioError.network, AudiobookshelfError.network, GPodderError.network {
+            throw NoSignal()
+        }
     }
 
     /// The type of an episode whose source names none, from its original file's extension.
@@ -681,6 +728,13 @@ final class AppModel {
         engine.skipForwardSecs = settings.skipForwardSecs
         engine.skipBackwardSecs = settings.skipBackwardSecs
         engine.smartRewind = SmartRewind(isEnabled: settings.smartRewind)
+        applyLookAhead()
+    }
+
+    /// The window is the listener's choice, and the smallest with Low Data Mode on.
+    func applyLookAhead() {
+        let minutes = network.isConstrained ? PlaybackSettings.constrainedLookAheadMinutes : settings.lookAheadMinutes
+        streamWindow.lookAheadSecs = Double(minutes) * 60
     }
 
     /// The feed's chapters: inline ones, else the linked JSON document. Times past the end are
@@ -1381,8 +1435,9 @@ extension AppModel {
 
     func isDownloaded(_ item: SourcedEpisode) -> Bool { downloads.isDownloaded(item.id) }
 
-    /// Offline, only what is on the phone plays; the rest is shown greyed out.
-    func canPlay(_ item: SourcedEpisode) -> Bool { !isOffline || isDownloaded(item) }
+    /// Offline, only what is on the phone plays — a download, or a whole copy in the listening
+    /// cache, as `PartLocator` finds them; the rest is shown greyed out.
+    func canPlay(_ item: SourcedEpisode) -> Bool { !isOffline || isDownloaded(item) || cachedEpisodeIds.contains(item.id) }
 
     func download(_ item: SourcedEpisode) {
         downloads.download(item, show: show(for: item))
@@ -1423,14 +1478,44 @@ extension AppModel {
     func scheduleListeningCache(for item: SourcedEpisode, part: SpokenPart) {
         listeningCacheTask?.cancel()
         listeningCacheTask = nil
+        Task { await enforceListeningCap(protecting: item.id) }
         guard !part.url.isFileURL, !part.isHLS, !network.isExpensive, !network.isConstrained else { return }
         let cache = listeningCache!
-        Task { await cache.enforce(capBytes: Self.listeningCacheCapBytes) }
         listeningCacheTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(45))
             guard let self, !Task.isCancelled, self.nowPlaying?.id == item.id else { return }
-            await cache.prefetch(trackId: item.id)
+            // Its own task, so it finishes when this one is cancelled (another episode), as
+            // before.
+            let fetch = Task { try? await cache.localURL(trackId: item.id) }
+            guard let url = await fetch.value else { return }
+            self.cachedEpisodeIds.insert(item.id)
+            // The whole file is on the phone now: the player switches to it at the next pause
+            // or seek.
+            if self.engine.book?.id == item.id { self.engine.useLocalCopy(partId: Self.episodePartId, at: url) }
         }
+    }
+
+    /// The listening cache and the look-ahead window share one cap. The window's stretches go
+    /// first (a few minutes each, quick to fetch again), then the oldest whole files; the episode
+    /// playing keeps its window.
+    func enforceListeningCap(protecting id: String) async {
+        let cap = Self.listeningCacheCapBytes
+        let cache = listeningCache!
+        let cacheBytes = await cache.totalBytes()
+        let window = streamWindow
+        let keys: Set<String> = [id + "#" + Self.episodePartId]
+        let windowBytes = await Task.detached(priority: .utility) {
+            window.enforce(capBytes: max(0, cap - cacheBytes), protecting: keys)
+            return window.totalBytes()
+        }.value
+        await cache.enforce(capBytes: max(0, cap - windowBytes))
+        await refreshCachedIds()
+    }
+
+    func refreshCachedIds() async {
+        let directory = Self.listeningCacheDirectory
+        let ids = await Task.detached(priority: .utility) { PartLocator.cachedIds(in: directory) }.value
+        if ids != cachedEpisodeIds { cachedEpisodeIds = ids }
     }
 }
 

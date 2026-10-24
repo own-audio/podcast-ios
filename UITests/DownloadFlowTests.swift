@@ -167,5 +167,10 @@ final class DownloadFlowTests: XCTestCase {
         let mobile = app.buttons["settings.mobileData"].firstMatch
         for _ in 0..<4 where !mobile.isHittable { app.swipeUp() }
         XCTAssertTrue(mobile.exists)
+        // How much of a stream is kept ahead on the phone: 10 minutes unless chosen otherwise.
+        let ahead = app.buttons["settings.lookAhead"].firstMatch
+        for _ in 0..<3 where !ahead.isHittable { app.swipeUp() }
+        XCTAssertTrue(ahead.exists)
+        XCTAssertTrue(ahead.label.contains("10 min"), ahead.label)
     }
 }

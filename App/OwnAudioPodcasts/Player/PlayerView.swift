@@ -125,6 +125,19 @@ struct PlayerView: View {
             }
             .font(.caption.monospacedDigit())
             .foregroundStyle(Theme.Colors.muted)
+            if engine.isWaitingForSignal {
+                // Not an error: it plays on by itself when the signal returns.
+                Label("No signal — waiting", systemImage: "wifi.slash")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(Theme.Colors.foreground)
+                    .accessibilityIdentifier("player.noSignal")
+            } else if let saved = engine.savedAheadMs {
+                // How long the episode plays on with no signal: worth knowing before the metro.
+                Label("\(saved / 60_000) min saved", systemImage: "arrow.down.circle")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(Theme.Colors.muted)
+                    .accessibilityIdentifier("player.savedAhead")
+            }
         }
         .padding(.horizontal, Theme.Spacing.xl)
     }
@@ -448,7 +461,7 @@ struct MiniPlayerBar: View {
                     ArtworkView(url: item.episode.imageURL ?? model.nowPlayingShow?.imageURL, size: 40)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(Mojibake.repair(item.episode.title)).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.Colors.foreground).lineLimit(1)
-                        Text(engine.durationMs > 0 ? ProgressText.leftAtSpeed(engine.durationMs - engine.positionMs, rate: engine.rate) : (model.nowPlayingShow?.title ?? ""))
+                        Text(engine.isWaitingForSignal ? String(localized: "No signal — waiting") : engine.durationMs > 0 ? ProgressText.leftAtSpeed(engine.durationMs - engine.positionMs, rate: engine.rate) : (model.nowPlayingShow?.title ?? ""))
                             .font(.caption)
                             .foregroundStyle(Theme.Colors.muted)
                             .lineLimit(1)

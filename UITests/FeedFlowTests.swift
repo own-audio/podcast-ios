@@ -43,6 +43,9 @@ final class FeedFlowTests: XCTestCase {
         let started = Date()
         while elapsed.label == "0:00", Date().timeIntervalSince(started) < 30 { RunLoop.current.run(until: Date().addingTimeInterval(0.5)) }
         XCTAssertNotEqual(elapsed.label, "0:00", "the episode plays")
+        // A real host's enclosure streams through the look-ahead window: the player says how
+        // much is on the phone.
+        XCTAssertTrue(app.descendants(matching: .any)["player.savedAhead"].waitForExistence(timeout: 30), "the next minutes are kept on the phone")
         XCTAssertTrue(app.descendants(matching: .any)["player.airplay"].exists, "the AirPlay picker is in the player, as in the music app")
         // With chapters there are five tools; every one must sit inside the screen.
         let screen = app.windows.firstMatch.frame

@@ -268,6 +268,58 @@
         }
       }
     },
+    "%lld min saved": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld min saved"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld min saved"
+                }
+              }
+            }
+          }
+        },
+        "cs": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "uloženo %lld min"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "uloženo %lld min"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "uloženo %lld min"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "uloženo %lld min"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld s": {
       "localizations": {
         "cs": {
@@ -1570,6 +1622,16 @@
         }
       }
     },
+    "Keep Ahead": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uchovávat dopředu"
+          }
+        }
+      }
+    },
     "Keep at Most": {
       "localizations": {
         "cs": {
@@ -1916,6 +1978,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zatím žádné pořady"
+          }
+        }
+      }
+    },
+    "No signal — waiting": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bez signálu — čekám"
           }
         }
       }
@@ -3608,6 +3680,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Místo toho, co sdílí tato rodina, uvidíte, co sdílejí členové té druhé."
+          }
+        }
+      }
+    },
+    "While an episode streams, its next minutes are kept on this iPhone, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Během streamování se v tomto iPhonu uchovávají další minuty epizody, i přes mobilní data, takže tunel ani výpadek signálu nebude slyšet; v režimu nízkých dat 5 minut."
           }
         }
       }

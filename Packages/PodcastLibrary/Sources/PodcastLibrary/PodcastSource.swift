@@ -83,11 +83,15 @@ public struct Playback: Sendable, Equatable {
     public var isServerFile: Bool
     /// An HLS playlist the server transcodes as it goes (a file the phone can't play as it is).
     public var isHLS: Bool
+    /// A stream the server makes as it plays rather than the file itself: no length to fetch
+    /// pieces of by Range, so it is never kept ahead on the phone.
+    public var isTranscode: Bool
 
-    public init(url: URL, isServerFile: Bool, isHLS: Bool = false) {
+    public init(url: URL, isServerFile: Bool, isHLS: Bool = false, isTranscode: Bool = false) {
         self.url = url
         self.isServerFile = isServerFile
         self.isHLS = isHLS
+        self.isTranscode = isTranscode
     }
 }
 

@@ -27,6 +27,26 @@ All notable changes to own.audio Podcasts. The format follows
   the player can't be told streams directly, as before. Tests: `StreamWindowTests` (as in
   Books, plus a redirect to another host, an expired CDN address, a `*` length and an episode
   with no known length), `SignalWaitTests`, `LocalCopyTests`.
+- The next minutes of a streamed episode are kept on the phone, so a tunnel or a car with no
+  signal goes unheard, as in own.audio Books. Settings → Streaming → Keep Ahead: 5, 10 or 15
+  minutes, 10 by default; 5 with Low Data Mode. It works on any network, also with Wi-Fi-only
+  downloads (a few megabytes). Only the file itself is kept ahead — a feed's enclosure, an
+  Audiobookshelf or own.audio server's original file; an HLS stream or a server's transcode
+  plays as before. The player shows how much is saved ahead ("8 min saved"); when the signal
+  runs out past that, the player and the mini player say "No signal — waiting" instead of
+  failing, and it plays on by itself when the network is back (told at once when it goes, after
+  the 3 s settling when it returns), unless you paused meanwhile. The window shares the
+  listening cache's 1 GB cap: its stretches go first, the episode playing keeps its own.
+- One locator decides where an episode plays from — the download, then the listening cache,
+  then the stream — for play and for the player's own asking (`PartLocator`, from own.audio
+  Books). A download or a listening-cache copy that finishes while the episode streams is
+  switched to at the next pause or seek, never mid-sentence.
+- The player asks the app for a fresh link when its link fails or a server refuses it (an
+  own.audio link that ran out, an Audiobookshelf token); there was none before, so such a
+  failure ended playback. Offline Mode gives the message; no network makes it wait.
+  Tests: `PartLocatorTests`, `NetworkMonitorTests`; the live own.audio and Audiobookshelf tests
+  check that the original file answers a range with a length; the feed UI test checks the
+  saved-ahead label on a real feed.
 
 ### Battery
 
@@ -65,6 +85,11 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Fixed
 
+- Offline, an episode that is whole in the listening cache showed greyed out although it plays
+  from the phone; what plays offline now comes from the same place as play does.
+- A file that could not be played at all (a broken enclosure, a missing file) made the player
+  ask for a fresh link again and again, thousands of times a second; it asks once per load now
+  and then shows the error. Found while porting; own.audio Books' engine has the same code.
 - An episode in the listening cache (streamed before on Wi-Fi) played from the network again:
   playing now looks for the downloaded file first, then the listening cache, then the stream, so
   a cached episode needs no request and plays offline too. Tests: `EpisodeFileTests`,

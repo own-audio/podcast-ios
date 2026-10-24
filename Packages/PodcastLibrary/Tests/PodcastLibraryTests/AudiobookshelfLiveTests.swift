@@ -27,6 +27,10 @@ struct AudiobookshelfLiveTests {
         request.setValue("bytes=0-100", forHTTPHeaderField: "Range")
         let (_, response) = try await URLSession.shared.data(for: request)
         #expect((response as? HTTPURLResponse)?.statusCode == 206, "the server file answers a range")
+        // What the look-ahead window needs: a length in Content-Range, so it can fetch pieces.
+        let range = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Content-Range") ?? ""
+        #expect(range.hasPrefix("bytes 0-100/") && Int64(range.split(separator: "/").last ?? "") != nil, "Content-Range with a length: \(range)")
+        #expect(!playback.isTranscode)
         let before = try await client.episodeProgress(itemId: episode.showId, episodeId: episode.id)
         let saved = try await abs.saveProgress(ListeningProgress(positionMs: 61_000, played: false, updatedAt: Date()), for: episode.key)
         let server = try #require(try await client.episodeProgress(itemId: episode.showId, episodeId: episode.id))

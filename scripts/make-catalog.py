@@ -364,9 +364,13 @@ cs = {
  "Streaming": "Streamování",
  "Source Code and Licence": "Zdrojový kód a licence",
  "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen se servery, které přidáte.",
+ "No signal — waiting": "Bez signálu — čekám",
+ "Keep Ahead": "Uchovávat dopředu",
+ "While an episode streams, its next minutes are kept on this iPhone, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.": "Během streamování se v tomto iPhonu uchovávají další minuty epizody, i přes mobilní data, takže tunel ani výpadek signálu nebude slyšet; v režimu nízkých dat 5 minut.",
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {
+ "%lld min saved": {"en": {"one": "%lld min saved", "other": "%lld min saved"}, "cs": {"one": "uloženo %lld min", "few": "uloženo %lld min", "many": "uloženo %lld min", "other": "uloženo %lld min"}},
  "%lld days": {"en": {"one": "%lld day", "other": "%lld days"}, "cs": {"one": "%lld den", "few": "%lld dny", "many": "%lld dne", "other": "%lld dní"}},
  "%lld members": {"en": {"one": "%lld member", "other": "%lld members"}, "cs": {"one": "%lld člen", "few": "%lld členové", "many": "%lld člena", "other": "%lld členů"}},
  "%lld Episodes": {"en": {"one": "%lld Episode", "other": "%lld Episodes"}, "cs": {"one": "%lld epizoda", "few": "%lld epizody", "many": "%lld epizody", "other": "%lld epizod"}},

@@ -21,6 +21,9 @@ final class NetworkMonitor {
     /// Changes with every change of path; used to remember which address worked where.
     private(set) var signature = ""
     @ObservationIgnored var onChange: ((Bool) -> Void)?
+    /// At once, before the debounce, whenever there comes to be a network or none: a player
+    /// streaming into a gap has to know now, not in three seconds.
+    @ObservationIgnored var onConnectivity: ((Bool) -> Void)?
     @ObservationIgnored private let monitor: NWPathMonitor?
     @ObservationIgnored private let debounce: Duration
     @ObservationIgnored private var pendingChange: Task<Void, Never>?
@@ -50,10 +53,12 @@ final class NetworkMonitor {
     func pathChanged(connected: Bool, expensive: Bool, constrained: Bool, interfaces: [String]) {
         let signature = Self.signature(connected: connected, interfaces: interfaces)
         guard self.signature != signature || isExpensive != expensive || isConstrained != constrained else { return }
+        let flipped = isConnected != connected
         isConnected = connected
         isExpensive = expensive
         isConstrained = constrained
         self.signature = signature
+        if flipped { onConnectivity?(connected) }
         pendingChange?.cancel()
         pendingChange = Task { [weak self, debounce] in
             try? await Task.sleep(for: debounce)
