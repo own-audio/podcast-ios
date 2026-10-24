@@ -6,12 +6,13 @@ import UIKit
 // Copied in shape from the books app.
 
 extension AppModel {
-    /// A picture as a small JPEG (`size` points square at 2×), kept for the app's lifetime.
+    /// A picture as a small JPEG (`size` points square at 2×), kept for the app's lifetime. It
+    /// comes through the cached loader, already scaled down, so the full picture is fetched once.
     func smallPicture(_ url: URL?, size: CGFloat) async -> Data? {
         guard let url else { return nil }
         if let known = smallPictures[url] { return known }
-        guard let (data, _) = try? await Self.session.data(from: url), let image = UIImage(data: data) else { return nil }
         let side = size * 2
+        guard let image = await ArtworkLoader.shared.image(url, pixels: Int(side)) else { return nil }
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: { let f = UIGraphicsImageRendererFormat(); f.scale = 1; return f }())
         let small = renderer.jpegData(withCompressionQuality: 0.75) { _ in
             image.draw(in: CGRect(x: 0, y: 0, width: side, height: side))

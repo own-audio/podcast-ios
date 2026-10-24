@@ -29,6 +29,24 @@ All notable changes to own.audio Podcasts. The format follows
   order are no change at all. Each settled change used to race every server's addresses and
   refresh everything; on screen it now finds the addresses and refreshes if one is due, and in
   the background it only sends the positions waiting for a server. Tests: `NetworkMonitorTests`.
+- The lock screen's picture and the widget's and CarPlay's small pictures come through the
+  cached, scaled-down picture loader, instead of downloading the show's full picture (often
+  several megabytes) for every episode and every launch.
+- What a show's rules download by themselves goes through a discretionary background session,
+  which iOS runs when it suits the battery and the network; a download you start yourself still
+  starts at once, and asking for one a rule is already fetching moves it to the quick session.
+  Both sessions are picked up again after a relaunch.
+- Download progress reaches the screen at most twice a second per episode, instead of on every
+  few kilobytes the session reports.
+- A launch with no screen (CarPlay, a finished download, the background refresh) no longer opens
+  own.audio's live-update streams; they open once the app is on screen.
+
+### Fixed
+
+- An episode in the listening cache (streamed before on Wi-Fi) played from the network again:
+  playing now looks for the downloaded file first, then the listening cache, then the stream, so
+  a cached episode needs no request and plays offline too. Tests: `EpisodeFileTests`,
+  `DownloadProgressGateTests`.
 
 ### Removed
 

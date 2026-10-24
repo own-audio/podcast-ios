@@ -10,8 +10,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
         Task { @MainActor in
-            guard identifier == DownloadManager.sessionIdentifier else { return completionHandler() }
-            AppModel.shared.downloads.backgroundCompletion = completionHandler
+            guard DownloadManager.sessionIdentifiers.contains(identifier) else { return completionHandler() }
+            AppModel.shared.downloads.backgroundCompletions[identifier] = completionHandler
             AppModel.shared.downloads.resume()
         }
     }

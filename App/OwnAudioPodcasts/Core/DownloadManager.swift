@@ -8,6 +8,10 @@ import UIKit
 /// app is in the background or gone, and picks up where it stopped after a kill. Copied from
 /// the books app's `DownloadManager`; an episode is one file, so a download is one task.
 ///
+/// Two sessions: one for what the listener asked for, which starts at once, and a discretionary
+/// one for what a show's rules fetch by themselves, which iOS runs when it suits the battery and
+/// the network (often on Wi-Fi and power, overnight).
+///
 /// Files live in Application Support, which iOS doesn't clear the way it clears Caches, and are
 /// excluded from iCloud backup: they can always be downloaded again. An index file records
 /// each episode with its show, so the Downloads tab works with no network at all.
@@ -33,6 +37,9 @@ final class DownloadManager: NSObject {
         let startedAt: Date
         var finishedAt: Date?
         var lastPlayedAt: Date?
+        /// Fetched by a show's rules rather than asked for: it goes through the discretionary
+        /// session. Missing (false) in indexes from older builds.
+        var automatic: Bool?
 
         var isComplete: Bool { fileName != nil }
         var sourceRef: SourceRef? { SourceRef(id: source) }
@@ -51,15 +58,19 @@ final class DownloadManager: NSObject {
     var wifiOnly = true { didSet { if wifiOnly != oldValue { restart() } } }
     /// What the app asks for an episode's file URL; the session can't, it only knows ids.
     var urlProvider: ((_ id: String) async throws -> URL)?
-    /// Called when the session reports that its background work is done, so the app can tell
-    /// iOS (`handleEventsForBackgroundURLSession`).
-    var backgroundCompletion: (() -> Void)?
+    /// Called when a session reports that its background work is done, so the app can tell
+    /// iOS (`handleEventsForBackgroundURLSession`); by session identifier.
+    var backgroundCompletions: [String: () -> Void] = [:]
 
     private let directory: URL
     private let indexURL: URL
     private var session: URLSession!
+    private var automaticSession: URLSession!
     private var tasks: [String: URLSessionDownloadTask] = [:]
+    nonisolated private let progressGate = DownloadProgressGate()
     static let sessionIdentifier = "audio.own.podcastplayer.downloads"
+    static let automaticSessionIdentifier = "audio.own.podcastplayer.downloads.automatic"
+    static var sessionIdentifiers: Set<String> { [sessionIdentifier, automaticSessionIdentifier] }
 
     override init() {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -76,6 +87,11 @@ final class DownloadManager: NSObject {
         configuration.isDiscretionary = false
         configuration.sessionSendsLaunchEvents = true
         session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
+        let automatic = URLSessionConfiguration.background(withIdentifier: Self.automaticSessionIdentifier)
+        // The UI tests wait for a rule's download; iOS's discretion could hold it for hours.
+        automatic.isDiscretionary = !UITestFlags.isUITesting
+        automatic.sessionSendsLaunchEvents = true
+        automaticSession = URLSession(configuration: automatic, delegate: self, delegateQueue: nil)
         loadIndex()
     }
 
@@ -100,10 +116,18 @@ final class DownloadManager: NSObject {
 
     // MARK: - Changing
 
-    func download(_ item: SourcedEpisode, show: Show?) {
+    /// `automatic` for what a show's rules fetch. Asking for an episode a rule is already
+    /// fetching moves it to the session that starts at once.
+    func download(_ item: SourcedEpisode, show: Show?, automatic: Bool = false) {
         guard episodes[item.id]?.isComplete != true else { return }
         if episodes[item.id] == nil {
-            episodes[item.id] = DownloadedEpisode(id: item.id, source: item.source.id, episode: item.episode, show: show, bytes: 0, startedAt: Date())
+            episodes[item.id] = DownloadedEpisode(id: item.id, source: item.source.id, episode: item.episode, show: show, bytes: 0, startedAt: Date(), automatic: automatic)
+        } else if !automatic, episodes[item.id]?.automatic == true {
+            episodes[item.id]?.automatic = false
+            states[item.id] = .downloading(fraction: 0)
+            saveIndex()
+            restart(item.id)
+            return
         }
         states[item.id] = .downloading(fraction: 0)
         saveIndex()
@@ -134,39 +158,50 @@ final class DownloadManager: NSObject {
         for id in policy.evictions(from: candidates, protected: protected) { remove(id) }
     }
 
+    /// The listener asked: it starts at once, also when a rule had started it.
     func retry(_ id: String) {
         guard let entry = episodes[id], !entry.isComplete else { return }
+        episodes[id]?.automatic = false
         states[id] = .downloading(fraction: 0)
         start(id)
     }
 
     /// Picks up interrupted downloads: at launch, and after the session was recreated.
     func resume() {
-        session.getAllTasks { [weak self] running in
-            Task { @MainActor [weak self] in
-                guard let self else { return }
-                for task in running as? [URLSessionDownloadTask] ?? [] {
-                    if let key = task.taskDescription { self.tasks[key] = task }
+        Task {
+            // Both sessions' tasks are known before anything missing is started again.
+            for session in [session!, automaticSession!] {
+                for task in await session.allTasks {
+                    if let key = task.taskDescription, let download = task as? URLSessionDownloadTask { tasks[key] = download }
                 }
-                for entry in self.episodes.values where !entry.isComplete && self.tasks[entry.id] == nil {
-                    if case .failed = self.states[entry.id] { continue }
-                    self.states[entry.id] = .downloading(fraction: 0)
-                    self.start(entry.id)
-                }
+            }
+            for entry in episodes.values where !entry.isComplete && tasks[entry.id] == nil {
+                if case .failed = states[entry.id] { continue }
+                states[entry.id] = .downloading(fraction: 0)
+                start(entry.id)
             }
         }
     }
 
     private func restart() {
-        for (key, task) in tasks {
-            task.cancel { [weak self] data in
-                Task { @MainActor in
-                    if let data { self?.resumeData[key] = data }
-                    self?.tasks[key] = nil
-                    self?.start(key)
-                }
+        for key in tasks.keys { restart(key) }
+    }
+
+    /// Stopped (keeping what came) and started again: after Wi-Fi Only changed, or to move to
+    /// the other session.
+    private func restart(_ key: String) {
+        guard let task = tasks[key] else { return start(key) }
+        task.cancel { [weak self] data in
+            Task { @MainActor in
+                if let data { self?.resumeData[key] = data }
+                self?.tasks[key] = nil
+                self?.start(key)
             }
         }
+    }
+
+    private func session(for id: String) -> URLSession {
+        episodes[id]?.automatic == true ? automaticSession : session
     }
 
     // MARK: - Work
@@ -174,7 +209,7 @@ final class DownloadManager: NSObject {
     private func start(_ id: String) {
         guard tasks[id] == nil else { return }
         if let data = resumeData.removeValue(forKey: id) {
-            let task = session.downloadTask(withResumeData: data)
+            let task = session(for: id).downloadTask(withResumeData: data)
             task.taskDescription = id
             tasks[id] = task
             task.resume()
@@ -189,7 +224,7 @@ final class DownloadManager: NSObject {
                 var request = URLRequest(url: url)
                 request.allowsCellularAccess = !self.wifiOnly
                 request.setValue("own.audio Podcasts/\(AppModel.appVersion) iOS", forHTTPHeaderField: "User-Agent")
-                let task = self.session.downloadTask(with: request)
+                let task = self.session(for: id).downloadTask(with: request)
                 task.taskDescription = id
                 self.tasks[id] = task
                 task.resume()
@@ -277,6 +312,8 @@ extension DownloadManager: URLSessionDownloadDelegate {
 
     nonisolated func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         let id = downloadTask.taskDescription ?? ""
+        // The session calls this for every few kilobytes; the bar needs a few updates a second.
+        guard progressGate.shouldReport(id: id, done: totalBytesExpectedToWrite > 0 && totalBytesWritten >= totalBytesExpectedToWrite) else { return }
         Task { @MainActor in
             guard let entry = self.episodes[id], !entry.isComplete else { return }
             let expected = totalBytesExpectedToWrite > 0 ? totalBytesExpectedToWrite : (entry.episode.audioBytes ?? 0)
@@ -290,6 +327,9 @@ extension DownloadManager: URLSessionDownloadDelegate {
         let resume = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data
         let cancelled = (error as NSError).code == NSURLErrorCancelled
         Task { @MainActor in
+            // A task cancelled to move it (Wi-Fi Only, the other session) may report after its
+            // successor started; the successor stays.
+            guard self.tasks[id] == nil || self.tasks[id] === task else { return }
             self.tasks[id] = nil
             if let resume { self.resumeData[id] = resume }
             if !cancelled, self.episodes[id] != nil {
@@ -300,9 +340,36 @@ extension DownloadManager: URLSessionDownloadDelegate {
     }
 
     nonisolated func urlSessionDidFinishEvents(forBackgroundURLSession session: URLSession) {
+        let identifier = session.configuration.identifier ?? ""
         Task { @MainActor in
-            self.backgroundCompletion?()
-            self.backgroundCompletion = nil
+            self.backgroundCompletions.removeValue(forKey: identifier)?()
+        }
+    }
+}
+
+/// Lets a download's progress through to the main actor at most every `interval` per episode,
+/// and always at the end. Called on the session's queue, so it keeps its own lock.
+final class DownloadProgressGate: @unchecked Sendable {
+    private let interval: TimeInterval
+    private let now: @Sendable () -> Date
+    private let lock = NSLock()
+    private var last: [String: Date] = [:]
+
+    init(interval: TimeInterval = 0.5, now: @escaping @Sendable () -> Date = { Date() }) {
+        self.interval = interval
+        self.now = now
+    }
+
+    func shouldReport(id: String, done: Bool) -> Bool {
+        lock.withLock {
+            let at = now()
+            if done {
+                last[id] = nil
+                return true
+            }
+            if let previous = last[id], at.timeIntervalSince(previous) < interval { return false }
+            last[id] = at
+            return true
         }
     }
 }

@@ -125,7 +125,9 @@ final class AppModel {
     /// A `feed://` or `podcast://` link opened the app: Add a Feed shows with it filled in.
     var pendingFeedAddress: String?
     @ObservationIgnored var reloadTask: Task<Void, Never>?
-    @ObservationIgnored var isInForeground = true
+    /// False until a scene is on screen: a launch by CarPlay, a finished download or the
+    /// background refresh opens no live-update streams.
+    @ObservationIgnored var isInForeground = false
     /// How many times a server's live update read the lists again (for the UI tests).
     private(set) var liveReloads = 0
     @ObservationIgnored private var syncTask: Task<Void, Never>?
@@ -607,11 +609,18 @@ final class AppModel {
         do {
             let part: SpokenPart
             let duration = item.episode.durationMs ?? 0
-            if let local = downloads.fileURL(item.id) {
+            let downloaded = downloads.fileURL(item.id)
+            let cached = downloaded == nil ? await listeningCache.existingLocalURL(trackId: item.id) : nil
+            switch Self.locate(downloaded: downloaded, cached: cached) {
+            case .downloaded(let local):
                 // The file's extension says what it is.
                 part = SpokenPart(id: "audio", url: local, durationMs: duration)
                 downloads.notePlayed(item.id)
-            } else {
+            case .cached(let local):
+                // Streamed before on Wi-Fi and kept: no request, and it plays offline too. The
+                // cache names the file by what its bytes are.
+                part = SpokenPart(id: "audio", url: local, durationMs: duration)
+            case .stream:
                 if isOffline { throw DownloadError.notOnPhone }
                 if settings.mobileData == .downloadedOnly, network.isExpensive { throw DownloadError.mobileData }
                 let playback = try await source.playback(item.episode.key)
@@ -629,6 +638,17 @@ final class AppModel {
         } catch {
             if !quietly { actionError = Self.message(for: error) }
         }
+    }
+
+    enum EpisodeFile: Equatable {
+        case downloaded(URL), cached(URL), stream
+    }
+
+    /// Where an episode plays from: its download, else the listening cache, else the stream.
+    nonisolated static func locate(downloaded: URL?, cached: URL?) -> EpisodeFile {
+        if let downloaded { return .downloaded(downloaded) }
+        if let cached { return .cached(cached) }
+        return .stream
     }
 
     /// The type of an episode whose source names none, from its original file's extension.
@@ -722,12 +742,16 @@ final class AppModel {
         }
     }
 
+    /// The lock screen's picture, through the cached loader: a show's picture can be several
+    /// megabytes, and is asked for again on every episode of that show.
     private func artwork(for id: String) async -> NowPlayingImage? {
         guard let item = nowPlaying, item.id == id,
-              let url = item.episode.imageURL ?? nowPlayingShow?.imageURL,
-              let (data, _) = try? await Self.session.data(from: url) else { return nil }
-        return UIImage(data: data)
+              let url = item.episode.imageURL ?? nowPlayingShow?.imageURL else { return nil }
+        return await ArtworkLoader.shared.image(url, pixels: Self.nowPlayingArtworkPixels)
     }
+
+    /// Big enough for the lock screen's largest picture at 3×.
+    static let nowPlayingArtworkPixels = 900
 
     // MARK: - Searching
 
@@ -1388,7 +1412,7 @@ extension AppModel {
             let protected = nowPlaying.flatMap { progress[$0.id]?.played == true ? nil : $0.id }
             let plan = DownloadRules.plan(for: items, settings: show.show.settings, protected: protected)
             for id in plan.remove { downloads.remove(id) }
-            for id in plan.download { if let item = episodes.first(where: { $0.id == id }) { downloads.download(item, show: show.show) } }
+            for id in plan.download { if let item = episodes.first(where: { $0.id == id }) { downloads.download(item, show: show.show, automatic: true) } }
         }
         applyDownloadSettings()
     }
@@ -1564,7 +1588,8 @@ extension AppModel {
             positionReporter.flush()
             BackgroundRefresh.schedule()
         }
-        if foreground { Task { await refreshIfDue() } }
+        // The first time is at launch, while `load` is still running; it refreshes by itself.
+        if foreground, hasLoaded { Task { await refreshIfDue() } }
     }
 }
 
