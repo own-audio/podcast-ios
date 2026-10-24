@@ -192,11 +192,23 @@ final class AppModel {
             await self?.listeningCache.existingLocalURL(trackId: id)
         }
         network.onChange = { [weak self] connected in
-            self?.followLibraryChanges()
-            guard connected else { return }
-            Task {
-                await self?.chooseAddresses()
-                await self?.refreshIfDue()
+            guard let self else { return }
+            self.followLibraryChanges()
+            let inBackground = UIApplication.shared.applicationState == .background
+            if inBackground, connected { self.positionReporter.flush() }
+            switch NetworkChangeResponse.decide(connected: connected, inBackground: inBackground, hasPendingPositions: self.pendingProgressCount > 0) {
+            case .nothing, .sendPositions(chooseAddresses: false):
+                break
+            case .sendPositions(chooseAddresses: true):
+                Task {
+                    await self.chooseAddresses()
+                    await self.sendPendingProgress()
+                }
+            case .full:
+                Task {
+                    await self.chooseAddresses()
+                    await self.refreshIfDue()
+                }
             }
         }
     }

@@ -24,6 +24,11 @@ All notable changes to own.audio Podcasts. The format follows
   episode's file is stored at the next launch, so nothing is lost. A chapter change counts as
   listening on. Tests: `PositionReporterTests` (cadence, what stores at once, the background,
   another episode, offline and a dead server).
+- Network changes settle before the app acts on them: 3 s with no further change (a car
+  handing over between cells, a flickering Wi-Fi), and the same interfaces listed in another
+  order are no change at all. Each settled change used to race every server's addresses and
+  refresh everything; on screen it now finds the addresses and refreshes if one is due, and in
+  the background it only sends the positions waiting for a server. Tests: `NetworkMonitorTests`.
 
 ### Removed
 
