@@ -129,6 +129,8 @@ final class AppModel {
     /// How many times a server's live update read the lists again (for the UI tests).
     private(set) var liveReloads = 0
     @ObservationIgnored private var syncTask: Task<Void, Never>?
+    /// Stores positions past memory every minute while playing, and at once on pause, seek, stop.
+    @ObservationIgnored private(set) var positionReporter: PositionReporter!
     /// When the last full refresh started, for `RefreshPolicy`'s interval.
     @ObservationIgnored private var lastRefreshAt: Date?
 
@@ -170,6 +172,7 @@ final class AppModel {
         engine.skipBackwardSecs = settings.skipBackwardSecs
         engine.smartRewind = SmartRewind(isEnabled: settings.smartRewind)
         engine.onPosition = { [weak self] position in self?.positionReported(position) }
+        positionReporter = PositionReporter { [weak self] id, value in self?.storeProgress(value, for: id) }
         engine.artworkProvider = { [weak self] id in await self?.artwork(for: id) }
         downloads.wifiOnly = settings.wifiOnlyDownloads
         downloads.urlProvider = { [weak self] id in
@@ -679,7 +682,7 @@ final class AppModel {
     }
 
     private func positionReported(_ position: SpokenEngine.Position) {
-        guard let (ref, key) = SourcedEpisode.parse(position.bookId), let source = source(ref) else { return }
+        guard let (ref, _) = SourcedEpisode.parse(position.bookId), source(ref) != nil else { return }
         let played = position.finished || ListeningProgress.reachedEnd(positionMs: position.positionMs, durationMs: engine.durationMs)
         let value = ListeningProgress(positionMs: position.positionMs, played: played, updatedAt: position.at)
         progress[position.bookId] = value
@@ -688,16 +691,23 @@ final class AppModel {
             forgetLastPlayed()
             Task { await playOn(after: position.bookId) }
         } else if let item = nowPlaying, item.id == position.bookId {
-            saveLastPlayed(item, positionMs: position.positionMs)
+            // The one write every tick: enough to come back here after a kill.
+            saveLastPlayed(item, positionMs: position.positionMs, at: position.at)
         }
         if played { inbox.removeAll { $0.id == position.bookId } }
+        positionReporter.report(value, for: position.bookId, reason: position.reason)
+        if ref == .phone, [.pause, .stop, .finished].contains(position.reason) { scheduleSync() }
+        if played, position.reason == .finished { Task { await applyDownloadRules() } }
+    }
+
+    /// Into the source's store: the phone's library file, or a server's queue and then the server.
+    private func storeProgress(_ value: ListeningProgress, for id: String) {
+        guard let (ref, key) = SourcedEpisode.parse(id), let source = source(ref) else { return }
         if ref == .phone {
             Task { _ = try? await source.saveProgress(value, for: key) }
         } else {
-            send(value, for: position.bookId)
+            send(value, for: id)
         }
-        if ref == .phone, [.pause, .stop, .finished].contains(position.reason) { scheduleSync() }
-        if played, position.reason == .finished { Task { await applyDownloadRules() } }
     }
 
     private func artwork(for id: String) async -> NowPlayingImage? {
@@ -1393,12 +1403,24 @@ extension AppModel {
 extension AppModel {
     /// Written to disk first, then sent; it stays on disk until the server has it.
     func send(_ value: ListeningProgress, for id: String) {
+        let source = SourcedEpisode.parse(id).flatMap { ref, key in self.source(ref).map { ($0, key) } }
+        Self.send(value, for: id, pending: pending, offline: isOffline || source == nil) { value in
+            guard let (source, key) = source else { return }
+            _ = try await source.saveProgress(value, for: key)
+        }
+    }
+
+    /// On disk first; then, online, to the server, and off the disk once the server has it. A
+    /// failure (no network, a dead server) leaves it for the next refresh.
+    @discardableResult
+    nonisolated static func send(_ value: ListeningProgress, for id: String, pending: PendingProgress, offline: Bool,
+                                 save: @escaping @Sendable (ListeningProgress) async throws -> Void) -> Task<Void, Never>? {
         let entry = PendingProgress.Entry(id: id, progress: value)
         pending.record(entry)
-        guard !isOffline, let (ref, key) = SourcedEpisode.parse(id), let source = source(ref) else { return }
-        Task {
+        guard !offline else { return nil }
+        return Task {
             do {
-                _ = try await source.saveProgress(value, for: key)
+                try await save(value)
                 pending.sent(entry)
             } catch {
                 // Kept for the next refresh.
@@ -1435,6 +1457,8 @@ private struct LastPlayed: Codable {
     let episode: Episode
     let show: Show?
     var positionMs: Int64
+    /// When the position was reached; missing in files from older builds.
+    var at: Date?
 }
 
 extension AppModel {
@@ -1443,8 +1467,8 @@ extension AppModel {
             .appendingPathComponent("podcasts", isDirectory: true).appendingPathComponent("last-played.json")
     }
 
-    func saveLastPlayed(_ item: SourcedEpisode, positionMs: Int64) {
-        let last = LastPlayed(source: item.source.id, episode: item.episode, show: nowPlayingShow ?? show(for: item), positionMs: positionMs)
+    func saveLastPlayed(_ item: SourcedEpisode, positionMs: Int64, at: Date = Date()) {
+        let last = LastPlayed(source: item.source.id, episode: item.episode, show: nowPlayingShow ?? show(for: item), positionMs: positionMs, at: at)
         guard let data = try? JSONEncoder().encode(last) else { return }
         try? data.write(to: lastPlayedURL, options: .atomic)
     }
@@ -1458,6 +1482,13 @@ extension AppModel {
         guard nowPlaying == nil, let data = try? Data(contentsOf: lastPlayedURL),
               let last = try? JSONDecoder().decode(LastPlayed.self, from: data), let ref = SourceRef(id: last.source) else { return }
         let item = SourcedEpisode(source: ref, episode: last.episode)
+        // Positions are stored once a minute while playing; a kill in between left the newest
+        // here only, so it is stored now (the newer one wins wherever it goes).
+        if let at = last.at, progress[item.id].map({ $0.updatedAt < at && $0.positionMs != last.positionMs }) ?? true {
+            let value = ListeningProgress(positionMs: last.positionMs, played: false, updatedAt: at)
+            progress[item.id] = value
+            storeProgress(value, for: item.id)
+        }
         await play(item, startAt: last.positionMs, autoplay: false, quietly: true)
         if nowPlaying?.id == item.id, nowPlayingShow == nil { nowPlayingShow = last.show }
     }
@@ -1517,7 +1548,10 @@ extension AppModel {
         guard foreground != isInForeground else { return }
         isInForeground = foreground
         followLibraryChanges()
-        if !foreground { BackgroundRefresh.schedule() }
+        if !foreground {
+            positionReporter.flush()
+            BackgroundRefresh.schedule()
+        }
         if foreground { Task { await refreshIfDue() } }
     }
 }

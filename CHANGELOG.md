@@ -16,6 +16,14 @@ All notable changes to own.audio Podcasts. The format follows
   ten minutes instead of fetching every feed again. Positions waiting for a server are still sent
   when a refresh is skipped. Tests: `RefreshPolicyTests`, and the Audiobookshelf source's
   automatic and asked-for refresh.
+- Fewer writes and requests while playing. The player reports every 10 s; that position now
+  stays in memory and goes to disk as one small write (the last episode's file). The phone's
+  library file and a server's queue and request get it once a minute while playing, and at once
+  on pause, seek, stop, another episode, the end of an episode and going to the background, so
+  the mobile radio can sleep in between. After a kill the newer position from the last
+  episode's file is stored at the next launch, so nothing is lost. A chapter change counts as
+  listening on. Tests: `PositionReporterTests` (cadence, what stores at once, the background,
+  another episode, offline and a dead server).
 
 ### Removed
 
