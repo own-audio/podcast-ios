@@ -114,8 +114,7 @@ final class AppModel {
     @ObservationIgnored let upNext: UpNext
     private(set) var upNextList: [UpNext.Entry] = []
     @ObservationIgnored var liveUpdates: [UUID: Task<Void, Never>] = [:]
-    @ObservationIgnored var liveActivity: LiveActivityController?
-    /// Small JPEGs for the widget and the Live Activity, by picture address.
+    /// Small JPEGs for the widget and CarPlay, by picture address.
     @ObservationIgnored var smallPictures: [URL: Data] = [:]
     @ObservationIgnored var widgetTask: Task<Void, Never>?
     /// The own.audio server whose podcast catalogue Discover uses; nil means Apple's directory.
@@ -186,7 +185,6 @@ final class AppModel {
         engine.partLocator = { [weak self] id, _ in
             await self?.listeningCache.existingLocalURL(trackId: id)
         }
-        liveActivity = LiveActivityController(model: self)
         network.onChange = { [weak self] connected in
             self?.followLibraryChanges()
             guard connected else { return }
@@ -664,7 +662,6 @@ final class AppModel {
         let played = position.finished || ListeningProgress.reachedEnd(positionMs: position.positionMs, durationMs: engine.durationMs)
         let value = ListeningProgress(positionMs: position.positionMs, played: played, updatedAt: position.at)
         progress[position.bookId] = value
-        liveActivity?.tick()
         if [.pause, .stop, .finished].contains(position.reason) { scheduleWidgetUpdate() }
         if position.reason == .finished {
             forgetLastPlayed()

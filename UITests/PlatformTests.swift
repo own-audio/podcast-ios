@@ -1,7 +1,7 @@
 import XCTest
 
 /// The ways into the app from outside it: a `feed://` link from a web page or another app opens
-/// Add a Feed with the address filled in; the widget's and Live Activity's `ownpodcast://play/`
+/// Add a Feed with the address filled in; the widget's `ownpodcast://play/`
 /// link reaches the player (here with an episode the app doesn't know, which it says). Needs
 /// the network.
 final class PlatformTests: XCTestCase {

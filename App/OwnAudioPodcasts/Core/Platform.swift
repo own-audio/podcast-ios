@@ -2,8 +2,8 @@ import Foundation
 import PodcastLibrary
 import UIKit
 
-// The widget, the links that open the app, and the small pictures both of them and the Live
-// Activity use. Copied in shape from the books app.
+// The widget, the links that open the app, and the small pictures the widget and CarPlay use.
+// Copied in shape from the books app.
 
 extension AppModel {
     /// A picture as a small JPEG (`size` points square at 2×), kept for the app's lifetime.
@@ -54,7 +54,7 @@ extension AppModel {
         WidgetSnapshot(entries: entries, at: Date()).save()
     }
 
-    /// `ownpodcast://play/<id>` from the widget and the Live Activity; `feed://`, `podcast://`
+    /// `ownpodcast://play/<id>` from the widget; `feed://`, `podcast://`
     /// and `pcast://` from a web page or another app, to follow a show.
     func open(_ url: URL) async {
         if let id = WidgetSnapshot.episodeId(from: url) {

@@ -18,7 +18,7 @@ In development; the plan is in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
   server's catalogue where it has one, else Apple's charts and search; follow by feed address or
   a `feed://` link
 - Several servers at once, each reached at the fastest of its addresses; iPad with a sidebar
-- CarPlay, a widget, the Live Activity, Siri, AirPlay and the player on the lock screen
+- CarPlay, a widget, Siri, AirPlay and the player on the lock screen
 - With own.audio: the family, signed-in devices, live updates, summaries of an episode and
   questions about it
 - English and Czech

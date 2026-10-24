@@ -53,8 +53,6 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Connects to the podcast server on your local network.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

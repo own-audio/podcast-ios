@@ -5,7 +5,6 @@ import WidgetKit
 struct OwnAudioPodcastsWidgets: WidgetBundle {
     var body: some Widget {
         UpNextWidget()
-        EpisodeLiveActivity()
     }
 }
 

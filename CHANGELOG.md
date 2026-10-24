@@ -6,6 +6,14 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Removed
+
+- The Live Activity. The lock screen showed two players while an episode played: iOS's own Now
+  Playing controls and the Live Activity under them. Now Playing stays, with its controls, in
+  the Dynamic Island and on CarPlay; the Up Next widget, the `ownpodcast://play/` links and Siri
+  are unchanged. This also ends the activity's updates every 15 s while playing and its picture
+  fetches. An activity left from an older build ends when iOS sees the extension no longer has it.
+
 ### Tests
 
 - CarPlay unit tests (`UnitTests/CarPlayContentTests`, a new unit-test target hosted by the app):

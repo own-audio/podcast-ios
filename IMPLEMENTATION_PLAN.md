@@ -97,10 +97,8 @@ phase's review checks this list.
 - **Positions**: written to disk before they are sent, merged per episode, sent oldest first
   when a server is back; the newer of phone and server wins; another device's newer position
   is asked about before playing ("Continue from …?"), never applied silently.
-- **Stop lets go everywhere**: the model, the mini player, the widget and the Live Activity
-  all release the episode, not only the engine.
-- **The Live Activity's cover** travels in its updatable state, filled in when it has loaded;
-  never fixed in the attributes at start.
+- **Stop lets go everywhere**: the model, the mini player, the widget and the lock screen's
+  Now Playing all release the episode, not only the engine.
 - **Idempotent requests** send byte-identical bodies on retry: JSON keys sorted
   (`JSONEncoder.ownAudio`), the idempotency key kept with the queued request.
 - **Tokens**: rotating refresh tokens refreshed single-flight; Audiobookshelf media links carry
@@ -137,7 +135,7 @@ phase's review checks this list.
   and `Capabilities`, the four adapters, the local feed store, the inbox and queue logic, the
   sync queue, server store, addresses.
 - `Packages/PlayerEngine/` — `SpokenEngine` + `PlayerCore`, from the books app.
-- `Shared/` — the widget snapshot and the Live Activity attributes, from the books app.
+- `Shared/` — the widget snapshot, from the books app.
 - `Widgets/` — the widget extension, from the books app.
 - `scripts/` — `test-servers.sh`, `testflight.sh`, `make-catalog.py`, `render-icons.mjs`,
   `app-store-upload.swift`, from the books app.
@@ -305,11 +303,12 @@ tests, a build of the app, `CHANGELOG.md`, then one commit and push.
   live updates over `/events`. Still to do here: sharing a show with the family, server-side
   storing, the server's auto-download setting (from P7), translation.*
 - [ ] **P11: Platform.** CarPlay (New Episodes, Queue, Shows, Now Playing with chapters), the
-  widget (new episodes / up next), the Live Activity, Siri ("Play *show* in own.podcast",
+  widget (new episodes / up next), Siri ("Play *show* in own.podcast",
   "What's new in own.podcast"), iPad split view — each copied from the books app and adapted.
   *Mostly brought forward 2026-10-18 for parity: CarPlay (New Episodes, Downloads, Shows, Now
-  Playing with chapters; no Queue list until the queue has a screen), the Up Next widget, the
-  Live Activity, Siri ("Continue listening", "Play ‹show›"). Still to do: "What's new" in Siri,
+  Playing with chapters; no Queue list until the queue has a screen), the Up Next widget,
+  Siri ("Continue listening", "Play ‹show›"). The Live Activity that came with it was removed
+  on 2026-10-24: the lock screen's own Now Playing controls are the one player there. Still to do: "What's new" in Siri,
   iPad split view, the CarPlay entitlement for this app, trying it all on a device.*
 - [ ] **P12: Polish, accessibility, tests, release.** Dynamic Type, VoiceOver labels, Reduce
   Motion, both colour schemes, the Czech re-read, performance with 300 shows and 20 000

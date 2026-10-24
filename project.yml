@@ -37,14 +37,13 @@ targets:
         # Only standard HTTPS, which is exempt; saves answering the export question per build.
         ITSAppUsesNonExemptEncryption: false
         UIApplicationSupportsIndirectInputEvents: true
-        NSSupportsLiveActivities: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: true
           UISceneConfigurations:
             CPTemplateApplicationSceneSessionRoleApplication:
               - UISceneConfigurationName: CarPlay
                 UISceneDelegateClassName: $(PRODUCT_MODULE_NAME).CarPlaySceneDelegate
-        # The widget's and the Live Activity's way in (ownpodcast://play/<episode id>), and the
+        # The widget's way in (ownpodcast://play/<episode id>), and the
         # links web pages and other apps use to hand over a feed.
         CFBundleURLTypes:
           - CFBundleURLName: audio.own.podcastplayer
@@ -83,7 +82,7 @@ targets:
       properties:
         # Sign in with Apple for own.audio servers (AUTH__APPLE__CLIENT_IDS must list this app).
         com.apple.developer.applesignin: [Default]
-        # Shared with the widget: the Up Next snapshot and the Live Activity's picture.
+        # Shared with the widget: the Up Next snapshot.
         com.apple.security.application-groups: [group.audio.own.podcastplayer]
     dependencies:
       - target: OwnAudioPodcastsWidgets
