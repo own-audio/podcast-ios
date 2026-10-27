@@ -2162,6 +2162,16 @@
         }
       }
     },
+    "Or with the Apple or Google account this server was added with.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nebo účtem Apple či Google, se kterým byl tento server přidán."
+          }
+        }
+      }
+    },
     "Password": {
       "localizations": {
         "cs": {
@@ -3220,6 +3230,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tato epizoda tu už není."
+          }
+        }
+      }
+    },
+    "That is %@, not the account this server was added with. Sign in with the same account, or add the server again for another one.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tohle je %@, ne účet, se kterým byl tento server přidán. Přihlaste se stejným účtem, nebo server přidejte znovu pro jiný účet."
           }
         }
       }

@@ -14,6 +14,8 @@ struct AppleSignInButton: View {
     @Binding var isWorking: Bool
     @Binding var errorMessage: String?
     var onSignedIn: () -> Void = {}
+    /// What the sign-in is for; unset, it adds the server at `address`.
+    var perform: ((AppModel.OwnAudioSignIn) async throws -> Void)?
 
     @Environment(AppModel.self) private var model
     @Environment(\.colorScheme) private var colorScheme
@@ -51,7 +53,8 @@ struct AppleSignInButton: View {
                 // Apple gives the name only the first time someone signs in to this app.
                 let fullName = credential.fullName.map { PersonNameComponentsFormatter.localizedString(from: $0, style: .default) }
                     .flatMap { $0.isEmpty ? nil : $0 }
-                try await model.addOwnAudioServer(address: address, signIn: .apple(identityToken: token, fullName: fullName))
+                let signIn = AppModel.OwnAudioSignIn.apple(identityToken: token, fullName: fullName)
+                if let perform { try await perform(signIn) } else { try await model.addOwnAudioServer(address: address, signIn: signIn) }
                 Haptics.impact(.medium)
                 onSignedIn()
             } catch let error as ASAuthorizationError where error.code == .canceled {
@@ -115,6 +118,8 @@ struct GoogleSignInButton: View {
     @Binding var isWorking: Bool
     @Binding var errorMessage: String?
     var onSignedIn: () -> Void = {}
+    /// What the sign-in is for; unset, it adds the server at `address`.
+    var perform: ((AppModel.OwnAudioSignIn) async throws -> Void)?
 
     @Environment(AppModel.self) private var model
     @Environment(\.colorScheme) private var colorScheme
@@ -143,7 +148,8 @@ struct GoogleSignInButton: View {
             defer { isWorking = false }
             do {
                 let idToken = try await google.signIn()
-                try await model.addOwnAudioServer(address: address, signIn: .google(idToken: idToken))
+                let signIn = AppModel.OwnAudioSignIn.google(idToken: idToken)
+                if let perform { try await perform(signIn) } else { try await model.addOwnAudioServer(address: address, signIn: signIn) }
                 Haptics.impact(.medium)
                 onSignedIn()
             } catch is CancellationError {

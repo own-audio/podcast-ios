@@ -297,7 +297,8 @@ extension ServerAddress.Origin {
     }
 }
 
-/// The saved server's sign-in, entered again: its user name kept, the password asked for.
+/// The saved server's sign-in, entered again: its user name kept, the password asked for —
+/// or, for an own.audio server that takes them, Apple or Google, as when it was added.
 private struct SignInAgainView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -307,6 +308,7 @@ private struct SignInAgainView: View {
     @State private var code = ""
     @State private var isWorking = false
     @State private var errorMessage: String?
+    @State private var providers: Set<String> = []
 
     var body: some View {
         NavigationStack {
@@ -333,9 +335,29 @@ private struct SignInAgainView: View {
                             .accessibilityIdentifier("signInAgain.password")
                     }
                 }
+                if server.kind == .ownAudio, !providers.isEmpty, model.pendingTwoFactor?.replacing != server.id {
+                    Section {
+                        if providers.contains("apple") {
+                            AppleSignInButton(address: server.host.absoluteString, isWorking: $isWorking, errorMessage: $errorMessage,
+                                              onSignedIn: providerSignedIn, perform: signInAgain)
+                        }
+                        if providers.contains("google") {
+                            GoogleSignInButton(address: server.host.absoluteString, isWorking: $isWorking, errorMessage: $errorMessage,
+                                               onSignedIn: providerSignedIn, perform: signInAgain)
+                        }
+                    } footer: {
+                        Text("Or with the Apple or Google account this server was added with.")
+                    }
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                }
                 if let errorMessage {
                     Text(errorMessage).foregroundStyle(Theme.Colors.error)
                 }
+            }
+            .task {
+                guard server.kind == .ownAudio else { return }
+                providers = await model.ownAudioProviders(address: server.host.absoluteString)
             }
             .navigationTitle(server.displayName)
             .navigationBarTitleDisplayMode(.inline)
@@ -358,6 +380,15 @@ private struct SignInAgainView: View {
             }
             .onAppear { username = server.username }
         }
+    }
+
+    private func signInAgain(_ signIn: AppModel.OwnAudioSignIn) async throws {
+        try await model.signInAgain(id: server.id, signIn: signIn)
+    }
+
+    /// A second factor keeps the sheet open for its code.
+    private func providerSignedIn() {
+        if model.pendingTwoFactor?.replacing != server.id { dismiss() }
     }
 
     private func submit() async {

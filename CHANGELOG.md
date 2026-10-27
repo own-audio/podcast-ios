@@ -102,6 +102,10 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Fixed
 
+- Signing in again to an own.audio server offers Apple and Google too, as adding it does (when
+  the server takes them). It offered only a password, so an account added with Google had no
+  way back in once its session ended. It must be the same account the server was added with;
+  another one is refused with a message. As in the books and music apps.
 - Offline, an episode that is whole in the listening cache showed greyed out although it plays
   from the phone; what plays offline now comes from the same place as play does.
 - A file that could not be played at all (a broken enclosure, a missing file) made the player

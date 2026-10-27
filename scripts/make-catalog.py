@@ -18,6 +18,8 @@ cs = {
  "Google didn't return a sign-in. Try again.": "Google nevrátil přihlášení. Zkuste to znovu.",
  "Or sign in with the Apple or Google account you use on this own.audio server.": "Nebo se přihlaste účtem Apple nebo Google, který na tomto serveru own.audio používáte.",
  "Sign in with Apple": "Přihlásit se přes Apple",
+ "Or with the Apple or Google account this server was added with.": "Nebo účtem Apple či Google, se kterým byl tento server přidán.",
+ "That is %@, not the account this server was added with. Sign in with the same account, or add the server again for another one.": "Tohle je %@, ne účet, se kterým byl tento server přidán. Přihlaste se stejným účtem, nebo server přidejte znovu pro jiný účet.",
  "Summary": "Shrnutí",
  "Summarize Episode": "Shrnout epizodu",
  "Summary Length": "Délka shrnutí",

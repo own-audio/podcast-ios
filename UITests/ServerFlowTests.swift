@@ -315,6 +315,55 @@ final class ServerFlowTests: XCTestCase {
         XCTAssertTrue(everywhere.exists)
     }
 
+    /// Signing in again offers what adding the server offered: Apple and Google for an own.audio
+    /// server that takes them (run with the canary as OWNAUDIO_HOST), the password alone where
+    /// it does not (the public demo). It used to be the password alone everywhere, so an account
+    /// added with Google had no way back in after its session ended.
+    func testSignInAgainOffersTheServersSignIns() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let host = env["OWNAUDIO_HOST"], let user = env["OWNAUDIO_EMAIL"], let password = env["OWNAUDIO_ACCOUNT_PASSWORD"] else {
+            throw XCTSkip("OWNAUDIO_HOST is not set")
+        }
+        let offered = try serverSignIns(host)
+        let app = XCUIApplication()
+        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US",
+                               "-debugServerKind", "ownAudio", "-debugServerHost", host, "-debugServerUser", user, "-debugServerPassword", password]
+        app.launchChecked()
+        let settings = app.buttons["home.settings"]
+        XCTAssertTrue(settings.waitForExistence(timeout: 40))
+        let name = URL(string: host)?.host() ?? host
+        let row = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "settings.server.\(name)")).firstMatch
+        for _ in 0..<3 where !row.exists {
+            for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
+            if settings.isHittable { settings.tap() }
+            _ = row.waitForExistence(timeout: 5)
+        }
+        row.tap()
+        let again = app.buttons["serverDetail.signInAgain"]
+        XCTAssertTrue(again.waitForExistence(timeout: 10))
+        again.tap()
+        XCTAssertTrue(app.secureTextFields["signInAgain.password"].waitForExistence(timeout: 10), "the password is always there")
+        if offered.contains("google") {
+            XCTAssertTrue(app.buttons["addServer.google"].waitForExistence(timeout: 20), "Google, as when the server was added")
+        }
+        if offered.contains("apple") {
+            XCTAssertTrue(app.buttons["addServer.apple"].waitForExistence(timeout: 20), "Apple, as when the server was added")
+        }
+        if offered.isEmpty {
+            XCTAssertFalse(app.buttons["addServer.google"].waitForExistence(timeout: 5))
+            XCTAssertFalse(app.buttons["addServer.apple"].exists)
+        }
+    }
+
+    /// Which of Apple and Google the server says it takes.
+    private func serverSignIns(_ host: String) throws -> Set<String> {
+        let url = URL(string: host)!.appending(path: "api/v1/server")
+        let data = try Data(contentsOf: url)
+        let body = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let auth = (body?["features"] as? [String: Any])?["auth"] as? [String: Any] ?? [:]
+        return Set(["apple", "google"].filter { auth[$0] as? Bool == true })
+    }
+
     /// A server's page in Settings: it answers and accepts the sign-in, its addresses are listed,
     /// one can be added, and the server can be renamed.
     func testServerPage() throws {

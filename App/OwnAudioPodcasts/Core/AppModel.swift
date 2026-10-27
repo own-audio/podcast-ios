@@ -1005,6 +1005,43 @@ final class AppModel {
         throw lastError
     }
 
+    /// A saved own.audio server signed in to again with Apple or Google (a refused refresh, a
+    /// session ended elsewhere). It must be the account the server was saved with: another one
+    /// would put this server's downloads and progress under someone else.
+    func signInAgain(id: UUID, signIn: OwnAudioSignIn) async throws {
+        guard var record = server(id), record.kind == .ownAudio else { return }
+        let host = address(for: record)
+        let (idToken, fullName): (String, String?) = switch signIn {
+        case .apple(let token, let name): (token, name)
+        case .google(let token): (token, nil)
+        }
+        let tokens: OwnAudioKit.Tokens
+        do {
+            tokens = try await OwnAudioClient.signIn(host: host, provider: signIn.provider, idToken: idToken, fullName: fullName, device: Self.ownAudioDevice, session: Self.session)
+        } catch OwnAudioError.twoFactorRequired(let mfaToken, _) {
+            pendingTwoFactor = PendingTwoFactor(host: host, mfaToken: mfaToken, email: "", replacing: id)
+            return
+        }
+        let email = await Self.accountEmail(host: host, tokens: tokens)
+        if !record.username.isEmpty, !email.isEmpty, email.caseInsensitiveCompare(record.username) != .orderedSame {
+            throw SignInAgainError.anotherAccount(email)
+        }
+        record.ownAudioTokens = tokens
+        if !email.isEmpty { record.username = email }
+        try await update(record)
+        connectionChecks[id] = nil
+    }
+
+    enum SignInAgainError: LocalizedError {
+        case anotherAccount(String)
+        var errorDescription: String? {
+            switch self {
+            case .anotherAccount(let email):
+                String(localized: "That is \(email), not the account this server was added with. Sign in with the same account, or add the server again for another one.")
+            }
+        }
+    }
+
     /// The account's email, which the server list shows.
     private static func accountEmail(host: URL, tokens: OwnAudioKit.Tokens) async -> String {
         let client = OwnAudioClient(host: host, tokens: OwnAudioKit.TokenSession(tokens), session: session)
