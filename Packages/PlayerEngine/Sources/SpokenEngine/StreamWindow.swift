@@ -47,6 +47,13 @@ public final class StreamWindow: @unchecked Sendable {
         set { lock.withLock { _onUnsupported = newValue } }
     }
 
+    /// Where own.audio storage is blocked on this network, its files come through the server's
+    /// media proxy; nil fetches every link as it is.
+    public var storageRoute: ProxyMemory? {
+        get { lock.withLock { _storageRoute } }
+        set { lock.withLock { _storageRoute = newValue } }
+    }
+
     private struct Active: Equatable {
         var key: String
         var offsetMs: Int64
@@ -63,6 +70,7 @@ public final class StreamWindow: @unchecked Sendable {
     private var _playerAheadSecs: Double = 180
     private var _onStarved: (@Sendable (String, Bool) -> Void)?
     private var _onUnsupported: (@Sendable (String) -> Void)?
+    private var _storageRoute: ProxyMemory?
     private var files: [String: PartCacheFile] = [:]
     private var links: [String: URL] = [:]
     /// Where a link's redirects ended. A podcast enclosure often goes through a chain of
@@ -372,10 +380,22 @@ public final class StreamWindow: @unchecked Sendable {
             let data: Data
             let response: URLResponse
             do {
-                (data, response) = try await session.data(for: request)
+                (data, response) = try await load(request)
             } catch {
                 // The player let go of the request: nothing failed.
                 if Task.isCancelled || (error as? URLError)?.code == .cancelled { throw CancellationError() }
+                if onRedirect, StorageRoute.isBlocked(error: error, link: link) {
+                    // The address a redirect ended at can't be reached on this network (storage
+                    // blocked after a change of network): the link again, which finds the way.
+                    onRedirect = false
+                    let failed = url
+                    url = lock.withLock {
+                        if resolved[key] == failed { resolved[key] = nil }
+                        return links[key] ?? link
+                    }
+                    log.info("\(key, privacy: .public): the redirected address can't be reached here; back to the link")
+                    continue
+                }
                 throw SpokenEngine.isNetworkUnavailable(error) ? Failure.unreachable : error
             }
             guard let http = response as? HTTPURLResponse else { throw Failure.server(0) }
@@ -435,6 +455,17 @@ public final class StreamWindow: @unchecked Sendable {
             default:
                 throw Failure.server(http.statusCode)
             }
+        }
+    }
+
+    /// One request, through the media proxy when storage is blocked (`ProxyMemory`).
+    private func load(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        guard let storageRoute, let link = request.url else { return try await session.data(for: request) }
+        let session = session
+        return try await storageRoute.fetch(link) { url in
+            var routed = request
+            routed.url = url
+            return try await session.data(for: routed)
         }
     }
 

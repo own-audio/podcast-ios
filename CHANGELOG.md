@@ -8,6 +8,23 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- An own.audio episode plays on a network that blocks cloud storage (a company firewall,
+  say). Ported by hand from own.audio Books (`own-audio/book-ios`, "an own.audio book plays on
+  a network that blocks cloud storage"), file names kept: `StorageRoute` and `ProxyMemory` in
+  `PlayerCore`, and their use in `StreamWindow`, `SpokenEngine`, `TrackFileCache` and the
+  download manager. own.audio's stream link redirects to the file in storage; when that host
+  does not resolve, refuses or resets the connection, fails TLS, or a proxy in between answers
+  403, 407 or 451, the same link is tried once more with `route=proxy`, which the server
+  (1.0.0-beta.43 and later) redirects to its media proxy on its own domain; older servers
+  ignore it. That the proxy worked is remembered per server and network for a week, so later
+  streams, the listening cache and downloads go straight to it; if the proxy fails there and
+  storage works again, it is forgotten. A 403 from the server itself is still an expired link,
+  and no network at all is still a gap in the signal. Only own.audio stream links are ever
+  changed; feeds, Audiobookshelf and gPodder are untouched. Beyond Books: the window, which
+  remembers where an episode's redirects ended, goes back to the link when that address can't
+  be reached any more (storage blocked after a change of network), and the link finds the
+  proxy. `StorageRouteTests`, and `StreamWindowTests` with storage blocked from the start (a
+  failing name, a proxy's 403/451) and part-way through an episode.
 - The player engine from own.audio Books' offline work (`own-audio/book-ios`, "a file on the
   phone plays from the phone", "the next minutes are kept on the phone", "a gap in the signal
   waits"), ported by hand with the file names kept: `StreamWindow`, `PartCacheFile`,

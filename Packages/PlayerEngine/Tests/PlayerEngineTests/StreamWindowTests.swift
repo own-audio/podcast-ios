@@ -68,6 +68,17 @@ final class RangeServer: @unchecked Sendable {
     private var _hosts: [String] = []
     /// The host of every request, redirects included.
     var hosts: [String] { lock.withLock { _hosts } }
+    private var _blockedHosts: Set<String> = []
+    /// Hosts this network can't reach: own.audio's storage behind a company firewall.
+    var blockedHosts: Set<String> {
+        get { lock.withLock { _blockedHosts } }
+        set { lock.withLock { _blockedHosts = newValue } }
+    }
+    /// How a blocked host fails: a name that does not resolve, else this status from a proxy.
+    var blockedStatus: Int?
+    private var _servedHosts: [String] = []
+    /// The host of every request that reached a file.
+    var servedHosts: [String] { lock.withLock { _servedHosts } }
     /// After this many answers the network is gone (`offline` turns on by itself).
     var cutAfter: Int?
     /// How the network is gone: no network at all, or a server that does not answer.
@@ -91,6 +102,19 @@ final class RangeServer: @unchecked Sendable {
         if cut { throw URLError(failure) }
         let url = request.url!
         lock.withLock { _hosts.append(url.host ?? "") }
+        if url.path == "/api/v2/stream" {
+            // own.audio's stream link: a redirect to storage, or with `route=proxy` to the
+            // server's media proxy on its own domain.
+            let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            let path = query.first { $0.name == "i" }?.value ?? ""
+            let proxied = query.contains { $0.name == "route" && $0.value == "proxy" }
+            let target = URL(string: "https://\(proxied ? "media.example" : "storage.example")\(path)")!
+            return .init(statusCode: 302, body: Data(), redirectTo: target)
+        }
+        if let host = url.host, blockedHosts.contains(host) {
+            if let blockedStatus { return .init(statusCode: blockedStatus, body: Data("Blocked by policy".utf8), headers: ["Content-Type": "text/html"]) }
+            throw URLError(.cannotFindHost, userInfo: [NSURLErrorFailingURLErrorKey: url])
+        }
         if let target = redirects[url.path] {
             return .init(statusCode: 302, body: Data(), redirectTo: target)
         }
@@ -105,7 +129,10 @@ final class RangeServer: @unchecked Sendable {
         }
         guard let file = files[url.path] else { return .init(statusCode: 404, body: Data()) }
         let header = request.value(forHTTPHeaderField: "Range") ?? ""
-        lock.withLock { _ranges.append(header) }
+        lock.withLock {
+            _ranges.append(header)
+            _servedHosts.append(url.host ?? "")
+        }
         guard !ignoresRange, header.hasPrefix("bytes="), let dash = header.firstIndex(of: "-") else {
             return .init(statusCode: 200, body: file.data, headers: ["Content-Type": file.type])
         }
@@ -214,6 +241,74 @@ struct StreamWindowTests {
         #expect(await wait(until: { engine.positionMs > 1000 }, seconds: 10), "plays with the new link")
         #expect(calls.count == 1 && engine.errorMessage == nil)
         #expect(engine.book?.timeline.parts[0].url.query == "token=new", "the timeline keeps the new link")
+        engine.stop()
+    }
+
+    /// A book whose part is own.audio's stream link, which redirects to storage.
+    private func linkedBook(streamsByRange: Bool = true) -> (SpokenBook, URL) {
+        let link = URL(string: "https://server.example/api/v2/stream?i=/files/book.m4b&f=orig&b=0&o=0&u=u1&e=1900000000&k=1&s=sig")!
+        return (SpokenBook(id: "book1", title: "T", author: nil, parts: [
+            SpokenPart(id: "p1", url: link, durationMs: 6000, streamsByRange: streamsByRange),
+        ], chapters: []), link)
+    }
+
+    @Test("storage blocked on this network: the window fetches through the server's media proxy and remembers it",
+          arguments: [nil, 403, 451])
+    func storageBlocked(status: Int?) async throws {
+        let server = RangeServer()
+        try server.add("/files/book.m4b", fixture: "test-book.m4b", type: "audio/mp4")
+        server.blockedHosts = ["storage.example"]
+        server.blockedStatus = status
+        let (engine, _) = await setUp(server)
+        let memory = ProxyMemory(defaults: UserDefaults(suiteName: "route-\(UUID().uuidString)")!)
+        memory.network = "up,wifi-en0"
+        engine.storageRoute = memory
+        let (book, link) = linkedBook()
+        engine.load(book, at: 0, autoplay: true)
+        #expect(await wait(until: { engine.positionMs > 1500 }, seconds: 10), "plays through the proxy")
+        #expect(engine.errorMessage == nil && !engine.isWaitingForSignal)
+        #expect(!server.servedHosts.isEmpty && server.servedHosts.allSatisfy { $0 == "media.example" })
+        #expect(memory.usesProxy(for: link))
+        engine.stop()
+    }
+
+    @Test("storage blocked after a change of network: the address the redirect ended at is left, and the proxy takes over")
+    func storageBlockedMidway() async throws {
+        let server = RangeServer()
+        try server.add("/files/book.m4b", fixture: "test-book.m4b", type: "audio/mp4")
+        let (engine, window) = await setUp(server)
+        let memory = ProxyMemory(defaults: UserDefaults(suiteName: "route-\(UUID().uuidString)")!)
+        engine.storageRoute = memory
+        // Small, so the file comes in several pieces after the first.
+        window.lookAheadSecs = 1
+        engine.forwardBufferSecs = 1
+        let (book, link) = linkedBook()
+        engine.load(book, at: 0, autoplay: true)
+        #expect(await wait(until: { engine.positionMs > 500 }, seconds: 10))
+        #expect(server.servedHosts.allSatisfy { $0 == "storage.example" })
+        server.blockedHosts = ["storage.example"]
+        #expect(await wait(until: { engine.positionMs > 5500 || !engine.isPlaying }, seconds: 15))
+        #expect(engine.positionMs > 5500 && engine.errorMessage == nil, "plays to the end")
+        #expect(server.servedHosts.last == "media.example" && memory.usesProxy(for: link))
+        engine.stop()
+    }
+
+    @Test("a part the player streams itself: blocked storage is found and the part loaded again through the proxy")
+    func directPathReroutes() async throws {
+        let server = RangeServer()
+        try server.add("/files/book.m4b", fixture: "test-book.m4b", type: "audio/mp4")
+        server.blockedHosts = ["storage.example"]
+        // The window's session is where the engine asks; the part itself is not windowed.
+        let (engine, _) = await setUp(server)
+        let memory = ProxyMemory(defaults: UserDefaults(suiteName: "route-\(UUID().uuidString)")!)
+        engine.storageRoute = memory
+        let (book, link) = linkedBook(streamsByRange: false)
+        engine.load(book, at: 0, autoplay: true)
+        #expect(engine.loadedRoute == link)
+        // AVPlayer can't reach the test's hosts at all; what matters is that its failure leads
+        // to the check and to the part being loaded again by the proxy.
+        #expect(await wait(until: { engine.loadedRoute.map(StorageRoute.isProxied) == true }, seconds: 20))
+        #expect(memory.usesProxy(for: link))
         engine.stop()
     }
 

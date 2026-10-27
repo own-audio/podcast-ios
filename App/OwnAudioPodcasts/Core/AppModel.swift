@@ -111,6 +111,10 @@ final class AppModel {
         directory: FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("listening-window", isDirectory: true),
         session: AppModel.session
     )
+    /// Where own.audio storage is blocked on a network (a company firewall), its files come
+    /// through the server's media proxy instead: for the player, the window, the listening
+    /// cache and downloads alike. Kept per server and network.
+    let storageRoute = ProxyMemory()
     /// Episodes with a whole copy in the listening cache: offline they play like downloads.
     private(set) var cachedEpisodeIds: Set<String> = []
     /// An episode is one file; the player knows it by this part id.
@@ -203,8 +207,10 @@ final class AppModel {
         listeningCache = TrackFileCache(remoteURL: { [weak self] id in
             guard let self, let item = await self.nowPlaying, item.id == id, let source = await self.source(item.source) else { throw SourceError.notFound }
             return try await source.playback(item.episode.key).url
-        }, session: Self.session, cacheDirectory: cacheDirectory)
+        }, session: Self.session, cacheDirectory: cacheDirectory, storageRoute: storageRoute)
         engine.window = streamWindow
+        engine.storageRoute = storageRoute
+        downloads.storageRoute = storageRoute
         applyLookAhead()
         // The one locator, for play and for the player's own asking before it loads a file.
         engine.partLocator = { [weak self] id, _ in
@@ -229,6 +235,7 @@ final class AppModel {
         Task { await refreshCachedIds() }
         network.onChange = { [weak self] connected in
             guard let self else { return }
+            self.storageRoute.network = self.network.signature
             self.applyLookAhead()
             // An episode waiting for a signal plays on (with a fresh link if it needs one).
             self.engine.networkChanged(isConnected: connected)

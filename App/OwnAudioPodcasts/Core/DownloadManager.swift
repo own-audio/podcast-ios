@@ -69,6 +69,12 @@ final class DownloadManager: NSObject {
     private var session: URLSession!
     private var automaticSession: URLSession!
     private var tasks: [String: URLSessionDownloadTask] = [:]
+    /// Where own.audio storage is blocked on this network, files come through the server's
+    /// media proxy (`StorageRoute`).
+    var storageRoute: ProxyMemory?
+    /// Episodes whose download was blocked at storage and was started again the other way; a
+    /// second failure is shown.
+    private var rerouted: Set<String> = []
     nonisolated private let progressGate = DownloadProgressGate()
     static let sessionIdentifier = "audio.own.podcastplayer.downloads"
     static let automaticSessionIdentifier = "audio.own.podcastplayer.downloads.automatic"
@@ -142,6 +148,7 @@ final class DownloadManager: NSObject {
             try? FileManager.default.removeItem(at: directory.appendingPathComponent(name))
         }
         resumeData[id] = nil
+        rerouted.remove(id)
         states[id] = nil
         saveIndex()
     }
@@ -223,29 +230,50 @@ final class DownloadManager: NSObject {
             do {
                 let url = try await urlProvider(id)
                 guard let self, self.episodes[id] != nil, self.tasks[id] == nil else { return }
-                var request = URLRequest(url: url)
-                request.allowsCellularAccess = !self.wifiOnly
-                request.setValue("own.audio Podcasts/\(AppModel.appVersion) iOS", forHTTPHeaderField: "User-Agent")
-                let task = self.session(for: id).downloadTask(with: request)
-                task.taskDescription = id
-                self.tasks[id] = task
-                task.resume()
+                self.launch(id, url: self.storageRoute?.route(url) ?? url)
             } catch {
                 self?.states[id] = .failed(AppModel.message(for: error))
             }
         }
     }
 
-    private func finished(id: String, file: URL, response: URLResponse?) {
+    private func launch(_ id: String, url: URL) {
+        var request = URLRequest(url: url)
+        request.allowsCellularAccess = !wifiOnly
+        request.setValue("own.audio Podcasts/\(AppModel.appVersion) iOS", forHTTPHeaderField: "User-Agent")
+        let task = session(for: id).downloadTask(with: request)
+        task.taskDescription = id
+        tasks[id] = task
+        task.resume()
+    }
+
+    /// A download of an own.audio link that was blocked at storage: once more the other way —
+    /// through the server's media proxy, or straight to storage when the proxy is what failed.
+    /// True when it was started.
+    private func rerouteIfBlocked(_ id: String, link: URL?, blocked: Bool) -> Bool {
+        guard blocked, let link, !rerouted.contains(id), let other = StorageRoute.alternate(to: link) else { return false }
+        rerouted.insert(id)
+        resumeData[id] = nil
+        launch(id, url: other)
+        return true
+    }
+
+    private func finished(id: String, file: URL, response: URLResponse?, link: URL?) {
         guard var entry = episodes[id] else {
             try? FileManager.default.removeItem(at: file)
             return
         }
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
             try? FileManager.default.removeItem(at: file)
+            var blocked = false
+            if let link, let response { blocked = StorageRoute.isBlocked(response: response, link: link) }
+            if rerouteIfBlocked(id, link: link, blocked: blocked) { return }
+            rerouted.remove(id)
             states[id] = .failed(String(localized: "The server did not send the file."))
             return
         }
+        // The other way worked after this one was blocked: remembered for this network.
+        if rerouted.remove(id) != nil, let link { storageRoute?.worked(link) }
         // AVFoundation types a local file by its extension, so one is worked out: from the
         // bytes, else the server's content type, else what the feed says.
         let head = (try? FileHandle(forReadingFrom: file)).flatMap { handle -> Data? in
@@ -305,11 +333,12 @@ extension DownloadManager: URLSessionDownloadDelegate {
     nonisolated func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
         let id = downloadTask.taskDescription ?? ""
         let response = downloadTask.response
+        let link = downloadTask.originalRequest?.url
         let holding = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try? FileManager.default.moveItem(at: location, to: holding)
         Task { @MainActor in
             self.tasks[id] = nil
-            self.finished(id: id, file: holding, response: response)
+            self.finished(id: id, file: holding, response: response, link: link)
         }
     }
 
@@ -329,11 +358,18 @@ extension DownloadManager: URLSessionDownloadDelegate {
         let id = task.taskDescription ?? ""
         let resume = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data
         let cancelled = (error as NSError).code == NSURLErrorCancelled
+        let link = task.originalRequest?.url
+        let blocked = link.map { StorageRoute.isBlocked(error: error, link: $0, current: task.currentRequest?.url) } ?? false
         Task { @MainActor in
             // A task cancelled to move it (Wi-Fi Only, the other session) may report after its
             // successor started; the successor stays.
             guard self.tasks[id] == nil || self.tasks[id] === task else { return }
             self.tasks[id] = nil
+            if !cancelled, self.rerouteIfBlocked(id, link: link, blocked: blocked) {
+                self.saveIndex()
+                return
+            }
+            self.rerouted.remove(id)
             if let resume { self.resumeData[id] = resume }
             if !cancelled, self.episodes[id] != nil {
                 self.states[id] = .failed(error.localizedDescription)
