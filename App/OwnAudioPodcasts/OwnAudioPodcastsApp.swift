@@ -26,7 +26,6 @@ struct OwnAudioPodcastsApp: App {
         WindowGroup {
             RootView()
                 .environment(model)
-                .tint(Theme.Colors.accent)
         }
     }
 }

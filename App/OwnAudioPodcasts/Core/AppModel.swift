@@ -965,7 +965,7 @@ final class AppModel {
     static func summaryMessage(for error: Error) -> String {
         switch OwnAudioError.status(of: error) {
         case 402:
-            String(localized: "There isn't enough credit for this. Top up the family's credit in the own.audio web app.")
+            String(localized: "There isn't enough credit in the family for this.")
         case 409:
             String(localized: "Today's limit for paid work is reached. Try again tomorrow.")
         case 400:
@@ -1086,6 +1086,37 @@ final class AppModel {
         if let index = servers.firstIndex(where: { $0.host == Self.demoHost }) {
             servers[index].displayName = String(localized: "own.audio demo")
             try? await store.update(servers[index])
+        }
+    }
+
+    /// The own.audio client of a server, while it is signed in.
+    func ownAudioClient(serverId id: UUID) -> OwnAudioClient? {
+        (sources[id] as? OwnAudioPodcastSource)?.client
+    }
+
+    /// Deletes the own.audio account on the server, then the server from this iPhone. The
+    /// server's last admin can't: the server answers 400. Ported from own.audio Music.
+    func deleteAccount(serverId id: UUID) async throws {
+        guard let client = ownAudioClient(serverId: id) else { return }
+        do {
+            try await client.deleteAccount()
+        } catch where OwnAudioError.status(of: error) == 400 {
+            throw AccountDeletionError.lastAdmin
+        } catch where OwnAudioError.status(of: error) == 403 {
+            throw AccountDeletionError.refused
+        }
+        await removeServer(id)
+    }
+
+    enum AccountDeletionError: LocalizedError {
+        case lastAdmin
+        /// The public demo's shared account, which nobody may change.
+        case refused
+        var errorDescription: String? {
+            switch self {
+            case .lastAdmin: String(localized: "This is the server's only admin account. Make someone else an admin on the server first, or delete the account there.")
+            case .refused: String(localized: "The server doesn't let this account be deleted. A shared demo account stays for everyone.")
+            }
         }
     }
 
@@ -1454,6 +1485,8 @@ final class AppModel {
     /// What the listener is told when something fails.
     static func message(for error: Error) -> String {
         switch error {
+        case let error as AccountDeletionError:
+            error.errorDescription ?? ""
         case DownloadError.notOnPhone:
             String(localized: "This episode is not on this iPhone. Download it, or turn Offline Mode off.")
         case DownloadError.mobileData:

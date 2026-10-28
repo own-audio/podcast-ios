@@ -12,6 +12,7 @@ struct ServerDetailView: View {
     @State private var newName = ""
     @State private var isSigningIn = false
     @State private var confirmRemove = false
+    @State private var confirmDeleteAccount = false
     @State private var errorMessage: String?
     @State private var isSyncing = false
 
@@ -39,6 +40,11 @@ struct ServerDetailView: View {
                 Section {
                     Button("Sign In Again") { isSigningIn = true }
                         .accessibilityIdentifier("serverDetail.signInAgain")
+                    if server.kind == .ownAudio, server.ownAudioTokens != nil {
+                        Button("Delete Account…", role: .destructive) { confirmDeleteAccount = true }
+                            .foregroundStyle(.red)
+                            .accessibilityIdentifier("serverDetail.deleteAccount")
+                    }
                 } header: {
                     Text("Account")
                 } footer: {
@@ -98,6 +104,12 @@ struct ServerDetailView: View {
                             Label("Devices", systemImage: "iphone.gen3")
                         }
                         .accessibilityIdentifier("serverDetail.devices")
+                        NavigationLink {
+                            ListeningView(serverId: server.id)
+                        } label: {
+                            Label("Listening", systemImage: "chart.bar")
+                        }
+                        .accessibilityIdentifier("serverDetail.listening")
                     } header: {
                         Text("Account")
                     } footer: {
@@ -221,6 +233,15 @@ struct ServerDetailView: View {
                 }
             } message: {
                 Text(server.kind == .gpodder ? "Shows on this iPhone stay; they are no longer kept in step." : "Its shows leave this iPhone. Nothing changes on the server.")
+            }
+            .confirmationDialog("Delete Your Account?", isPresented: $confirmDeleteAccount, titleVisibility: .visible) {
+                Button("Delete Account", role: .destructive) {
+                    let id = server.id
+                    dismiss()
+                    model.perform { try await model.deleteAccount(serverId: id) }
+                }
+            } message: {
+                Text("Your account on \(server.host.host() ?? server.displayName) is deleted for good, with everything you added to it: music, audiobooks, podcasts, playlists and your listening history. What others in your family added stays with them.")
             }
         }
     }

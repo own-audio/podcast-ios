@@ -51,7 +51,7 @@ struct DevicesView: View {
     private func row(_ session: DeviceSession) -> some View {
         HStack(spacing: Theme.Spacing.md) {
             Image(systemName: Self.symbol(session.kind))
-                .foregroundStyle(Theme.Colors.accent)
+                .foregroundStyle(.tint)
                 .frame(width: 28)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
@@ -62,8 +62,8 @@ struct DevicesView: View {
                             .font(.caption2.weight(.semibold))
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(Theme.Colors.accent.opacity(0.15), in: Capsule())
-                            .foregroundStyle(Theme.Colors.accent)
+                            .background(.tint.opacity(0.15), in: Capsule())
+                            .foregroundStyle(.tint)
                     }
                 }
                 Group {

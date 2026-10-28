@@ -85,7 +85,7 @@ struct PlayerView: View {
                                 Text(engine.currentChapter?.title ?? String(localized: "Chapters")).font(.subheadline.weight(.medium)).lineLimit(1)
                                 Image(systemName: "chevron.down").font(.caption2)
                             }
-                            .foregroundStyle(Theme.Colors.accent)
+                            .foregroundStyle(.tint)
                         }
                         .accessibilityIdentifier("player.chapter")
                     }
@@ -113,7 +113,6 @@ struct PlayerView: View {
                     self.scrubbing = nil
                 }
             }
-            .tint(Theme.Colors.accent)
             .disabled(engine.durationMs == 0)
             .accessibilityIdentifier("player.scrubber")
             .accessibilityValue("\(ProgressText.clock(Int64(shown))) of \(ProgressText.clock(engine.durationMs))")
@@ -219,7 +218,7 @@ struct PlayerView: View {
                 icon().frame(height: 24)
                 Text(caption).font(.caption2)
             }
-            .foregroundStyle(tinted ? Theme.Colors.accent : Theme.Colors.foreground)
+            .foregroundStyle(tinted ? AnyShapeStyle(.tint) : AnyShapeStyle(Theme.Colors.foreground))
             .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
             .contentShape(Rectangle())
         }
@@ -233,6 +232,7 @@ struct PlayerView: View {
 struct SpeedSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(AccentChoice.storageKey) private var accent: AccentChoice = .app
 
     private let presets: [Float] = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0]
 
@@ -262,7 +262,7 @@ struct SpeedSheet: View {
                                 .frame(maxWidth: .infinity, minHeight: Theme.minTarget)
                         }
                         .buttonStyle(.bordered)
-                        .tint(abs(model.engine.rate - preset) < 0.01 ? .accentColor : .secondary)
+                        .tint(abs(model.engine.rate - preset) < 0.01 ? accent.color : .secondary)
                         .accessibilityIdentifier("speed.preset.\(preset)")
                     }
                 }
@@ -508,7 +508,7 @@ struct MiniPlayerBar: View {
             .overlay(alignment: .bottom) {
                 GeometryReader { geometry in
                     let fraction = engine.durationMs > 0 ? CGFloat(engine.positionMs) / CGFloat(engine.durationMs) : 0
-                    Theme.Colors.accent.frame(width: geometry.size.width * min(max(fraction, 0), 1), height: 2)
+                    Rectangle().fill(.tint).frame(width: geometry.size.width * min(max(fraction, 0), 1), height: 2)
                         .frame(maxHeight: .infinity, alignment: .bottom)
                 }
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.miniPlayer, style: .continuous))

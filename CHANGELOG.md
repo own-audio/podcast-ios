@@ -18,6 +18,30 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Account, listening and colour, ported by hand from own.audio Music (`own-audio/music-ios`,
+  "delete the own.audio account in the app, listening statistics with the family overview, and
+  an accent colour"), file and type names kept:
+  - Delete Account on an own.audio server's page (Settings → the server → Account): asks once,
+    then deletes the account and everything it added on the server (`DELETE /api/v1/users/me`)
+    and the server from this iPhone. The server's last admin is told to hand over first; the
+    public demo's shared account is refused by the server and the app says so. App Store
+    guideline 5.1.1(v): an app that can create an account (own.audio's Apple and Google sign-in
+    can) must let it be deleted in the app.
+  - Listening, next to Family and Devices: time listened in a week, month, year or ever, days
+    in a row, minutes per day as a chart, by kind and the most played, from every own.audio app
+    on the account (`/api/v1/stats/me`). The family's admin also sees each member's total, or
+    "Private" for those who don't share it (`/api/v1/stats/family`); everyone else gets a
+    switch to share theirs with the admin, on servers that say whether it is shared
+    (1.0.0-beta.49 and later). `OwnAudioKit/Account.swift`; `getV1` takes a query.
+  - Accent Colour in Settings: the app's blue or one of ten others, for buttons, links and
+    what's playing; alerts and menus follow. The icon and the widgets keep the blue. What drew
+    in `Theme.Colors.accent` now draws in the tint, apart from the logo and the storage bar's
+    per-app colours.
+  - The family's credit is only shown, without telling who tops it up, and a summary or answer
+    refused for want of credit no longer points to the web app: an app that may not sell
+    anything shouldn't point to where it is sold.
+  - `AccountTests` in OwnAudioKit; UI test `DemoTests.testSettingsOnTheDemo`: the welcome
+    screen's demo, the colours, Listening, and the delete dialog (cancelled).
 - An own.audio episode plays on a network that blocks cloud storage (a company firewall,
   say). Ported by hand from own.audio Books (`own-audio/book-ios`, "an own.audio book plays on
   a network that blocks cloud storage"), file names kept: `StorageRoute` and `ProxyMemory` in

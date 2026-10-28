@@ -58,6 +58,8 @@ struct EpisodeRow: View {
     var showsShowTitle = true
     var inInbox = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// Swipe actions are drawn by UIKit and need the colour itself, not the tint.
+    @AppStorage(AccentChoice.storageKey) private var accent: AccentChoice = .app
 
     private func words(episode: Episode, show: Show?, progress: ListeningProgress?, lineLimit: Int?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -70,7 +72,7 @@ struct EpisodeRow: View {
                 .lineLimit(lineLimit)
             HStack(spacing: 4) {
                 if model.isQueued(item) {
-                    Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.caption).foregroundStyle(Theme.Colors.accent)
+                    Image(systemName: "text.line.first.and.arrowtriangle.forward").font(.caption).foregroundStyle(.tint)
                         .accessibilityLabel("In Up Next")
                 }
                 DownloadBadge(state: model.downloadState(item))
@@ -129,7 +131,7 @@ struct EpisodeRow: View {
             } label: {
                 progress?.played == true ? Label("Unplayed", systemImage: "circle") : Label("Played", systemImage: "checkmark.circle")
             }
-            .tint(Theme.Colors.accent)
+            .tint(accent.color)
         }
         .swipeActions(edge: .trailing) {
             if inInbox {
@@ -196,7 +198,7 @@ struct PlayButton: View {
         } label: {
             Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
                 .font(.title)
-                .foregroundStyle(Theme.Colors.accent)
+                .foregroundStyle(.tint)
                 .frame(minWidth: Theme.minTarget, minHeight: Theme.minTarget)
                 .contentShape(Rectangle())
         }
@@ -287,8 +289,8 @@ struct DownloadButton: View {
                     Image(systemName: "checkmark.circle.fill").font(.title2)
                 case .downloading(let fraction):
                     ZStack {
-                        Circle().stroke(Theme.Colors.accent.opacity(0.25), lineWidth: 3)
-                        Circle().trim(from: 0, to: max(fraction, 0.02)).stroke(Theme.Colors.accent, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
+                        Circle().stroke(.tint.opacity(0.25), lineWidth: 3)
+                        Circle().trim(from: 0, to: max(fraction, 0.02)).stroke(.tint, style: StrokeStyle(lineWidth: 3, lineCap: .round)).rotationEffect(.degrees(-90))
                     }
                     .frame(width: 22, height: 22)
                 case .failed:
@@ -300,7 +302,6 @@ struct DownloadButton: View {
             .frame(minWidth: Theme.minTarget, minHeight: Theme.minTarget)
         }
         .buttonStyle(.bordered)
-        .tint(Theme.Colors.accent)
         .disabled(model.isOffline && state == nil)
         .accessibilityIdentifier("episode.download")
         .accessibilityLabel(label(state))
@@ -329,12 +330,12 @@ struct DownloadBadge: View {
         case .downloaded:
             Image(systemName: "arrow.down.circle.fill")
                 .font(.caption)
-                .foregroundStyle(Theme.Colors.accent)
+                .foregroundStyle(.tint)
                 .accessibilityLabel("Downloaded")
         case .downloading(let fraction):
             ZStack {
-                Circle().stroke(Theme.Colors.accent.opacity(0.25), lineWidth: 1.5)
-                Circle().trim(from: 0, to: max(fraction, 0.02)).stroke(Theme.Colors.accent, style: StrokeStyle(lineWidth: 1.5, lineCap: .round)).rotationEffect(.degrees(-90))
+                Circle().stroke(.tint.opacity(0.25), lineWidth: 1.5)
+                Circle().trim(from: 0, to: max(fraction, 0.02)).stroke(.tint, style: StrokeStyle(lineWidth: 1.5, lineCap: .round)).rotationEffect(.degrees(-90))
             }
             .frame(width: 11, height: 11)
             .accessibilityLabel("Downloading")

@@ -8,6 +8,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var isShowingPlayer = false
     @State private var tab: AppTab = .inbox
+    @AppStorage(AccentChoice.storageKey) private var accent: AccentChoice = .app
 
     private enum AppTab: Hashable { case inbox, shows, downloads, search }
 
@@ -66,6 +67,13 @@ struct RootView: View {
         }
         .onChange(of: model.engine.errorMessage) { _, message in
             if let message, !isShowingPlayer { model.actionError = message }
+        }
+        .tint(accent.color)
+        // Alerts and menus are drawn by UIKit, which takes the window's tint.
+        .onChange(of: accent, initial: true) { _, choice in
+            for case let scene as UIWindowScene in UIApplication.shared.connectedScenes {
+                for window in scene.windows { window.tintColor = UIColor(choice.color) }
+            }
         }
     }
 

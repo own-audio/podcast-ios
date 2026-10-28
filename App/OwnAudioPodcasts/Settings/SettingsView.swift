@@ -102,6 +102,7 @@ struct SettingsView: View {
                     }
                 }
                 .onChange(of: settings.lookAheadMinutes) { model.applyPlaybackSettings() }
+                AccentColorPicker()
                 Section {
                     LabeledContent("Version", value: AppModel.appVersion)
                     Link("Source Code and Licence", destination: URL(string: "https://github.com/own-audio/podcast-ios")!)
