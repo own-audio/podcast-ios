@@ -6,6 +6,16 @@ All notable changes to own.audio Podcasts. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- own.audio and Audiobookshelf no longer sign the phone out after a network change or a
+  restart. Every network change rebuilt the servers' clients with new token sessions made from
+  the tokens loaded at launch, so after the first refresh the next one presented a refresh
+  token already rotated, which own.audio treats as theft and ends the device's sign-in; saving
+  a server (a new name or address) also wrote those old tokens back. Each server now keeps one
+  token session while the app runs, and `ServerStore.update` keeps the stored tokens unless
+  the save is a new sign-in.
+
 ### Added
 
 - An own.audio episode plays on a network that blocks cloud storage (a company firewall,

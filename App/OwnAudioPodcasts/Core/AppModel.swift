@@ -121,6 +121,15 @@ final class AppModel {
     nonisolated static let episodePartId = "audio"
 
     @ObservationIgnored private var sources: [UUID: any PodcastSource] = [:]
+    /// One token session per server for as long as the app runs, whatever is rebuilt around it:
+    /// a new one made from the record would refresh with a token the old one already rotated,
+    /// and the server signs the device out for that.
+    @ObservationIgnored private var tokenSessions: [UUID: TokenSessions] = [:]
+
+    private struct TokenSessions {
+        var ownAudio: OwnAudioKit.TokenSession?
+        var audiobookshelf: AudiobookshelfKit.TokenSession?
+    }
     @ObservationIgnored private var syncs: [UUID: GPodderSync] = [:]
     @ObservationIgnored private let store = ServerStore()
     @ObservationIgnored private let directory: URL
@@ -433,11 +442,15 @@ final class AppModel {
         for record in servers {
             switch record.kind {
             case .ownAudio:
-                let tokens = OwnAudioKit.TokenSession(record.ownAudioTokens, keeper: OwnAudioTokenKeeper(store: store, serverId: record.id))
+                let tokens = tokenSessions[record.id]?.ownAudio
+                    ?? OwnAudioKit.TokenSession(record.ownAudioTokens, keeper: OwnAudioTokenKeeper(store: store, serverId: record.id))
+                tokenSessions[record.id, default: TokenSessions()].ownAudio = tokens
                 let client = OwnAudioClient(host: address(for: record), tokens: tokens, session: Self.session)
                 sources[record.id] = OwnAudioPodcastSource(client: client, store: ListeningStore(directory: serverDirectory(record.id)))
             case .audiobookshelf:
-                let tokens = AudiobookshelfKit.TokenSession(record.audiobookshelfTokens, keeper: AudiobookshelfTokenKeeper(store: store, serverId: record.id))
+                let tokens = tokenSessions[record.id]?.audiobookshelf
+                    ?? AudiobookshelfKit.TokenSession(record.audiobookshelfTokens, keeper: AudiobookshelfTokenKeeper(store: store, serverId: record.id))
+                tokenSessions[record.id, default: TokenSessions()].audiobookshelf = tokens
                 let client = AudiobookshelfClient(host: address(for: record), tokens: tokens, session: Self.session)
                 sources[record.id] = AudiobookshelfPodcastSource(client: client, store: ListeningStore(directory: serverDirectory(record.id)), fetcher: FeedFetcher(session: Self.session), canAddShows: record.canAddShows)
             case .gpodder:
@@ -889,7 +902,7 @@ final class AppModel {
         if let id = pending.replacing, var record = server(id) {
             record.ownAudioTokens = tokens
             record.username = email
-            try await update(record)
+            try await update(record, signIn: true)
             return
         }
         try await save(ServerRecord(displayName: Self.displayName(pending.host), kind: .ownAudio, host: pending.host, username: email, ownAudioTokens: tokens))
@@ -1028,7 +1041,7 @@ final class AppModel {
         }
         record.ownAudioTokens = tokens
         if !email.isEmpty { record.username = email }
-        try await update(record)
+        try await update(record, signIn: true)
         connectionChecks[id] = nil
     }
 
@@ -1085,6 +1098,7 @@ final class AppModel {
         changeUpNext { $0.removeAll { SourceRef(id: $0.source)?.serverId == id } }
         try? await store.remove(id: id)
         servers.removeAll { $0.id == id }
+        tokenSessions[id] = nil
         try? FileManager.default.removeItem(at: serverDirectory(id))
         rebuildSources()
         followLibraryChanges()
@@ -1324,8 +1338,9 @@ final class AppModel {
     }
 
     /// Saves a changed record (a new name, address or sign-in) and rebuilds what uses it.
-    func update(_ record: ServerRecord, rebuild: Bool = true) async throws {
-        try await store.update(record)
+    func update(_ record: ServerRecord, rebuild: Bool = true, signIn: Bool = false) async throws {
+        let record = try await store.update(record, signIn: signIn)
+        if signIn { tokenSessions[record.id] = nil }
         if let index = servers.firstIndex(where: { $0.id == record.id }) { servers[index] = record }
         if rebuild {
             chosenAddresses[record.id] = nil
@@ -1386,7 +1401,7 @@ final class AppModel {
             record.password = password
         }
         record.username = username
-        try await update(record)
+        try await update(record, signIn: true)
         connectionChecks[id] = nil
     }
 
