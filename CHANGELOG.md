@@ -8,6 +8,11 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Fixed
 
+- Accent Colour: the ring followed the first colour picked and then stayed on it while the
+  colour itself changed on (iOS 27). The picker now keeps its own choice and saves each change.
+
+### Fixed
+
 - own.audio and Audiobookshelf no longer sign the phone out after a network change or a
   restart. Every network change rebuilt the servers' clients with new token sessions made from
   the tokens loaded at launch, so after the first refresh the next one presented a refresh

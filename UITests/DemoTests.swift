@@ -33,7 +33,15 @@ final class DemoTests: XCTestCase {
         XCTAssertTrue(green.waitForExistence(timeout: 5), "Settings should offer accent colours")
         green.tap()
         XCTAssertTrue(green.isSelected, "the chosen colour should be marked")
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.lifetime = .keepAlways
+        add(shot)
+        let blue = app.buttons["settings.accent.blue"]
+        blue.tap()
+        XCTAssertTrue(blue.isSelected, "a second choice should be marked")
+        XCTAssertFalse(green.isSelected, "and the first one not any more")
         app.buttons["settings.accent.app"].tap()
+        XCTAssertTrue(app.buttons["settings.accent.app"].isSelected)
 
         for _ in 0..<8 where !row.isHittable { app.swipeDown() }
         row.tap()
@@ -55,7 +63,7 @@ final class DemoTests: XCTestCase {
         // Never confirmed: only the dialog is under test.
         let cancel = app.buttons["Cancel"]
         // Without a Cancel button (a popover), a tap far from the dialog's buttons closes it.
-        if cancel.exists { cancel.tap() } else { app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.06)).tap() }
+        if cancel.exists { cancel.tap() } else { app.otherElements["PopoverDismissRegion"].firstMatch.tap() }
         XCTAssertTrue(delete.waitForExistence(timeout: 5), "cancelling keeps the server")
         let gone = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: app.staticTexts["Delete Your Account?"])
         wait(for: [gone], timeout: 5)
