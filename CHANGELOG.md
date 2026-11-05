@@ -4,7 +4,24 @@ All notable changes to own.audio Podcasts. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.0.0] - 2026-11-05
+
+The first App Store release, alongside own.audio Music 1.0.0.
+
+### Release
+
+- Version 1.0.0. The build number comes from `CURRENT_PROJECT_VERSION` again, so
+  `scripts/testflight.sh` uploads the commit count instead of a fixed `1`.
+- App Store screenshots made the way own.audio Music's are, so the three apps read as one
+  family: light mode, English and Czech, iPhone 6.9" and iPad 13", taken from the same local
+  demo-only server and family, and framed with a caption each (`AppStore/*/captions.json`,
+  `scripts/marketing-screenshots.swift`). The screenshot script takes the newest simulator of a
+  name and allows half an hour per run, as Music's does.
+- `AppStoreScreenshots` signs in to the server from the launch arguments and shows eight
+  screens: New Episodes, player, a show, Up Next, Discover, Downloads, family, and the welcome
+  screen. Debug builds take `-debugServerName` for the server added from the launch arguments,
+  and `-screenshotWordmark` to hold the welcome screen's rotating word still.
+- Store texts brought up to what ships: Up Next, browsing by category, downloads and per-show download rules; the privacy line names Apple's podcast directory (as `PRIVACY.md` already did) and Apple or Google sign-in; review notes in Music's shape.
 
 ### Fixed
 

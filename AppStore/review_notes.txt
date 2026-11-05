@@ -1,5 +1,9 @@
-No account or server is needed to try the app. On the welcome screen, tap "Add a Show" and search for a show by name (for example "Planet Money"), or choose "Add a Feed by Address" and paste https://feeds.npr.org/510289/podcast.xml. Follow it and play an episode: speed, chapters (where the show has them), skip intervals and the sleep timer are in the player.
+No account or server is needed to try the app. On the welcome screen, "Find a Show" searches Apple's podcast directory by name (for example "Planet Money"), and "Add a Feed by Address" takes a feed address such as https://feeds.npr.org/510289/podcast.xml. Follow a show and play an episode: speed, chapters (where the show has them), skip intervals and the sleep timer are in the player.
 
-Server features: "Add a Server" on the welcome screen, or in Settings. The public own.audio demo server is https://demo.own.audio, account guest@demo.own.audio, password own-audio-demo; it holds public-domain and Creative Commons shows. Audiobookshelf and gPodder servers would need a server of the reviewer's own; the app works the same way with each.
+For the server features, "Add a Server" on the welcome screen (or in Settings) has "Try the Demo Library", which signs in to the public own.audio demo server (demopi.own.audio) by itself; it follows three Creative Commons shows. Audiobookshelf and gPodder servers would need a server of the reviewer's own; the app works the same way with each.
+
+Some parts appear only when the server offers them: the family, listening statistics, and sign-in with Apple or Google. The app sells nothing and links to no purchase.
+
+Deleting an account: Settings → the server → Delete Account… The demo's shared account is protected by the server, so deleting it is refused with an explanation; on any other own.audio account it deletes the account and everything it added.
 
 The app is free and open source (MPL-2.0): https://github.com/own-audio/podcast-ios

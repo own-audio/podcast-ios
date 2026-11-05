@@ -1,0 +1,34 @@
+{
+  "1-new-episodes": [
+    "What's new, first",
+    "The unplayed episodes across your shows, newest first"
+  ],
+  "2-player": [
+    "Made for listening",
+    "Speed with the voice kept, chapters, sleep timer"
+  ],
+  "3-show": [
+    "Every show, every episode",
+    "Notes with working links; unplayed and downloaded at a tap"
+  ],
+  "4-up-next": [
+    "Up Next",
+    "Episodes from any show, in the order you choose"
+  ],
+  "5-discover": [
+    "Find your next show",
+    "Browse by category, or add any feed by its address"
+  ],
+  "6-downloads": [
+    "Offline, by your rules",
+    "Keep the newest episodes, delete them once played"
+  ],
+  "7-family": [
+    "Podcasts for the whole family",
+    "On own.audio, your family's shows in one library"
+  ],
+  "8-welcome": [
+    "No account needed",
+    "Follow any podcast by its feed; a server is optional"
+  ]
+}

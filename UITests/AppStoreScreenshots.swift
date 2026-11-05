@@ -1,75 +1,156 @@
 import XCTest
 
-/// Screenshots for the App Store and the website, taken on the public own.audio demo
-/// ("Try the Demo Library": Creative Commons shows, nothing private). Not a test of behaviour:
-/// run it on purpose, on the store's device sizes, with a clean status bar
-/// (`scripts/app-store-screenshots.sh`). `SCREENSHOT_LANGUAGE` is `en` or `cs`,
-/// `SCREENSHOT_DIR` is where the PNGs go. Modelled on the music app's.
+/// The App Store screenshots, taken from a real server. Not a test of behaviour: run it on
+/// purpose, on the device sizes the store wants, with a clean status bar, in light mode (see
+/// `scripts/app-store-screenshots.sh`). Use an own.audio server holding only the demo library
+/// (Creative Commons shows), signed in as the account that runs its family, as own.audio Music's
+/// screenshots do, so the three apps' pictures show the same family and server.
+///
+/// `TEST_RUNNER_SCREENSHOT_LANGUAGE` is `en` or `cs`; `TEST_RUNNER_SCREENSHOT_DIR` is where the
+/// PNGs go; `TEST_RUNNER_SCREENSHOT_SHOW` is the show whose page is shown.
 final class AppStoreScreenshots: XCTestCase {
     private var env: [String: String] { ProcessInfo.processInfo.environment }
     private var czech: Bool { env["SCREENSHOT_LANGUAGE"] == "cs" }
 
     override func setUpWithError() throws {
-        continueAfterFailure = true
-        guard env["SCREENSHOT_DIR"] != nil, env["SCREENSHOT_LANGUAGE"] != nil else {
-            throw XCTSkip("Set SCREENSHOT_DIR and SCREENSHOT_LANGUAGE to take store screenshots")
+        continueAfterFailure = false
+        guard env["SERVER_HOST"] != nil, env["SCREENSHOT_DIR"] != nil, env["SCREENSHOT_LANGUAGE"] != nil else {
+            throw XCTSkip("Set SERVER_HOST, SCREENSHOT_DIR and SCREENSHOT_LANGUAGE to take store screenshots")
         }
     }
 
     private func t(_ english: String, _ czech: String) -> String { self.czech ? czech : english }
 
-    func testTakeScreenshots() throws {
-        let app = XCUIApplication()
-        app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(\(env["SCREENSHOT_LANGUAGE"]!))", "-AppleLocale", czech ? "cs_CZ" : "en_US"]
-        app.launchChecked()
-        sleep(2)
-        save(app, "0-welcome")
+    private var language: [String] {
+        ["-uiTestReset", "-AppleLanguages", "(\(env["SCREENSHOT_LANGUAGE"]!))", "-AppleLocale", czech ? "cs_CZ" : "en_US"]
+    }
 
-        // The welcome screen's "I run a server" opens the add-server form, which has the demo.
-        let server = app.buttons["welcome.server"]
-        XCTAssertTrue(server.waitForExistence(timeout: 15))
-        server.tap()
-        let demo = app.buttons["addServer.demo"]
-        XCTAssertTrue(demo.waitForExistence(timeout: 15))
-        demo.tap()
-        XCTAssertTrue(app.buttons["home.settings"].waitForExistence(timeout: 90), "New Episodes should open on the demo")
+    func testTakeScreenshots() throws {
+        // First, the app as it opens for someone with no server at all.
+        let app = XCUIApplication()
+        app.launchArguments = language + ["-screenshotWordmark", "podcast"]
+        app.launchChecked()
+        XCTAssertTrue(app.buttons["welcome.search"].waitForExistence(timeout: 15))
+        sleep(2)
+        save(app, "8-welcome")
+        app.terminate()
+
+        app.launchArguments = language + [
+            "-debugServerKind", "ownAudio", "-debugServerHost", env["SERVER_HOST"]!,
+            "-debugServerUser", env["SERVER_USER"] ?? "", "-debugServerPassword", env["SERVER_PASSWORD"] ?? "",
+            "-debugServerName", t("Family Podcasts", "Rodinné podcasty"),
+        ]
+        app.launchChecked()
+        let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 90), "New Episodes from the server")
         // Artwork in.
         sleep(8)
         save(app, "1-new-episodes")
 
-        app.buttons["tab.shows"].tap()
-        let show = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'show.'")).firstMatch
-        XCTAssertTrue(show.waitForExistence(timeout: 30), "the demo should have shows")
-        sleep(5)
-        save(app, "2-shows")
+        // Two episodes for later, so Up Next has something in it.
+        let rows = app.buttons.matching(NSPredicate(
+            format: "identifier BEGINSWITH 'episode.' AND NOT identifier IN %@", ["episode.title", "episode.play"]
+        ))
+        for index in [1, 2] {
+            XCTAssertTrue(rows.element(boundBy: index).waitForExistence(timeout: 15))
+            rows.element(boundBy: index).tap()
+            let later = app.buttons["episode.playLater"]
+            XCTAssertTrue(later.waitForExistence(timeout: 10), "an episode's page offers Play Later")
+            later.tap()
+            sleep(1)
+            back(app)
+        }
 
-        show.tap()
-        let episode = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'episode.'")).firstMatch
-        XCTAssertTrue(episode.waitForExistence(timeout: 30))
-        sleep(4)
-        save(app, "3-show")
+        // The newest episode onto the phone, for the Downloads tab.
+        XCTAssertTrue(rows.element(boundBy: 0).waitForExistence(timeout: 10))
+        rows.element(boundBy: 0).tap()
+        let download = app.buttons["episode.download"]
+        XCTAssertTrue(download.waitForExistence(timeout: 10))
+        download.tap()
+        XCTAssertTrue(waitUntil(timeout: 300) { download.label == t("Downloaded", "Staženo") }, "the episode should download: \(download.label)")
+        back(app)
 
-        // Play the newest episode from New Episodes, then open the player a little way in.
-        app.buttons["tab.inbox"].tap()
-        let play = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'play.'")).firstMatch
-        XCTAssertTrue(play.waitForExistence(timeout: 30))
+        // The newest episode, a little way in.
+        XCTAssertTrue(play.waitForExistence(timeout: 10))
         play.tap()
         let miniPlayer = app.buttons["miniPlayer"]
         XCTAssertTrue(miniPlayer.waitForExistence(timeout: 40))
         sleep(10)
         miniPlayer.tap()
         XCTAssertTrue(app.descendants(matching: .any)["player.scrubber"].firstMatch.waitForExistence(timeout: 15))
-        sleep(4)
-        save(app, "4-player")
-        if app.buttons["player.close"].exists { app.buttons["player.close"].tap() }
+        sleep(3)
+        save(app, "2-player")
 
-        app.buttons["tab.search"].tap()
+        app.buttons["player.upNext"].tap()
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'upNext.'")).firstMatch
+            .waitForExistence(timeout: 10))
+        sleep(2)
+        save(app, "4-up-next")
+        dismissSheet(app)
+        let playPause = app.buttons["player.playPause"]
+        if playPause.exists && playPause.label == t("Pause", "Pozastavit") { playPause.tap() }
+        app.buttons["player.close"].tap()
+        sleep(1)
+
+        // A show's page.
+        app.buttons["tab.shows"].firstMatch.tap()
+        let name = env["SCREENSHOT_SHOW"] ?? "Hacker Public Radio"
+        let show = app.descendants(matching: .any)["show.\(name)"].firstMatch
+        XCTAssertTrue(show.waitForExistence(timeout: 30), "\(name) should be followed")
+        show.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["show.filter"].firstMatch.waitForExistence(timeout: 20))
+        sleep(4)
+        save(app, "3-show")
+
+        app.buttons["tab.search"].firstMatch.tap()
         sleep(6)
         save(app, "5-discover")
+        // The search tab takes the tab bar's place until its field is closed.
+        leaveSearch(app)
 
-        app.buttons["tab.downloads"].tap()
-        sleep(3)
+        app.buttons["tab.downloads"].firstMatch.tap()
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'downloads.source.'")).firstMatch
+            .waitForExistence(timeout: 15), "the download should be listed")
+        sleep(2)
         save(app, "6-downloads")
+
+        // The family, from the server's page in Settings.
+        app.buttons["tab.inbox"].firstMatch.tap()
+        app.buttons["home.settings"].tap()
+        let server = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'settings.server.'")).firstMatch
+        XCTAssertTrue(server.waitForExistence(timeout: 10), "Settings should list the server")
+        server.tap()
+        let family = app.buttons["serverDetail.family"]
+        // The iPad's form sheet is shorter than the server's page: the family may be below the fold.
+        for _ in 0..<4 where !family.waitForExistence(timeout: 4) {
+            app.swipeUp()
+        }
+        XCTAssertTrue(family.exists, "an own.audio server signed in to has a family")
+        family.tap()
+        XCTAssertTrue(app.staticTexts[t("Members", "Členové")].waitForExistence(timeout: 15))
+        sleep(3)
+        save(app, "7-family")
+    }
+
+    private func leaveSearch(_ app: XCUIApplication) {
+        let downloads = app.buttons["tab.downloads"].firstMatch
+        for _ in 0..<3 where !downloads.exists {
+            let close = app.buttons.matching(NSPredicate(format: "label IN %@", ["Close", "Zavřít", "Cancel", "Zrušit"])).firstMatch
+            if close.exists { close.tap() } else { app.buttons["tab.inbox"].firstMatch.tap() }
+            sleep(1)
+        }
+    }
+
+    private func back(_ app: XCUIApplication) {
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        sleep(1)
+    }
+
+    private func dismissSheet(_ app: XCUIApplication) {
+        let done = app.buttons.matching(NSPredicate(format: "label IN %@", ["Done", "Hotovo"])).firstMatch
+        if done.waitForExistence(timeout: 2) { done.tap(); sleep(1); return }
+        app.swipeDown(velocity: .fast)
+        sleep(1)
     }
 
     private func save(_ app: XCUIApplication, _ name: String) {
@@ -80,5 +161,14 @@ final class AppStoreScreenshots: XCTestCase {
         add(attachment)
         let directory = URL(fileURLWithPath: env["SCREENSHOT_DIR"]!)
         try? shot.pngRepresentation.write(to: directory.appendingPathComponent("\(name).png"))
+    }
+
+    private func waitUntil(timeout: TimeInterval, _ condition: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if condition() { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        }
+        return condition()
     }
 }

@@ -418,7 +418,8 @@ final class AppModel {
     }
 
     /// For UI tests and screenshots: `-debugFeedURL`, and `-debugServerKind` (ownAudio,
-    /// audiobookshelf, gpodder) with `-debugServerHost`, `-debugServerUser`, `-debugServerPassword`.
+    /// audiobookshelf, gpodder) with `-debugServerHost`, `-debugServerUser`, `-debugServerPassword`,
+    /// and `-debugServerName` for the name it is shown by.
     private func addFromLaunchArguments() async {
         let defaults = UserDefaults.standard
         for text in (defaults.string(forKey: "debugFeedURL") ?? "").split(separator: " ") {
@@ -431,6 +432,9 @@ final class AppModel {
         do {
             // "automatic" (or anything unknown) finds the kind the way the form does.
             try await addServer(kind: ServerKind(rawValue: kindName), address: host, username: user, password: password)
+            if let name = defaults.string(forKey: "debugServerName"), let added = servers.last {
+                await rename(id: added.id, to: name)
+            }
         } catch {
             actionError = Self.message(for: error)
         }

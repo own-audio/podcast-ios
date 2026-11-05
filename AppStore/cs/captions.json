@@ -1,0 +1,34 @@
+{
+  "1-new-episodes": [
+    "Nejdřív to nové",
+    "Nepřehrané epizody ze všech vašich pořadů, od nejnovějších"
+  ],
+  "2-player": [
+    "Stvořený pro poslech",
+    "Rychlost se zachovaným hlasem, kapitoly, časovač spánku"
+  ],
+  "3-show": [
+    "Každý pořad, každá epizoda",
+    "Poznámky s funkčními odkazy; nepřehrané i stažené jedním klepnutím"
+  ],
+  "4-up-next": [
+    "Na řadě",
+    "Epizody z kteréhokoli pořadu, v pořadí, jaké chcete"
+  ],
+  "5-discover": [
+    "Najděte další pořad",
+    "Procházejte podle kategorií, nebo přidejte kanál podle adresy"
+  ],
+  "6-downloads": [
+    "Offline, podle vašich pravidel",
+    "Nejnovější epizody stažené, přehrané zase smazané"
+  ],
+  "7-family": [
+    "Podcasty pro celou rodinu",
+    "Na own.audio pořady celé rodiny v jedné knihovně"
+  ],
+  "8-welcome": [
+    "Bez registrace",
+    "Odebírejte jakýkoli podcast podle kanálu; server je volitelný"
+  ]
+}

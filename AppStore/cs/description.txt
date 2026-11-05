@@ -10,7 +10,13 @@ Stvořený pro poslech
 Nejdřív to nové
 • Nové epizody ukazují nepřehrané epizody ze všech vašich pořadů, od nejnovějších
 • Stránka každého pořadu s jeho epizodami; poznámky ke každé epizodě s funkčními odkazy
-• Hledání pořadu podle názvu, nebo přidání podle adresy kanálu
+• Na řadě: epizody z kteréhokoli pořadu, v pořadí, jaké chcete
+• Hledání pořadu podle názvu, procházení podle kategorií, nebo přidání podle adresy kanálu
+
+Offline
+• Stahujte jednotlivé epizody, nebo ať pořad stahuje své nejnovější sám
+• Přehrané epizody smazat a od každého pořadu nechat nejvýš několik
+• Stahování běží na pozadí; jen přes Wi-Fi a s limitem úložiště, pokud chcete
 
 Vaše místo zůstane
 • Pozice v každé epizodě se ukládá nejdřív v iPhonu, takže výpadek signálu nikdy neztratí vaše místo
@@ -22,6 +28,6 @@ Pokud ho máte, přidejte ho a vaše pořady i pozice vás budou sledovat mezi z
 • Synchronizační služby gPodder, například gpodder.net a podfetch
 Přidat můžete několik serverů najednou; přepínač v Nových epizodách vybírá, který vidíte.
 
-Soukromí už od návrhu: žádný účet u nás, žádná analytika, žádné reklamy, žádné sledování. Aplikace mluví jen s kanály a servery, které si zvolíte.
+Soukromí už od návrhu: žádný účet u nás, žádná analytika, žádné reklamy, žádné sledování. Aplikace mluví jen s kanály a servery, které si zvolíte, s Applovým katalogem podcastů, když hledáte, a s Applem nebo Googlem, pokud se přes ně přihlásíte.
 
 Česky a anglicky. Zdarma a open source pod licencí MPL-2.0. Vytvořilo own.audio.

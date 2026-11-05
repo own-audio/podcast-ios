@@ -10,7 +10,13 @@ Made for listening
 What's new, first
 • New Episodes opens on the unplayed episodes across your shows, newest first
 • Each show's page with its episodes; each episode's notes with working links
-• Search for a show by name, or add one by its feed address
+• Up Next: episodes from any show, in the order you choose
+• Search for a show by name, browse by category, or add one by its feed address
+
+Offline
+• Download single episodes, or let a show download its newest ones by itself
+• Delete episodes once played, and keep at most a few per show
+• Downloads go on in the background; Wi-Fi only and a storage limit if you want
 
 Your place, kept
 • Your position in every episode is saved on this iPhone first, so a lost signal never loses your place
@@ -22,6 +28,6 @@ If you run one, add it, and your shows and positions follow you between devices:
 • gPodder sync services, such as gpodder.net and podfetch
 Several servers can be added at once, and a switch on New Episodes chooses which one you see.
 
-Private by design: no account with us, no analytics, no ads, no tracking. The app talks only to the feeds and servers you choose.
+Private by design: no account with us, no analytics, no ads, no tracking. The app talks only to the feeds and servers you choose, to Apple's podcast directory when you search, and to Apple or Google if you sign in with them.
 
 In English and Czech. Free and open source under the MPL-2.0. Made by own.audio.
