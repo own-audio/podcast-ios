@@ -28,6 +28,11 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Changed
 
+- Wording follows the family's glossary, in American English: **Accent Color**, **App Color**,
+  **Favorite**, "catalog" (Discover's footer, the guide). The admin's listening list shows
+  **Not Shared** / *Nesdíleno* for a member who keeps their time to themselves, not "Private" (as in Music and Books).
+  Czech: *Odhlásit se všude*, *Odebrat stažení* / *Odebrat všechna stažení*, and *Odeberte
+  server* in the signed-out message.
 - The privacy policy and the Settings footer name everything the app talks to: the feeds you
   follow, Apple's podcast directory (its charts load as Discover opens, not only when you
   search) and your servers. The policy no longer mentions a Podcast Index key, which the app

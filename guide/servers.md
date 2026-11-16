@@ -23,7 +23,7 @@ To add one, see [Getting started](getting-started.md#add-a-server).
 | Positions and played marks on other devices | No, they stay on this iPhone | Yes | Yes, for the episodes the server holds | Yes |
 | Episodes kept on the server | No | Yes | Yes | No |
 | Family, devices, listening time | | Yes, see [own.audio extras](own-audio.md) | | |
-| Catalogue for Discover | | Where the server has one | | |
+| Catalog for Discover | | Where the server has one | | |
 | Episode summaries and questions | | Where the server offers them | | |
 | Sign in with Apple or Google | | Where the server accepts them | | |
 
@@ -42,7 +42,7 @@ Notes:
 
 ## The server page
 
-In **Settings**, tap a server. A coloured dot on its icon in the list shows whether it answers:
+In **Settings**, tap a server. A colored dot on its icon in the list shows whether it answers:
 green when it does, orange when no address answers, grey while unknown. Swipe a server to the
 left to remove it.
 

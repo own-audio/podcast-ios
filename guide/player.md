@@ -30,7 +30,7 @@ From the top:
 - Skip back, play/pause, skip forward. The skip buttons show their seconds; you set them in
   [Settings](settings.md#playback) (15 s back and 30 s forward by default).
 - The tools: **Speed**, **Sleep**, **Chapters** (only with chapters), **Up Next** and
-  **AirPlay**. A tool is coloured while it is in use (a speed other than 1×, a sleep timer
+  **AirPlay**. A tool is colored while it is in use (a speed other than 1×, a sleep timer
   running, episodes in Up Next).
 
 While streaming, a line under the scrubber may say how many minutes are already saved ahead on

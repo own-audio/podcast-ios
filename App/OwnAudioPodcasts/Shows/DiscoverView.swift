@@ -141,7 +141,7 @@ struct DiscoverHome: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Browse")
                     Text(model.catalogueSuggests
-                         ? "From \(model.catalogueName)'s catalogue. Nothing you search for here leaves your own server."
+                         ? "From \(model.catalogueName)'s catalog. Nothing you search for here leaves your own server."
                          : "Apple's top shows in each category, and Apple's search.")
                         .font(.caption).textCase(nil)
                 }

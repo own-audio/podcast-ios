@@ -41,7 +41,7 @@ and later.
 - Downloads with rules per show (the newest few, delete when played, keep at most), a storage
   limit, and an Offline Mode; positions wait on the phone until a server has them
 - Discover: categories to browse, search, and shows like the ones you follow — from an own.audio
-  server's catalogue where it has one, else Apple's charts and search; follow by feed address or
+  server's catalog where it has one, else Apple's charts and search; follow by feed address or
   a `feed://` link
 - Several servers at once, each reached at the fastest of its addresses; iPad with a sidebar
 - A widget, Siri, AirPlay and the player on the lock screen; CarPlay once Apple grants the

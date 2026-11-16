@@ -14,8 +14,8 @@ The full policy is in
 
 - **The shows you follow**: their feeds, pictures and episodes, from wherever each feed says.
   Those hosts see your IP address, as with any podcast player.
-- **Apple**, when you use Discover without an own.audio catalogue: the categories' top shows,
-  and the words you search for. With an own.audio catalogue, Discover asks your server instead.
+- **Apple**, when you use Discover without an own.audio catalog: the categories' top shows,
+  and the words you search for. With an own.audio catalog, Discover asks your server instead.
 - **The servers you add**, and only those: your sign-in, your shows, what you play, your
   positions and played marks.
 - **Apple or Google**, only if you sign in to an own.audio server with them.

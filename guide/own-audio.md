@@ -57,7 +57,7 @@ How long you have listened, from every own.audio app signed in to the account. C
 - **Most Played**.
 - **Share with the Family's Admin**: lets the admin see how long you listen and to what kind.
   Off, your listening stays yours.
-- If you are the family's admin, **Family** lists each member's total, or **Private** for
+- If you are the family's admin, **Family** lists each member's total, or **Not Shared** for
   those who don't share it.
 
 ## Episode summaries and questions
@@ -79,7 +79,7 @@ limit for paid work is reached, the app says so.
 
 ## Discover from your server
 
-An own.audio server with a podcast catalogue takes over [Discover](discover.md): its
+An own.audio server with a podcast catalog takes over [Discover](discover.md): its
 categories, its search, **More Like Your Shows** and **Similar Shows**. Nothing you search for
 then leaves your server.
 

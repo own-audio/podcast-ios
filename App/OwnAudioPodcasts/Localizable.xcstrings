@@ -401,7 +401,7 @@
         }
       }
     },
-    "Accent Colour": {
+    "Accent Color": {
       "localizations": {
         "cs": {
           "stringUnit": {
@@ -602,7 +602,7 @@
         }
       }
     },
-    "App Colour": {
+    "App Color": {
       "localizations": {
         "cs": {
           "stringUnit": {
@@ -1412,7 +1412,7 @@
         }
       }
     },
-    "Favourite": {
+    "Favorite": {
       "localizations": {
         "cs": {
           "stringUnit": {
@@ -1512,7 +1512,7 @@
         }
       }
     },
-    "For buttons, links and what's playing. The icon and the widgets keep the app's colour.": {
+    "For buttons, links and what's playing. The icon and the widgets keep the app's color.": {
       "localizations": {
         "cs": {
           "stringUnit": {
@@ -1552,7 +1552,7 @@
         }
       }
     },
-    "From %@'s catalogue. Nothing you search for here leaves your own server.": {
+    "From %@'s catalog. Nothing you search for here leaves your own server.": {
       "localizations": {
         "cs": {
           "stringUnit": {
@@ -2232,6 +2232,16 @@
         }
       }
     },
+    "Not Shared": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nesdíleno"
+          }
+        }
+      }
+    },
     "Nothing Downloaded": {
       "localizations": {
         "cs": {
@@ -2612,16 +2622,6 @@
         }
       }
     },
-    "Private": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Soukromé"
-          }
-        }
-      }
-    },
     "Purple": {
       "localizations": {
         "cs": {
@@ -2697,7 +2697,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odstranit všechna stažení"
+            "value": "Odebrat všechna stažení"
           }
         }
       }
@@ -2707,7 +2707,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odstranit všechna stažení?"
+            "value": "Odebrat všechna stažení?"
           }
         }
       }
@@ -2717,7 +2717,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odstranit stažení"
+            "value": "Odebrat stažení"
           }
         }
       }
@@ -2727,7 +2727,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odstranit stažení?"
+            "value": "Odebrat stažení?"
           }
         }
       }
@@ -3089,7 +3089,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odhlásit všude"
+            "value": "Odhlásit se všude"
           }
         }
       }
@@ -3099,7 +3099,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Odhlásit všude?"
+            "value": "Odhlásit se všude?"
           }
         }
       }
@@ -3689,7 +3689,7 @@
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server toto zařízení odhlásil. Odstraňte server a přidejte ho znovu."
+            "value": "Server toto zařízení odhlásil. Odeberte server a přidejte ho znovu."
           }
         }
       }

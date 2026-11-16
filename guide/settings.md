@@ -42,11 +42,11 @@ A show can also keep its own downloads; see [Show Settings](shows.md#show-settin
 | **On Mobile Data** | **Stream**, **Downloaded Only** | **Stream** | **Downloaded Only** plays nothing that isn't on this device while on mobile data. Not shown on a Mac. |
 | **Keep Ahead** | 5, 10, 15 min | 10 min | While an episode streams, this much of what comes next is kept on this device, on mobile data too. With Low Data Mode, 5 minutes. |
 
-## Accent Colour
+## Accent Color
 
-The colour of buttons, links and what's playing: **App Colour** (the default blue), Blue,
+The color of buttons, links and what's playing: **App Color** (the default blue), Blue,
 Indigo, Purple, Red, Orange, Yellow, Green, Teal, Brown or Graphite. The app icon and the
-widget keep the app's colour.
+widget keep the app's color.
 
 ## About
 

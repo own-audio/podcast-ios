@@ -28,7 +28,7 @@ Tap a show to open it: the picture, the title, the author, the source, the show'
 and its episodes, newest first. The picker above the episodes filters them: **All**,
 **Unplayed** or **Downloaded**. Pull down to refresh just this show.
 
-Where Discover uses an own.audio catalogue, the bottom of the page has **Similar Shows**, a row
+Where Discover uses an own.audio catalog, the bottom of the page has **Similar Shows**, a row
 of shows like this one that you don't follow yet (see [Discover](discover.md)).
 
 The **⋯** (**More**) menu at the top has:
