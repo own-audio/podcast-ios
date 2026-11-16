@@ -359,7 +359,7 @@ cs = {
  "Try the Download Again": "Zkusit stáhnout znovu",
  "Streaming": "Streamování",
  "Source Code and Licence": "Zdrojový kód a licence",
- "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen se servery, které přidáte.",
+ "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the feeds you follow, Apple's podcast directory and the servers you add.": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen s kanály, které odebíráte, s adresářem podcastů Applu a se servery, které přidáte.",
  "No signal — waiting": "Bez signálu — čekám",
  "Keep Ahead": "Uchovávat dopředu",
  "While an episode streams, its next minutes are kept on this device, so a gap in the network goes unheard; with Low Data Mode, 5 minutes.": "Během streamování se v tomto zařízení uchovávají další minuty epizody, takže výpadek sítě nebude slyšet; v režimu nízkých dat 5 minut.",

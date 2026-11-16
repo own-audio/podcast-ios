@@ -122,7 +122,7 @@ struct SettingsView: View {
                 } header: {
                     Text("About")
                 } footer: {
-                    Text("own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.")
+                    Text("own.audio Podcasts is free and open source (MPL-2.0). It talks only to the feeds you follow, Apple's podcast directory and the servers you add.")
                 }
             }
             .navigationTitle("Settings")

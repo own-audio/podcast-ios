@@ -4268,12 +4268,12 @@
       },
       "shouldTranslate": false
     },
-    "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the servers you add.": {
+    "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the feeds you follow, Apple's podcast directory and the servers you add.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen se servery, které přidáte."
+            "value": "own.audio Podcasts je zdarma a open source (MPL-2.0). Mluví jen s kanály, které odebíráte, s adresářem podcastů Applu a se servery, které přidáte."
           }
         }
       }

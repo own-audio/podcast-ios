@@ -28,6 +28,10 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Changed
 
+- The privacy policy and the Settings footer name everything the app talks to: the feeds you
+  follow, Apple's podcast directory (its charts load as Discover opens, not only when you
+  search) and your servers. The policy no longer mentions a Podcast Index key, which the app
+  doesn't have.
 - Text that named the iPhone says "this device" instead, which is right on iPad and Mac too:
   the local source is **This Device** (its stored id stays `phone`), **Keep this device's
   position**, and the settings, server, download and error texts. "Swipe a device to sign it
