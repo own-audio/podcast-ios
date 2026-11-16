@@ -9,6 +9,7 @@
 <!-- App Store badge goes here once the app is released, as in music-ios and book-ios. -->
 
 <p align="center">
+  <a href="https://own-audio.github.io/podcast-ios/">User guide</a> ·
   <a href="https://www.own.audio">Website</a> ·
   <a href="PRIVACY.md">Privacy</a> ·
   <a href="CHANGELOG.md">Changelog</a> ·
@@ -67,7 +68,7 @@ shows shared with the family and translated episodes.
 - **Free, with nothing to unlock.** No in-app purchases and no subscription. The only paid
   thing in own.audio is the optional hosted storage at [own.audio](https://www.own.audio),
   paid on the website.
-- **Try it before you set anything up.** "Try the Demo Library" in the add-server form signs
+- **Try it before you set anything up.** "Try the Public Demo" in the add-server form signs
   in to a public demo server, no account needed.
 - **Made by a person you can reach.** own.audio Podcasts is built by
   [Kornel Maráz](https://www.own.audio/about/). Problems and questions go to
