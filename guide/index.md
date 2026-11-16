@@ -3,6 +3,9 @@ title: Home
 nav_order: 1
 ---
 
+<img class="app-icon only-light" src="assets/images/app-icon.svg" alt="own.audio Podcasts app icon" width="96" height="96">
+<img class="app-icon only-dark" src="assets/images/app-icon-dark.svg" alt="own.audio Podcasts app icon" width="96" height="96">
+
 # own.audio Podcasts
 
 own.audio Podcasts is a podcast player for iPhone and iPad. On the Home Screen it is called
