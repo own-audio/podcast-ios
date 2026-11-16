@@ -2,6 +2,18 @@ import Foundation
 import PodcastLibrary
 import UIKit
 
+/// Where the app runs. On an Apple-silicon Mac it runs as an iPad app, and a few things differ
+/// there: no mobile data, a pointer and a keyboard, no background refresh.
+enum Platform {
+    static let isMac = ProcessInfo.processInfo.isiOSAppOnMac
+
+    /// The symbol for this device, next to its own shows and downloads.
+    static var deviceSymbol: String {
+        if isMac { return "laptopcomputer" }
+        return UIDevice.current.userInterfaceIdiom == .pad ? "ipad" : "iphone"
+    }
+}
+
 // The widget, the links that open the app, and the small pictures the widget and CarPlay use.
 // Copied in shape from the books app.
 

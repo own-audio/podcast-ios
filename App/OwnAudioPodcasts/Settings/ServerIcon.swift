@@ -28,7 +28,7 @@ enum ServerBrand {
         case .ownAudio: "person.3"
         case .podfetch, .gpodder: "arrow.triangle.2.circlepath"
         case .audiobookshelf: "books.vertical"
-        case .phone: "iphone"
+        case .phone: Platform.deviceSymbol
         }
     }
 }

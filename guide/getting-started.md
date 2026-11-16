@@ -50,9 +50,9 @@ When you tap a `feed://` or `podcast://` link in Safari or another app, own.podc
 
 ### Where the show is followed
 
-With no server, every show is followed on **This iPhone**. If you have added a server that
+With no server, every show is followed on **This Device**. If you have added a server that
 takes new shows (an Audiobookshelf account that may upload), a **Follow On** picker appears, so
-you can choose between this iPhone and that server. See [Servers and sync](servers.md).
+you can choose between this device and that server. See [Servers and sync](servers.md).
 
 ## Add a server
 

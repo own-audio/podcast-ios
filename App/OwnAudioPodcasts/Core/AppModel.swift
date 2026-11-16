@@ -152,6 +152,7 @@ final class AppModel {
     /// False until a scene is on screen: a launch by CarPlay, a finished download or the
     /// background refresh opens no live-update streams.
     @ObservationIgnored var isInForeground = false
+    @ObservationIgnored var openRefreshTask: Task<Void, Never>?
     /// How many times a server's live update read the lists again (for the UI tests).
     private(set) var liveReloads = 0
     @ObservationIgnored private var syncTask: Task<Void, Never>?
@@ -364,7 +365,7 @@ final class AppModel {
 
     func sourceName(_ ref: SourceRef) -> String {
         switch ref {
-        case .phone: String(localized: "This iPhone")
+        case .phone: String(localized: "This Device")
         case .server(let id): server(id)?.displayName ?? String(localized: "Removed server")
         case .library(let id, let library):
             "\(server(id)?.displayName ?? String(localized: "Removed server")) · \(server(id)?.libraries.first { $0.id == library }?.name ?? library)"
@@ -884,7 +885,7 @@ final class AppModel {
                 case .gpodder:
                     let client = GPodderClient(host: host, username: username, password: password, session: Self.session)
                     try await client.login()
-                    try await client.registerDevice(id: Self.gpodderDevice, caption: UIDevice.current.name)
+                    try await client.registerDevice(id: Self.gpodderDevice, caption: Self.deviceName, type: Platform.isMac ? "laptop" : "mobile")
                     record = ServerRecord(displayName: Self.displayName(host), kind: .gpodder, host: host, username: username, password: password,
                                           software: await Self.isPodfetch(host) ? "podfetch" : nil)
                 }
@@ -1450,8 +1451,12 @@ final class AppModel {
     }
 
     private static var ownAudioDevice: OwnAudioClient.Device {
-        OwnAudioClient.Device(name: UIDevice.current.name, kind: "ios")
+        OwnAudioClient.Device(name: deviceName, kind: Platform.isMac ? "macos" : "ios")
     }
+
+    /// The name servers list this device under. On a Mac the iPad app would otherwise be
+    /// listed as an iPad.
+    private static var deviceName: String { Platform.isMac ? "Mac" : UIDevice.current.name }
 
     private static func displayName(_ host: URL) -> String { host.host() ?? host.absoluteString }
 
@@ -1492,9 +1497,12 @@ final class AppModel {
         case let error as AccountDeletionError:
             error.errorDescription ?? ""
         case DownloadError.notOnPhone:
-            String(localized: "This episode is not on this iPhone. Download it, or turn Offline Mode off.")
+            String(localized: "This episode is not on this device. Download it, or turn Offline Mode off.")
         case DownloadError.mobileData:
-            String(localized: "On mobile data only downloaded episodes play. You can change this in Settings.")
+            // A Mac has no mobile data and no such setting; it only meets this on a phone's hotspot.
+            Platform.isMac
+                ? String(localized: "On a metered network such as a phone's hotspot, only downloaded episodes play.")
+                : String(localized: "On mobile data only downloaded episodes play. You can change this in Settings.")
         case DownloadError.streamOnly:
             String(localized: "This episode can't be downloaded: the server only streams it.")
         case SourceError.notAFeed:
@@ -1502,7 +1510,7 @@ final class AppModel {
         case SourceError.signInRejected, AudiobookshelfError.invalidCredentials, GPodderError.unauthorized, OwnAudioError.problem:
             String(localized: "The name or password is wrong.")
         case AudiobookshelfError.signedOut, OwnAudioError.signedOut:
-            String(localized: "The server signed this iPhone out. Remove the server and add it again.")
+            String(localized: "The server signed this device out. Remove the server and add it again.")
         case AddServerError.badAddress:
             String(localized: "That doesn't look like a server address.")
         case AddServerError.notRecognised:
@@ -1771,6 +1779,23 @@ extension AppModel {
         }
         // The first time is at launch, while `load` is still running; it refreshes by itself.
         if foreground, hasLoaded { Task { await refreshIfDue() } }
+        refreshWhileOpen(foreground)
+    }
+
+    /// New episodes while the app stays open. Coming to the front and the background task are
+    /// the only other refreshes, and a Mac runs no background tasks for an iPad app, so a window
+    /// left open all day would never refresh. `RefreshPolicy` still decides whether each one runs.
+    private func refreshWhileOpen(_ foreground: Bool) {
+        openRefreshTask?.cancel()
+        openRefreshTask = nil
+        guard foreground else { return }
+        openRefreshTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(RefreshPolicy.minimumInterval))
+                guard !Task.isCancelled, let self else { return }
+                if self.hasLoaded { await self.refreshIfDue() }
+            }
+        }
     }
 }
 

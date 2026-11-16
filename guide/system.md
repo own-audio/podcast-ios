@@ -48,3 +48,6 @@ iOS lets the app check feeds and servers for new episodes in the background, abo
 at most, so New Episodes is current when you open it and a show's download rules can fetch the
 newest episodes, often overnight on Wi-Fi. iOS decides when this happens. If Background App
 Refresh is off for the app in the iPhone's Settings, new episodes are found when you open it.
+
+While the app is open it checks again every 15 minutes, so a window left open (on an iPad, or
+on a Mac, where there is no background refresh) stays current too.

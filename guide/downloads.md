@@ -28,7 +28,7 @@ than one source, they are grouped by source. Episodes from a server you have rem
 listed under **Removed server** and still play.
 
 - Tap a row for the episode's page, or the play button to play it.
-- Swipe left for **Remove**.
+- Swipe left for **Remove**, or touch and hold (right-click on a Mac) for the same.
 - While downloads run, **Downloading** shows how many. After failures,
   **Retry Failed** tries them all again.
 - **Remove All Downloads** deletes every downloaded episode. Under it you see how much space
@@ -66,7 +66,7 @@ While it is on:
   Mode off.
 
 Trying to play an episode that isn't on the iPhone says
-**This episode is not on this iPhone. Download it, or turn Offline Mode off.**
+**This episode is not on this device. Download it, or turn Offline Mode off.**
 
 ## Streaming and mobile data
 
@@ -77,6 +77,9 @@ Under **Streaming** in Settings:
 - **Keep Ahead**: 5, 10 (the default) or 15 min. While an episode streams, its next minutes are
   saved on the iPhone, so a tunnel or a gap in the signal goes unheard. With Low Data Mode on,
   it is 5 minutes whatever you choose.
+
+On a Mac there is no mobile data, so **On Mobile Data** and **Download on Wi-Fi Only** are not
+shown there.
 
 When you stream an episode on Wi-Fi, the app also keeps a copy of it for a while, so listening
 again or seeking back doesn't download it again, and it can play offline. This doesn't happen

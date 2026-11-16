@@ -45,7 +45,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Servers")
                 } footer: {
-                    Text("Shows you follow on this iPhone need no server. A server adds its own shows; a gPodder account keeps this iPhone's in step with your other players.")
+                    Text("Shows you follow on this device need no server. A server adds its own shows; a gPodder account keeps this device's in step with your other players.")
                 }
                 Section {
                     NavigationLink {
@@ -56,8 +56,11 @@ struct SettingsView: View {
                     .accessibilityIdentifier("settings.downloads")
                     Toggle("Offline Mode", isOn: Binding(get: { model.settings.offlineMode }, set: { model.setOfflineMode($0) }))
                         .accessibilityIdentifier("settings.offlineMode")
-                    Toggle("Download on Wi-Fi Only", isOn: $settings.wifiOnlyDownloads)
-                        .accessibilityIdentifier("settings.wifiOnly")
+                    // A Mac has no mobile data; the setting still applies on a phone's hotspot.
+                    if !Platform.isMac {
+                        Toggle("Download on Wi-Fi Only", isOn: $settings.wifiOnlyDownloads)
+                            .accessibilityIdentifier("settings.wifiOnly")
+                    }
                     Picker("Keep at Most", selection: $settings.storageCapBytes) {
                         ForEach(PlaybackSettings.storageCapChoices, id: \.self) { cap in
                             Text(cap.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) } ?? String(localized: "No Limit")).tag(cap)
@@ -65,7 +68,7 @@ struct SettingsView: View {
                     }
                     .accessibilityIdentifier("settings.storageCap")
                 } footer: {
-                    Text("Offline Mode shows and plays only what is on this iPhone, as the app does on its own with no network. Over the limit, played episodes go first, then the ones not played for longest; never the one playing. A show can keep its own downloads in Show Settings.")
+                    Text("Offline Mode shows and plays only what is on this device, as the app does on its own with no network. Over the limit, played episodes go first, then the ones not played for longest; never the one playing. A show can keep its own downloads in Show Settings.")
                 }
                 .onChange(of: settings.wifiOnlyDownloads) { model.applyDownloadSettings() }
                 .onChange(of: settings.storageCapBytes) { model.applyDownloadSettings() }
@@ -84,11 +87,13 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings.continueWithNew")
                 }
                 Section {
-                    Picker("On Mobile Data", selection: $settings.mobileData) {
-                        Text("Stream").tag(PlaybackSettings.MobileData.stream)
-                        Text("Downloaded Only").tag(PlaybackSettings.MobileData.downloadedOnly)
+                    if !Platform.isMac {
+                        Picker("On Mobile Data", selection: $settings.mobileData) {
+                            Text("Stream").tag(PlaybackSettings.MobileData.stream)
+                            Text("Downloaded Only").tag(PlaybackSettings.MobileData.downloadedOnly)
+                        }
+                        .accessibilityIdentifier("settings.mobileData")
                     }
-                    .accessibilityIdentifier("settings.mobileData")
                     Picker("Keep Ahead", selection: $settings.lookAheadMinutes) {
                         ForEach(PlaybackSettings.lookAheadChoices, id: \.self) { Text("\($0) min").tag($0) }
                     }
@@ -96,9 +101,13 @@ struct SettingsView: View {
                 } header: {
                     Text("Streaming")
                 } footer: {
-                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                        Text("Downloaded Only plays nothing that is not on this iPhone while on mobile data.")
-                        Text("While an episode streams, its next minutes are kept on this iPhone, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.")
+                    if Platform.isMac {
+                        Text("While an episode streams, its next minutes are kept on this device, so a gap in the network goes unheard; with Low Data Mode, 5 minutes.")
+                    } else {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                            Text("Downloaded Only plays nothing that is not on this device while on mobile data.")
+                            Text("While an episode streams, its next minutes are kept on this device, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.")
+                        }
                     }
                 }
                 .onChange(of: settings.lookAheadMinutes) { model.applyPlaybackSettings() }
@@ -125,7 +134,7 @@ struct SettingsView: View {
             .confirmationDialog("Remove \(removing?.displayName ?? "")?", isPresented: Binding(get: { removing != nil }, set: { if !$0 { removing = nil } }), titleVisibility: .visible, presenting: removing) { server in
                 Button("Remove", role: .destructive) { Task { await model.removeServer(server.id) } }
             } message: { server in
-                Text(server.kind == .gpodder ? "Shows on this iPhone stay; they are no longer kept in step." : "Its shows leave this iPhone. Nothing changes on the server.")
+                Text(server.kind == .gpodder ? "Shows on this device stay; they are no longer kept in step." : "Its shows leave this device. Nothing changes on the server.")
             }
         }
     }

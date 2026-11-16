@@ -26,9 +26,12 @@ struct PlayerView: View {
                 }
             }
             .background(Theme.Colors.background)
+            .playbackShortcuts()
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button { dismiss() } label: { Image(systemName: "chevron.down") }
+                        // Esc closes the player; not while a sheet is over it, which Esc closes first.
+                        .keyboardShortcut(sheet == nil ? .cancelAction : nil)
                         .accessibilityLabel("Close")
                         .accessibilityIdentifier("player.close")
                 }

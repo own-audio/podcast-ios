@@ -83,9 +83,11 @@ struct LogsView: View {
         return Array(out.suffix(2000))
     }
 
-    /// A text file to share: the app's version and the iOS version first.
+    /// A text file to share: the app's version and the system's first. On a Mac, UIDevice gives
+    /// the iPadOS version the Mac stands in for; ProcessInfo's string carries the macOS build.
     private func export(_ lines: [Line]) -> URL {
-        let header = "own.podcast \(AppModel.appVersion), iOS \(UIDevice.current.systemVersion)\n\n"
+        let system = Platform.isMac ? "macOS \(ProcessInfo.processInfo.operatingSystemVersionString)" : "iOS \(UIDevice.current.systemVersion)"
+        let header = "own.podcast \(AppModel.appVersion), \(system)\n\n"
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("own-podcast-log.txt")
         try? (header + lines.map(\.text).joined(separator: "\n")).write(to: url, atomically: true, encoding: .utf8)
         return url

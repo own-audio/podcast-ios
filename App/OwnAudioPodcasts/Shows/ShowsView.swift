@@ -285,7 +285,7 @@ struct ShowSettingsView: View {
                 } header: {
                     Text("Downloads")
                 } footer: {
-                    Text("New episodes download on their own, the newest first; unplayed ones only. Settings decides whether this waits for Wi-Fi.")
+                    Text(Platform.isMac ? LocalizedStringKey("New episodes download on their own, the newest first; unplayed ones only.") : "New episodes download on their own, the newest first; unplayed ones only. Settings decides whether this waits for Wi-Fi.")
                 }
             }
             .navigationTitle("Show Settings")

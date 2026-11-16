@@ -93,10 +93,11 @@ public struct GPodderClient: Sendable {
         }
     }
 
-    /// Registers (or renames) this phone as a device, which subscriptions are kept per.
-    public func registerDevice(id: String, caption: String) async throws {
+    /// Registers (or renames) this phone as a device, which subscriptions are kept per. `type`
+    /// is one of the API's device types: desktop, laptop, mobile, server, other.
+    public func registerDevice(id: String, caption: String, type: String = "mobile") async throws {
         struct Body: Encodable { let caption: String; let type: String }
-        _ = try await raw("POST", "api/2/devices/\(escaped(username))/\(escaped(id)).json", body: try JSONEncoder().encode(Body(caption: caption, type: "mobile")))
+        _ = try await raw("POST", "api/2/devices/\(escaped(username))/\(escaped(id)).json", body: try JSONEncoder().encode(Body(caption: caption, type: type)))
     }
 
     /// What changed in the account's subscriptions on every device since `since`, where the

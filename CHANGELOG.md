@@ -4,6 +4,41 @@ All notable changes to own.audio Podcasts. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- The app behaves on an Apple-silicon Mac, where it runs as the iPad app
+  (`Platform.isMac`, from `ProcessInfo.isiOSAppOnMac`):
+  - New Episodes refresh every 15 minutes while the app is open, on every device, and stop when
+    it goes to the background. Before, only coming to the front and the background task
+    refreshed, and a Mac runs no background tasks for an iPad app. `RefreshPolicy` still
+    decides whether each refresh runs.
+  - Keyboard: Space plays or pauses, ⌘← and ⌘→ skip by the listener's intervals, Esc closes
+    the full player (not while a sheet is over it). A field being edited keeps Space.
+  - Rows whose only action was a swipe have it in a context menu too (right-click on a Mac,
+    touch and hold on iOS): remove a download, sign out a device, withdraw an invitation,
+    remove an address.
+  - On a Mac, Settings hides **On Mobile Data** and **Download on Wi-Fi Only** (the logic stays,
+    for a phone's hotspot), a show's download rules no longer mention Wi-Fi, and the
+    downloaded-only error names a metered network instead of mobile data.
+  - own.audio lists a Mac as kind `macos` named "Mac", and gPodder as device type `laptop`
+    (`GPodderClient.registerDevice` takes a `type`, `mobile` by default). The shared log says
+    macOS and its build.
+
+### Changed
+
+- Text that named the iPhone says "this device" instead, which is right on iPad and Mac too:
+  the local source is **This Device** (its stored id stays `phone`), **Keep this device's
+  position**, and the settings, server, download and error texts. "Swipe a device to sign it
+  out" now mentions the menu as well. The device's own symbol (iPhone, iPad or laptop) marks
+  it in lists. CarPlay's text keeps the iPhone, where it is right.
+
+### Fixed
+
+- On a Mac, the full player is handed the app's state: without it, the player's keyboard
+  shortcuts ended the app as it opened.
+
 ## [1.0.0] - 2026-11-05
 
 The first App Store release, alongside own.audio Music 1.0.0.

@@ -19,7 +19,7 @@ struct RootView: View {
             } else if model.isEmpty {
                 OnboardingView()
             } else {
-                tabs
+                tabs.playbackShortcuts()
             }
         }
         .task { await model.load() }
@@ -40,7 +40,11 @@ struct RootView: View {
         .sheet(isPresented: Binding(get: { model.pendingFeedAddress != nil && model.hasLoaded }, set: { if !$0 { model.pendingFeedAddress = nil } })) {
             AddFeedView(address: model.pendingFeedAddress ?? "")
         }
-        .fullScreenCover(isPresented: $isShowingPlayer) { PlayerView() }
+        .fullScreenCover(isPresented: $isShowingPlayer) {
+            // On a Mac (an iPad app there) the cover is not given the window's environment: a view
+            // in the player that reads the model ended the app. Passed in on purpose.
+            PlayerView().environment(model)
+        }
         .alert("That Didn't Work", isPresented: Binding(get: { model.actionError != nil }, set: { if !$0 { model.actionError = nil } })) {
             Button("OK", role: .cancel) {}
         } message: {
@@ -57,13 +61,13 @@ struct RootView: View {
                 Task { await model.play(pending.episode, startAt: pending.otherMs) }
             }
             .accessibilityIdentifier("resume.other")
-            Button("Keep this iPhone's position (\(ProgressText.clock(pending.localMs)))") {
+            Button("Keep this device's position (\(ProgressText.clock(pending.localMs)))") {
                 model.pendingResume = nil
                 Task { await model.play(pending.episode, startAt: pending.localMs) }
             }
             .accessibilityIdentifier("resume.local")
         } message: { pending in
-            Text("Another device got to \(ProgressText.clock(pending.otherMs)); this iPhone was at \(ProgressText.clock(pending.localMs)).")
+            Text("Another device got to \(ProgressText.clock(pending.otherMs)); this device was at \(ProgressText.clock(pending.localMs)).")
         }
         .onChange(of: model.engine.errorMessage) { _, message in
             if let message, !isShowingPlayer { model.actionError = message }

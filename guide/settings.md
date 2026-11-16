@@ -12,15 +12,15 @@ Open Settings with the gear at the top of [New Episodes](new-episodes.md). **Don
 
 Your servers, each with its kind and user name, and a dot for whether it answers. Tap one for
 its [server page](servers.md#the-server-page); swipe one to the left to remove it.
-**Add a Server** adds another. Shows you follow on this iPhone need no server.
+**Add a Server** adds another. Shows you follow on this device need no server.
 
 ## Downloads and Offline Mode
 
 | Setting | Default | What it does |
 |---|---|---|
 | **Downloads** | | Opens the list of downloads; shows how much space they take. |
-| **Offline Mode** | off | Shows and plays only what is on this iPhone. See [Offline Mode](downloads.md#offline-mode). |
-| **Download on Wi-Fi Only** | on | Downloads, yours and the shows' own, wait for Wi-Fi. |
+| **Offline Mode** | off | Shows and plays only what is on this device. See [Offline Mode](downloads.md#offline-mode). |
+| **Download on Wi-Fi Only** | on | Downloads, yours and the shows' own, wait for Wi-Fi. Not shown on a Mac. |
 | **Keep at Most** | **No Limit** | A limit for all downloads: 1, 2, 5 or 10 GB. Over it, played episodes go first, then the ones not played for longest; never the one playing. |
 
 A show can also keep its own downloads; see [Show Settings](shows.md#show-settings).
@@ -39,8 +39,8 @@ A show can also keep its own downloads; see [Show Settings](shows.md#show-settin
 
 | Setting | Choices | Default | What it does |
 |---|---|---|---|
-| **On Mobile Data** | **Stream**, **Downloaded Only** | **Stream** | **Downloaded Only** plays nothing that isn't on this iPhone while on mobile data. |
-| **Keep Ahead** | 5, 10, 15 min | 10 min | While an episode streams, this much of what comes next is kept on this iPhone, on mobile data too. With Low Data Mode, 5 minutes. |
+| **On Mobile Data** | **Stream**, **Downloaded Only** | **Stream** | **Downloaded Only** plays nothing that isn't on this device while on mobile data. Not shown on a Mac. |
+| **Keep Ahead** | 5, 10, 15 min | 10 min | While an episode streams, this much of what comes next is kept on this device, on mobile data too. With Low Data Mode, 5 minutes. |
 
 ## Accent Colour
 

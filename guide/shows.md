@@ -9,7 +9,7 @@ description: "The Shows tab in own.audio Podcasts: every show you follow, groupe
 ## The Shows tab
 
 Every show you follow, as a grid of pictures. With more than one source, the shows are grouped
-under the source they come from (**This iPhone**, or a server's name). A source that doesn't
+under the source they come from (**This Device**, or a server's name). A source that doesn't
 answer says **Can't be reached right now**.
 
 - **+** (**Add a Show**) follows a show by its [feed address](getting-started.md#follow-a-show-by-its-feed-address).
@@ -59,7 +59,7 @@ Under **Downloads**:
 
 | Setting | Choices | Default | What it does |
 |---|---|---|---|
-| **Download New Episodes** | **Off**, **Newest 1**, 3, 5, 10 | **Off** | Keeps the newest unplayed episodes downloaded, by themselves. Whether this waits for Wi-Fi is decided by **Download on Wi-Fi Only** in Settings. |
+| **Download New Episodes** | **Off**, **Newest 1**, 3, 5, 10 | **Off** | Keeps the newest unplayed episodes downloaded, by themselves. Whether this waits for Wi-Fi is decided by **Download on Wi-Fi Only** in Settings (not on a Mac, which has no mobile data). |
 | **Delete When Played** | on / off | off | A downloaded episode of this show is deleted once you have played it. |
 | **Keep at Most** | **No Limit**, 1, 3, 5, 10 **Episodes** | **No Limit** | No more than this many of the show's episodes on the iPhone; the oldest go first. |
 

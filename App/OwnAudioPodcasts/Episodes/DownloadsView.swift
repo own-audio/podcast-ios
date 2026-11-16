@@ -65,7 +65,7 @@ struct DownloadsView: View {
                     Button("Remove All Downloads", role: .destructive) { isConfirmingRemoveAll = true }
                         .accessibilityIdentifier("downloads.removeAll")
                 } footer: {
-                    Text("\(ByteCountFormatter.string(fromByteCount: model.downloads.totalBytes, countStyle: .file)) on this iPhone.")
+                    Text("\(ByteCountFormatter.string(fromByteCount: model.downloads.totalBytes, countStyle: .file)) on this device.")
                 }
             }
         }
@@ -104,6 +104,9 @@ struct DownloadsView: View {
             .swipeActions {
                 Button(role: .destructive) { model.removeDownload(item) } label: { Label("Remove", systemImage: "trash") }
             }
+            .contextMenu {
+                Button(role: .destructive) { model.removeDownload(item) } label: { Label("Remove", systemImage: "trash") }
+            }
         }
     }
 
@@ -116,7 +119,7 @@ struct DownloadsView: View {
     }
 }
 
-/// "This iPhone", a server's name, or "Removed server" once the server is gone.
+/// "This Device", a server's name, or "Removed server" once the server is gone.
 struct DownloadSourceLabel: View {
     @Environment(AppModel.self) private var model
     let entry: DownloadManager.DownloadedEpisode
@@ -125,7 +128,7 @@ struct DownloadSourceLabel: View {
         let ref = entry.sourceRef
         let known = ref.map { $0 == .phone || $0.serverId.map { id in model.servers.contains { $0.id == id } } == true } ?? false
         HStack(spacing: 4) {
-            Image(systemName: ref == .phone ? "iphone" : "server.rack").imageScale(.small).accessibilityHidden(true)
+            Image(systemName: ref == .phone ? Platform.deviceSymbol : "server.rack").imageScale(.small).accessibilityHidden(true)
             Text(known ? model.sourceName(ref!) : String(localized: "Removed server"))
         }
         .font(.caption)

@@ -57,7 +57,7 @@ final class DownloadFlowTests: XCTestCase {
         let source = app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH 'downloads.source.'")).firstMatch
         let sourceGroup = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'downloads.source.'")).firstMatch
         XCTAssertTrue(sourceGroup.waitForExistence(timeout: 10), "the download is listed")
-        XCTAssertTrue((source.exists ? source.label : sourceGroup.label).contains("This iPhone"), "and says where it came from")
+        XCTAssertTrue((source.exists ? source.label : sourceGroup.label).contains("This Device"), "and says where it came from")
         XCTAssertTrue(app.buttons["downloads.removeAll"].exists, "Remove All is offered")
 
         // Offline: it still plays, from the phone.

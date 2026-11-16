@@ -59,7 +59,7 @@ search results too.
   out.
 - The gear opens [Settings](settings.md).
 - With more than one source, a server button on the left chooses what New Episodes and Shows
-  show: **All Sources**, **This iPhone**, or one server (an Audiobookshelf server with several
+  show: **All Sources**, **This Device**, or one server (an Audiobookshelf server with several
   podcast libraries is listed once per library). The choice is remembered.
 
 ## When it is empty

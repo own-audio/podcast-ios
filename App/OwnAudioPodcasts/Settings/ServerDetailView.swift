@@ -140,7 +140,7 @@ struct ServerDetailView: View {
                     } header: {
                         Text("Sync")
                     } footer: {
-                        Text("This iPhone's shows and positions are kept in step with the account, as every other app signed in to it does.")
+                        Text("This device's shows and positions are kept in step with the account, as every other app signed in to it does.")
                     }
                 }
 
@@ -163,6 +163,15 @@ struct ServerDetailView: View {
                     ForEach(server.candidateAddresses) { address in
                         addressRow(address)
                             .swipeActions {
+                                if address.origin != .added {
+                                    Button(role: .destructive) {
+                                        Task { await model.removeAddress(address.url, from: server.id) }
+                                    } label: {
+                                        Label("Remove", systemImage: "trash")
+                                    }
+                                }
+                            }
+                            .contextMenu {
                                 if address.origin != .added {
                                     Button(role: .destructive) {
                                         Task { await model.removeAddress(address.url, from: server.id) }
@@ -232,7 +241,7 @@ struct ServerDetailView: View {
                     }
                 }
             } message: {
-                Text(server.kind == .gpodder ? "Shows on this iPhone stay; they are no longer kept in step." : "Its shows leave this iPhone. Nothing changes on the server.")
+                Text(server.kind == .gpodder ? "Shows on this device stay; they are no longer kept in step." : "Its shows leave this device. Nothing changes on the server.")
             }
             .confirmationDialog("Delete Your Account?", isPresented: $confirmDeleteAccount, titleVisibility: .visible) {
                 Button("Delete Account", role: .destructive) {

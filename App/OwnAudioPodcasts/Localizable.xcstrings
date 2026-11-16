@@ -52,12 +52,12 @@
         }
       }
     },
-    "%@ on this iPhone.": {
+    "%@ on this device.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ v tomto iPhonu."
+            "value": "%@ v tomto zařízení."
           }
         }
       }
@@ -351,12 +351,12 @@
         }
       }
     },
-    "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players.": {
+    "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this device's shows and positions are kept in step with your other players.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Účet synchronizace gPodder (podfetch, gpodder.net, server own.audio): pořady a pozice v tomto iPhonu se udržují ve shodě s ostatními přehrávači."
+            "value": "Účet synchronizace gPodder (podfetch, gpodder.net, server own.audio): pořady a pozice v tomto zařízení se udržují ve shodě s ostatními přehrávači."
           }
         }
       }
@@ -582,12 +582,12 @@
         }
       }
     },
-    "Another device got to %@; this iPhone was at %@.": {
+    "Another device got to %@; this device was at %@.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jiné zařízení došlo na %@, tento iPhone byl na %@."
+            "value": "Jiné zařízení došlo na %@, toto zařízení bylo na %@."
           }
         }
       }
@@ -1242,12 +1242,12 @@
         }
       }
     },
-    "Downloaded Only plays nothing that is not on this iPhone while on mobile data.": {
+    "Downloaded Only plays nothing that is not on this device while on mobile data.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jen stažené na mobilních datech nepřehraje nic, co není v tomto iPhonu."
+            "value": "Jen stažené na mobilních datech nepřehraje nic, co není v tomto zařízení."
           }
         }
       }
@@ -1452,16 +1452,6 @@
         }
       }
     },
-    "Find a show by its name or its host.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Najděte pořad podle názvu nebo moderátora."
-          }
-        }
-      }
-    },
     "Follow": {
       "localizations": {
         "cs": {
@@ -1568,16 +1558,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Z katalogu serveru %@. Nic, co tu hledáte, neopustí váš server."
-          }
-        }
-      }
-    },
-    "From Apple Podcasts": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Z Apple Podcasts"
           }
         }
       }
@@ -1762,12 +1742,12 @@
         }
       }
     },
-    "Its shows leave this iPhone. Nothing changes on the server.": {
+    "Its shows leave this device. Nothing changes on the server.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Jeho pořady z tohoto iPhonu zmizí. Na serveru se nic nezmění."
+            "value": "Jeho pořady z tohoto zařízení zmizí. Na serveru se nic nezmění."
           }
         }
       }
@@ -1822,12 +1802,12 @@
         }
       }
     },
-    "Keep this iPhone's position (%@)": {
+    "Keep this device's position (%@)": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ponechat pozici tohoto iPhonu (%@)"
+            "value": "Ponechat pozici tohoto zařízení (%@)"
           }
         }
       }
@@ -2102,6 +2082,16 @@
         }
       }
     },
+    "New episodes download on their own, the newest first; unplayed ones only.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nové epizody se stahují samy, nejnovější první, a jen nepřehrané."
+          }
+        }
+      }
+    },
     "New episodes download on their own, the newest first; unplayed ones only. Settings decides whether this waits for Wi-Fi.": {
       "localizations": {
         "cs": {
@@ -2372,12 +2362,12 @@
         }
       }
     },
-    "Offline Mode shows and plays only what is on this iPhone, as the app does on its own with no network. Over the limit, played episodes go first, then the ones not played for longest; never the one playing. A show can keep its own downloads in Show Settings.": {
+    "Offline Mode shows and plays only what is on this device, as the app does on its own with no network. Over the limit, played episodes go first, then the ones not played for longest; never the one playing. A show can keep its own downloads in Show Settings.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Režim offline zobrazí a přehraje jen to, co je v tomto iPhonu, stejně jako aplikace sama bez sítě. Nad limitem odcházejí nejdřív přehrané epizody, pak ty nejdéle nepřehrávané; nikdy ta, která hraje. Pořad může mít vlastní pravidla stahování v nastavení pořadu."
+            "value": "Režim offline zobrazí a přehraje jen to, co je v tomto zařízení, stejně jako aplikace sama bez sítě. Nad limitem odcházejí nejdřív přehrané epizody, pak ty nejdéle nepřehrávané; nikdy ta, která hraje. Pořad může mít vlastní pravidla stahování v nastavení pořadu."
           }
         }
       }
@@ -2388,6 +2378,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Na mobilních datech"
+          }
+        }
+      }
+    },
+    "On a metered network such as a phone's hotspot, only downloaded episodes play.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Na zpoplatněném připojení, například na hotspotu z telefonu, se přehrávají jen stažené epizody."
           }
         }
       }
@@ -2874,32 +2874,12 @@
         }
       }
     },
-    "Search": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hledat"
-          }
-        }
-      }
-    },
     "Search Isn't Available": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
             "value": "Hledání není k dispozici"
-          }
-        }
-      }
-    },
-    "Search for Shows": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Hledat pořady"
           }
         }
       }
@@ -3054,22 +3034,22 @@
         }
       }
     },
-    "Shows on this iPhone stay; they are no longer kept in step.": {
+    "Shows on this device stay; they are no longer kept in step.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pořady v tomto iPhonu zůstanou, jen se už nebudou synchronizovat."
+            "value": "Pořady v tomto zařízení zůstanou, jen se už nebudou synchronizovat."
           }
         }
       }
     },
-    "Shows you follow on this iPhone need no server. A server adds its own shows; a gPodder account keeps this iPhone's in step with your other players.": {
+    "Shows you follow on this device need no server. A server adds its own shows; a gPodder account keeps this device's in step with your other players.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pořady odebírané v tomto iPhonu žádný server nepotřebují. Server přidá své vlastní pořady, účet gPodder udržuje pořady tohoto iPhonu ve shodě s ostatními přehrávači."
+            "value": "Pořady odebírané v tomto zařízení žádný server nepotřebují. Server přidá své vlastní pořady, účet gPodder udržuje pořady tohoto zařízení ve shodě s ostatními přehrávači."
           }
         }
       }
@@ -3294,16 +3274,6 @@
         }
       }
     },
-    "Source Code (MPL-2.0)": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zdrojový kód (MPL-2.0)"
-          }
-        }
-      }
-    },
     "Source Code and Licence": {
       "localizations": {
         "cs": {
@@ -3460,16 +3430,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Délka shrnutí"
-          }
-        }
-      }
-    },
-    "Swipe a device to sign it out. Signing out everywhere ends every session, this iPhone's too, and asks for a fresh sign-in.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Přejetím zařízení odhlásíte. Odhlášení všude ukončí všechny relace včetně tohoto iPhonu a vyžádá si nové přihlášení."
           }
         }
       }
@@ -3724,12 +3684,12 @@
         }
       }
     },
-    "The server signed this iPhone out. Remove the server and add it again.": {
+    "The server signed this device out. Remove the server and add it again.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Server tento iPhone odhlásil. Odstraňte server a přidejte ho znovu."
+            "value": "Server toto zařízení odhlásil. Odstraňte server a přidejte ho znovu."
           }
         }
       }
@@ -3794,6 +3754,16 @@
         }
       }
     },
+    "This Device": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toto zařízení"
+          }
+        }
+      }
+    },
     "This account has no podcast library on the server.": {
       "localizations": {
         "cs": {
@@ -3810,6 +3780,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Toto zařízení"
+          }
+        }
+      }
+    },
+    "This device's shows and positions are kept in step with the account, as every other app signed in to it does.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pořady a pozice v tomto zařízení se udržují ve shodě s účtem, stejně jako v každé další aplikaci, která je k němu přihlášená."
           }
         }
       }
@@ -3834,32 +3814,12 @@
         }
       }
     },
-    "This episode is not on this iPhone. Download it, or turn Offline Mode off.": {
+    "This episode is not on this device. Download it, or turn Offline Mode off.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Tato epizoda není v tomto iPhonu. Stáhněte ji, nebo vypněte režim offline."
-          }
-        }
-      }
-    },
-    "This iPhone": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tento iPhone"
-          }
-        }
-      }
-    },
-    "This iPhone's shows and positions are kept in step with the account, as every other app signed in to it does.": {
-      "localizations": {
-        "cs": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pořady a pozice v tomto iPhonu se udržují ve shodě s účtem, stejně jako v každé další aplikaci, která je k němu přihlášená."
+            "value": "Tato epizoda není v tomto zařízení. Stáhněte ji, nebo vypněte režim offline."
           }
         }
       }
@@ -3880,6 +3840,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Název"
+          }
+        }
+      }
+    },
+    "To sign a device out, swipe it or open its menu. Signing out everywhere ends every session, this device's too, and asks for a fresh sign-in.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zařízení odhlásíte přejetím nebo z jeho nabídky. Odhlášení všude ukončí všechny relace včetně tohoto zařízení a vyžádá si nové přihlášení."
           }
         }
       }
@@ -4074,12 +4044,22 @@
         }
       }
     },
-    "While an episode streams, its next minutes are kept on this iPhone, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.": {
+    "While an episode streams, its next minutes are kept on this device, on mobile data too, so a tunnel or a gap in the signal goes unheard; with Low Data Mode, 5 minutes.": {
       "localizations": {
         "cs": {
           "stringUnit": {
             "state": "translated",
-            "value": "Během streamování se v tomto iPhonu uchovávají další minuty epizody, i přes mobilní data, takže tunel ani výpadek signálu nebude slyšet; v režimu nízkých dat 5 minut."
+            "value": "Během streamování se v tomto zařízení uchovávají další minuty epizody, i přes mobilní data, takže tunel ani výpadek signálu nebude slyšet; v režimu nízkých dat 5 minut."
+          }
+        }
+      }
+    },
+    "While an episode streams, its next minutes are kept on this device, so a gap in the network goes unheard; with Low Data Mode, 5 minutes.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Během streamování se v tomto zařízení uchovávají další minuty epizody, takže výpadek sítě nebude slyšet; v režimu nízkých dat 5 minut."
           }
         }
       }

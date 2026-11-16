@@ -32,7 +32,7 @@ service. With an own.audio server added, its page in **Settings** has three more
    One invitation is for one person.
 
 Open invitations are listed under **Invitations** with the date they expire. Tap one to show
-it again, or swipe it to the left for **Withdraw**.
+it again, or swipe it to the left (or touch and hold it, or right-click it on a Mac) for **Withdraw**.
 
 ### Joining another family
 
@@ -42,8 +42,9 @@ leave your current family, and what the other family shares appears instead.
 ## Devices
 
 Every device signed in to your account, this one marked **This device**, with when each was
-last used. Swipe a device to the left for **Sign Out**. **Sign Out Everywhere** ends every
-session, this iPhone's too, so you will need to sign in again.
+last used. Swipe a device to the left, or touch and hold it (right-click on a Mac), for
+**Sign Out**. **Sign Out Everywhere** ends every session, this device's too, so you will need to
+sign in again.
 
 ## Listening
 

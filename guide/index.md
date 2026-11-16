@@ -46,7 +46,7 @@ server doesn't support isn't there. [Servers and sync](servers.md) has the detai
 - [own.audio extras](own-audio.md): the family, devices, listening time, summaries.
 - [Settings](settings.md): every setting and its default.
 - [Lock screen, widget and Siri](system.md)
-- [iPad](ipad.md)
+- [iPad and Mac](ipad.md): keyboard shortcuts, and the app on a Mac
 - [Privacy](privacy.md)
 
 ## Help and feedback

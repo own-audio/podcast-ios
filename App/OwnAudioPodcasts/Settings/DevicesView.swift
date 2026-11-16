@@ -27,7 +27,7 @@ struct DevicesView: View {
                     ProgressView().frame(maxWidth: .infinity)
                 }
             } footer: {
-                Text("Swipe a device to sign it out. Signing out everywhere ends every session, this iPhone's too, and asks for a fresh sign-in.")
+                Text("To sign a device out, swipe it or open its menu. Signing out everywhere ends every session, this device's too, and asks for a fresh sign-in.")
             }
             Section {
                 Button("Sign Out Everywhere", role: .destructive) { isConfirmingAll = true }
@@ -78,6 +78,16 @@ struct DevicesView: View {
             }
         }
         .swipeActions {
+            if !session.isThisDevice {
+                Button(role: .destructive) {
+                    signOut(session)
+                } label: {
+                    Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+                }
+            }
+        }
+        // Swiping needs a touch screen; a Mac's pointer gets the same through a right-click.
+        .contextMenu {
             if !session.isThisDevice {
                 Button(role: .destructive) {
                     signOut(session)

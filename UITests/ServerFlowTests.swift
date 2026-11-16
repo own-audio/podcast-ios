@@ -143,13 +143,13 @@ final class ServerFlowTests: XCTestCase {
 
         let inbox = app.buttons.matching(NSPredicate(format: "label == 'New Episodes'")).allElementsBoundByIndex.first { $0.isHittable } ?? app.buttons["New Episodes"].firstMatch
         inbox.tap()
-        for _ in 0..<3 where !app.buttons["This iPhone"].exists {
+        for _ in 0..<3 where !app.buttons["This Device"].exists {
             for label in ["Not Now", "Teď ne"] where app.buttons[label].exists { app.buttons[label].tap() }
             menu.tap()
-            _ = app.buttons["This iPhone"].waitForExistence(timeout: 3)
+            _ = app.buttons["This Device"].waitForExistence(timeout: 3)
         }
-        app.buttons["This iPhone"].tap()
-        XCTAssertTrue(menu.label.contains("This iPhone"))
+        app.buttons["This Device"].tap()
+        XCTAssertTrue(menu.label.contains("This Device"))
         shows.tap()
         XCTAssertTrue(phoneShow.waitForExistence(timeout: 10))
         XCTAssertEqual(serverShows.count, 0, "only this iPhone's shows")

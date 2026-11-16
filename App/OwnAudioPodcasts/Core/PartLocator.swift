@@ -61,7 +61,7 @@ struct PartLocator {
 /// signal is coming to end a wait.
 struct PartNotOnPhone: LocalizedError {
     var errorDescription: String? {
-        String(localized: "This episode is not on this iPhone. Download it, or turn Offline Mode off.")
+        String(localized: "This episode is not on this device. Download it, or turn Offline Mode off.")
     }
 }
 

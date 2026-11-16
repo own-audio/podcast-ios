@@ -7,7 +7,7 @@ description: "An episode's page in own.audio Podcasts: playing, downloading, cha
 # An episode's page
 
 Tap an episode in any list to open its page. It shows the picture, the show, the title, the
-date and length (or the time left), and which source the episode comes from (**This iPhone** or
+date and length (or the time left), and which source the episode comes from (**This Device** or
 a server's name).
 
 ## Buttons
@@ -43,6 +43,6 @@ When you play an episode from a server and another device got to a different pla
 than half a minute apart), the app asks **Continue from another device?**:
 
 - **Continue from** the other device's time, or
-- **Keep this iPhone's position**.
+- **Keep this device's position**.
 
 It never moves your position without asking.

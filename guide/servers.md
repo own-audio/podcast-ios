@@ -15,7 +15,7 @@ To add one, see [Getting started](getting-started.md#add-a-server).
 
 ## What each source does
 
-| | This iPhone (feeds) | own.audio | Audiobookshelf | gPodder sync |
+| | This Device (feeds) | own.audio | Audiobookshelf | gPodder sync |
 |---|---|---|---|---|
 | Where the shows come from | Feeds you follow | The shows your family follows on the server | The server's podcast libraries | The shows on this iPhone, kept in step with the account |
 | Follow a new show from the app | Yes | No, manage shows on the server | Yes, if your account may upload | Yes: follow it on this iPhone, and the account gets it |
@@ -90,13 +90,13 @@ this server.
 - **Connection**: **Automatic** (the default) or one fixed address.
 - **Addresses**: every address with its network kind and where it came from
   (**added with**, **from the server**, **added by you**). **Add Address** adds one, for example
-  `http://192.168.1.20:8080`. Swipe an address you added to remove it. An own.audio server
+  `http://192.168.1.20:8080`. Swipe an address you added, or touch and hold it (right-click on a Mac), to remove it. An own.audio server
   tells the app its other addresses by itself.
 
 ### Remove Server
 
-Asks first. For own.audio and Audiobookshelf, the server's shows leave this iPhone; nothing
-changes on the server. For a gPodder account, the shows on this iPhone stay, and are no longer
+Asks first. For own.audio and Audiobookshelf, the server's shows leave this device; nothing
+changes on the server. For a gPodder account, the shows on this device stay, and are no longer
 kept in step.
 
 ## Live updates (own.audio)

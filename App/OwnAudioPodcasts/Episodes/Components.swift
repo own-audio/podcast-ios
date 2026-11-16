@@ -42,7 +42,7 @@ struct SourceLabel: View {
 
     var body: some View {
         HStack(spacing: 4) {
-            Image(systemName: source == .phone ? "iphone" : "server.rack").imageScale(.small)
+            Image(systemName: source == .phone ? Platform.deviceSymbol : "server.rack").imageScale(.small)
             Text(model.sourceName(source))
         }
         .font(.caption)

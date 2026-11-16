@@ -126,7 +126,7 @@ struct AddServerView: View {
         case nil: "The app finds out what answers at the address: own.audio, Audiobookshelf, or a gPodder sync server such as podfetch."
         case .ownAudio?: "Your own.audio account: its shows, New Episodes and positions on every device."
         case .audiobookshelf?: "The podcast libraries of an Audiobookshelf server, with its downloaded episodes and positions."
-        case .gpodder?: "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this iPhone's shows and positions are kept in step with your other players."
+        case .gpodder?: "A gPodder sync account (podfetch, gpodder.net, an own.audio server): this device's shows and positions are kept in step with your other players."
         }
     }
 

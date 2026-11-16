@@ -106,6 +106,9 @@ struct HouseholdView: View {
                             .swipeActions {
                                 Button("Withdraw", role: .destructive) { withdraw(invite) }
                             }
+                            .contextMenu {
+                                Button("Withdraw", systemImage: "xmark.circle", role: .destructive) { withdraw(invite) }
+                            }
                         }
                     } header: {
                         Text("Invitations")
