@@ -29,7 +29,7 @@ targets:
       path: App/OwnAudioPodcasts/Info.plist
       properties:
         CFBundleDisplayName: own.podcast
-        CFBundleShortVersionString: "1.0.0"
+        CFBundleShortVersionString: "1.0.1"
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UIBackgroundModes: [audio, fetch]
@@ -107,7 +107,7 @@ targets:
       path: Widgets/Info.plist
       properties:
         CFBundleDisplayName: own.podcast
-        CFBundleShortVersionString: "1.0.0"
+        CFBundleShortVersionString: "1.0.1"
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
