@@ -1,6 +1,7 @@
 ---
 title: Getting started
 nav_order: 2
+description: "Until you follow a show or add a server, the app opens on a welcome screen with three buttons."
 ---
 
 # Getting started

@@ -1,6 +1,7 @@
 ---
 title: Downloads and Offline Mode
 nav_order: 9
+description: "Download an episode with the arrow on its page, or with Download in the menu when you touch and hold it."
 ---
 
 # Downloads and Offline Mode

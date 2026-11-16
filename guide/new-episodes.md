@@ -1,6 +1,7 @@
 ---
 title: New Episodes
 nav_order: 3
+description: "The first tab. It lists the unplayed episodes of the shows you follow that came out since you followed them, from every source, newest first."
 ---
 
 # New Episodes

@@ -1,6 +1,7 @@
 ---
 title: Shows
 nav_order: 5
+description: "The Shows tab in own.audio Podcasts: every show you follow, grouped by source, and each show's page and settings."
 ---
 
 # Shows

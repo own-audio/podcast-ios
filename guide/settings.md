@@ -1,6 +1,7 @@
 ---
 title: Settings
 nav_order: 12
+description: "Open Settings with the gear at the top of New Episodes. Done closes it."
 ---
 
 # Settings

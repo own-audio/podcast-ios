@@ -1,6 +1,7 @@
 ---
 title: Privacy
 nav_order: 15
+description: "The app collects nothing. There is no account with us, no analytics, no ads and no tracking. The full policy is in PRIVACY.md."
 ---
 
 # Privacy

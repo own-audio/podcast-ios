@@ -1,6 +1,7 @@
 ---
 title: iPad
 nav_order: 14
+description: "own.audio Podcasts on iPad: the sidebar, the larger player, and how the layout differs from iPhone."
 ---
 
 # iPad

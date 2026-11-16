@@ -1,6 +1,7 @@
 ---
 title: Home
 nav_order: 1
+description: "own.audio Podcasts is a podcast player for iPhone and iPad that needs no account and no server, and syncs with own.audio, Audiobookshelf or gPodder if you have one."
 ---
 
 <img class="app-icon only-light" src="assets/images/app-icon.svg" alt="own.audio Podcasts app icon" width="96" height="96">

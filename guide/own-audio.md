@@ -1,6 +1,7 @@
 ---
 title: own.audio extras
 nav_order: 11
+description: "An own.audio server is a library for a whole family: music, audiobooks and podcasts, each person listening from their own position."
 ---
 
 # own.audio extras

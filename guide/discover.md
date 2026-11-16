@@ -1,6 +1,7 @@
 ---
 title: Discover and search
 nav_order: 6
+description: "The Discover tab is the magnifying glass. Before you type anything, it shows ways to find new shows; once you type, it searches."
 ---
 
 # Discover and search

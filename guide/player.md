@@ -1,6 +1,7 @@
 ---
 title: The player
 nav_order: 7
+description: "While an episode is loaded, a bar above the tabs shows its picture, title and time left, with play/pause and skip forward."
 ---
 
 # The player

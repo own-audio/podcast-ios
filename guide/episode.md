@@ -1,6 +1,7 @@
 ---
 title: An episode's page
 nav_order: 4
+description: "An episode's page in own.audio Podcasts: playing, downloading, chapters, show notes, and the menu of everything else you can do with it."
 ---
 
 # An episode's page

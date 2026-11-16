@@ -1,6 +1,7 @@
 ---
 title: Up Next
 nav_order: 8
+description: "Up Next is your queue: what plays after the episode you are listening to. It can hold episodes from any show and any source, in the order you choose."
 ---
 
 # Up Next

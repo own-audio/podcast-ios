@@ -1,6 +1,7 @@
 ---
 title: Servers and sync
 nav_order: 10
+description: "The app is complete with feeds alone. A server adds shows of its own, positions that follow you between devices, and, depending on the server, more."
 ---
 
 # Servers and sync

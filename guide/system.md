@@ -1,6 +1,7 @@
 ---
 title: Lock screen, widget and Siri
 nav_order: 13
+description: "own.audio Podcasts outside the app: the lock screen and Control Center, the Up Next widget, Siri, AirPlay and background refresh."
 ---
 
 # Lock screen, widget and Siri
