@@ -17,6 +17,14 @@ struct AddServerView: View {
     @State private var providers: Set<String> = []
     @State private var offersCanary = false
 
+    /// `ownAudio`: opened from the welcome screen's Sign In, already set to own.audio's service.
+    init(ownAudio: Bool = false) {
+        if ownAudio {
+            _kind = State(initialValue: .ownAudio)
+            _address = State(initialValue: "own.audio")
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {

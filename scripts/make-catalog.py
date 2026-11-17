@@ -409,6 +409,22 @@ cs = {
  "Your account on %@ is deleted for good, with everything you added to it: music, audiobooks, podcasts, playlists and your listening history. What others in your family added stays with them.": "Váš účet na %@ bude nevratně smazán se vším, co jste do něj přidali: hudbou, audioknihami, podcasty, playlisty i historií poslechu. Co přidali ostatní z rodiny, jim zůstane.",
  "min": "min",
  "There isn't enough credit in the family for this.": "Na tohle rodina nemá dost kreditu.",
+ "Create an own.audio Account": "Vytvořit účet own.audio",
+ "Your Name": "Vaše jméno",
+ "At least 12 characters. A few words are fine.": "Alespoň 12 znaků. Klidně několik slov.",
+ "Create Account": "Vytvořit účet",
+ "own.audio emails you a link to confirm the address. By creating an account you agree to the [Terms](https://www.own.audio/terms/) and the [Privacy Policy](https://www.own.audio/privacy/).": "own.audio vám e-mailem pošle odkaz k potvrzení adresy. Vytvořením účtu souhlasíte s [podmínkami](https://www.own.audio/terms/) a [zásadami ochrany osobních údajů](https://www.own.audio/privacy/).",
+ "own.audio Account": "Účet own.audio",
+ "That doesn't look like an email address.": "Tohle nevypadá jako e-mailová adresa.",
+ "The password needs at least 12 characters. A few words are fine.": "Heslo musí mít alespoň 12 znaků. Klidně několik slov.",
+ "Enter your name.": "Zadejte své jméno.",
+ "own.audio isn't taking new accounts right now.": "own.audio teď nové účty nepřijímá.",
+ "There's already an account with this email. Sign in instead.": "Účet s tímto e-mailem už existuje. Přihlaste se k němu.",
+ "own.audio didn't create the account.": "own.audio účet nevytvořil.",
+ "Use own.audio": "Použít own.audio",
+ "An own.audio account keeps your shows and where you are in them on every device.": "Účet own.audio uchová vaše pořady a místo, kde jste v nich skončili, na všech zařízeních.",
+ "Sample shows on a shared own.audio server, no account needed.": "Ukázkové pořady na sdíleném serveru own.audio, bez účtu.",
+ "Or listen without an account": "Nebo poslouchejte bez účtu",
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {

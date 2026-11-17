@@ -582,6 +582,16 @@
         }
       }
     },
+    "An own.audio account keeps your shows and where you are in them on every device.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Účet own.audio uchová vaše pořady a místo, kde jste v nich skončili, na všech zařízeních."
+          }
+        }
+      }
+    },
     "Another device got to %@; this device was at %@.": {
       "localizations": {
         "cs": {
@@ -678,6 +688,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zeptejte se na tuto epizodu"
+          }
+        }
+      }
+    },
+    "At least 12 characters. A few words are fine.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alespoň 12 znaků. Klidně několik slov."
           }
         }
       }
@@ -1022,6 +1042,26 @@
         }
       }
     },
+    "Create Account": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vytvořit účet"
+          }
+        }
+      }
+    },
+    "Create an own.audio Account": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vytvořit účet own.audio"
+          }
+        }
+      }
+    },
     "Credit": {
       "localizations": {
         "cs": {
@@ -1358,6 +1398,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zadejte kód z ověřovací aplikace."
+          }
+        }
+      }
+    },
+    "Enter your name.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zadejte své jméno."
           }
         }
       }
@@ -2422,6 +2472,16 @@
         }
       }
     },
+    "Or listen without an account": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nebo poslouchejte bez účtu"
+          }
+        }
+      }
+    },
     "Or sign in with the Apple or Google account you use on this own.audio server.": {
       "localizations": {
         "cs": {
@@ -2840,6 +2900,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Sample shows on a shared own.audio server, no account needed.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ukázkové pořady na sdíleném serveru own.audio, bez účtu."
           }
         }
       }
@@ -3514,6 +3584,16 @@
         }
       }
     },
+    "That doesn't look like an email address.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tohle nevypadá jako e-mailová adresa."
+          }
+        }
+      }
+    },
     "That episode can't play right now.": {
       "localizations": {
         "cs": {
@@ -3610,6 +3690,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Jméno nebo heslo není správné."
+          }
+        }
+      }
+    },
+    "The password needs at least 12 characters. A few words are fine.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heslo musí mít alespoň 12 znaků. Klidně několik slov."
           }
         }
       }
@@ -3750,6 +3840,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Na tohle rodina nemá dost kreditu."
+          }
+        }
+      }
+    },
+    "There's already an account with this email. Sign in instead.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Účet s tímto e-mailem už existuje. Přihlaste se k němu."
           }
         }
       }
@@ -3974,6 +4074,16 @@
         }
       }
     },
+    "Use own.audio": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Použít own.audio"
+          }
+        }
+      }
+    },
     "User Name": {
       "localizations": {
         "cs": {
@@ -4134,6 +4244,16 @@
         }
       }
     },
+    "Your Name": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vaše jméno"
+          }
+        }
+      }
+    },
     "Your Shows": {
       "localizations": {
         "cs": {
@@ -4268,6 +4388,16 @@
       },
       "shouldTranslate": false
     },
+    "own.audio Account": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Účet own.audio"
+          }
+        }
+      }
+    },
     "own.audio Podcasts is free and open source (MPL-2.0). It talks only to the feeds you follow, Apple's podcast directory and the servers you add.": {
       "localizations": {
         "cs": {
@@ -4294,6 +4424,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Demo own.audio"
+          }
+        }
+      }
+    },
+    "own.audio didn't create the account.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own.audio účet nevytvořil."
+          }
+        }
+      }
+    },
+    "own.audio emails you a link to confirm the address. By creating an account you agree to the [Terms](https://www.own.audio/terms/) and the [Privacy Policy](https://www.own.audio/privacy/).": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own.audio vám e-mailem pošle odkaz k potvrzení adresy. Vytvořením účtu souhlasíte s [podmínkami](https://www.own.audio/terms/) a [zásadami ochrany osobních údajů](https://www.own.audio/privacy/)."
+          }
+        }
+      }
+    },
+    "own.audio isn't taking new accounts right now.": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "own.audio teď nové účty nepřijímá."
           }
         }
       }

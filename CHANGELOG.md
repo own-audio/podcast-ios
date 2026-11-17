@@ -8,6 +8,12 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- The welcome screen starts with a card for own.audio's hosted service: **Create an own.audio
+  Account** (name, email and password, then signed in straight away), **Sign In** (opens Add
+  Server set to own.audio), and **Try the Demo Library**. The three ways in without an account
+  follow under **Or listen without an account**, and the screen scrolls. Sign-up uses
+  `POST /api/v2/auth/register` and falls back to `/api/v1/auth/register` on a server without
+  it. New strings in Czech.
 - The app behaves on an Apple-silicon Mac, where it runs as the iPad app
   (`Platform.isMac`, from `ProcessInfo.isiOSAppOnMac`):
   - New Episodes refresh every 15 minutes while the app is open, on every device, and stop when
@@ -28,6 +34,9 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Changed
 
+- The own.audio mark matches the master mark on own.audio's website: two short arcs under the
+  core instead of two near-full rings, the family's colors (#FABB05, #29ABE2, #FF3B30, #FFCC00,
+  #34C759) on a #6E44FF core, and a 6-second spin. On the welcome screen it is larger (120 pt).
 - Wording follows the family's glossary, in American English: **Accent Color**, **App Color**,
   **Favorite**, "catalog" (Discover's footer, the guide). The admin's listening list shows
   **Not Shared** / *Nesdíleno* for a member who keeps their time to themselves, not "Private" (as in Music and Books).

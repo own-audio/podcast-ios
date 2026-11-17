@@ -1080,6 +1080,19 @@ final class AppModel {
         return []
     }
 
+    /// own.audio's hosted service, where someone without a server of their own can make an account.
+    static let ownAudioService = URL(string: "https://api.own.audio")!
+
+    /// A new account on own.audio's hosted service, then signed in to it as a server.
+    func createOwnAudioAccount(name: String, email: String, password: String) async throws {
+        let email = email.trimmingCharacters(in: .whitespaces)
+        try await OwnAudioSignUp.register(
+            host: Self.ownAudioService, email: email, password: password,
+            displayName: name.trimmingCharacters(in: .whitespaces), urlSession: Self.session
+        )
+        try await addServer(kind: .ownAudio, address: Self.ownAudioService.absoluteString, username: email, password: password)
+    }
+
     func addDemoServer() async throws {
         struct Body: Decodable {
             struct Demo: Decodable { let email: String; let password: String }
@@ -1505,6 +1518,18 @@ final class AppModel {
                 : String(localized: "On mobile data only downloaded episodes play. You can change this in Settings.")
         case DownloadError.streamOnly:
             String(localized: "This episode can't be downloaded: the server only streams it.")
+        case SignUpError.invalidEmail:
+            String(localized: "That doesn't look like an email address.")
+        case SignUpError.weakPassword:
+            String(localized: "The password needs at least 12 characters. A few words are fine.")
+        case SignUpError.missingName:
+            String(localized: "Enter your name.")
+        case SignUpError.closed:
+            String(localized: "own.audio isn't taking new accounts right now.")
+        case SignUpError.emailTaken:
+            String(localized: "There's already an account with this email. Sign in instead.")
+        case SignUpError.refused(let message):
+            message ?? String(localized: "own.audio didn't create the account.")
         case SourceError.notAFeed:
             String(localized: "That address is not a podcast feed.")
         case SourceError.signInRejected, AudiobookshelfError.invalidCredentials, GPodderError.unauthorized, OwnAudioError.problem:

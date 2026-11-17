@@ -1,16 +1,28 @@
 ---
 title: Getting started
 nav_order: 2
-description: "Until you follow a show or add a server, the app opens on a welcome screen with three buttons."
+description: "Until you follow a show or add a server, the app opens on a welcome screen: an own.audio account at the top, and three ways in that need no account."
 ---
 
 # Getting started
 
 ## The first screen
 
-Until you follow a show or add a server, the app opens on a welcome screen with three buttons.
+Until you follow a show or add a server, the app opens on a welcome screen.
 
 ![The welcome screen](images/8-welcome.jpg){: width="300"}
+
+At the top, **Use own.audio**: an own.audio account keeps your shows, and where you are in
+them, on every device.
+
+- **Create an own.audio Account** asks for **Your Name**, **Email** and a **Password** of at
+  least 12 characters (a few words are fine), then **Create Account**. The app signs in to the
+  new account straight away. own.audio emails you a link to confirm the address.
+- **Sign In** opens **Add Server** already set to own.audio, for an account you already have.
+- **Try the Demo Library** signs in to a shared own.audio server with sample shows, with no
+  account needed.
+
+Under **Or listen without an account**:
 
 - **Find a Show** opens [Discover](discover.md): browse categories or search by name.
 - **Add a Feed by Address** follows a show by its RSS feed address.
@@ -75,6 +87,6 @@ asks for the **Two-Factor Code** from your authenticator app, then **Verify**.
 
 ## Try the public demo
 
-To see what a server adds without an account, open **Add a Server** and tap
-**Try the Public Demo**. It signs in to a shared own.audio server with sample shows. You can
+To see what a server adds without an account, tap **Try the Demo Library** on the welcome
+screen, or open **Add a Server** and tap **Try the Public Demo**. It signs in to a shared own.audio server with sample shows. You can
 remove it again in [Settings](settings.md) at any time.
