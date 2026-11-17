@@ -428,6 +428,7 @@ cs = {
  "Or create an account with your email.": "Nebo si účet vytvořte e-mailem.",
  "Or sign in with your email.": "Nebo se přihlaste e-mailem.",
  "Sign In to own.audio": "Přihlásit se k own.audio",
+ "Try the Demo Library": "Vyzkoušet ukázkovou knihovnu",
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {

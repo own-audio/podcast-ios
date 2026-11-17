@@ -39,6 +39,8 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Changed
 
+- Czech: **Try the Demo Library** on the welcome screen is "Vyzkoušet ukázkovou knihovnu", as in
+  own.audio Music and Books (it showed in English).
 - The Apple and Google buttons look alike everywhere they appear (welcome screen, sign-in
   sheet, Settings): **Continue with Apple**, drawn by the app in the same font and size as
   **Continue with Google** instead of by `SignInWithAppleButton`; the Google "G" at 17 pt like

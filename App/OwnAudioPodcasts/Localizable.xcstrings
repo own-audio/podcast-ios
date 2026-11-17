@@ -4014,6 +4014,16 @@
         }
       }
     },
+    "Try the Demo Library": {
+      "localizations": {
+        "cs": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vyzkoušet ukázkovou knihovnu"
+          }
+        }
+      }
+    },
     "Try the Download Again": {
       "localizations": {
         "cs": {
