@@ -12,10 +12,7 @@ final class DemoTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestReset", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launchChecked()
-        let server = app.buttons["welcome.server"]
-        XCTAssertTrue(server.waitForExistence(timeout: 15))
-        server.tap()
-        let demo = app.buttons["addServer.demo"]
+        let demo = app.buttons["welcome.demo"]
         XCTAssertTrue(demo.waitForExistence(timeout: 15))
         demo.tap()
         let settings = app.buttons["home.settings"]

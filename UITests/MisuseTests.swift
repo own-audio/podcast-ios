@@ -51,7 +51,7 @@ final class MisuseTests: XCTestCase {
             secret.press(forDuration: 1)
             if app.menuItems["Select All"].waitForExistence(timeout: 2) { app.menuItems["Select All"].tap(); secret.typeText(XCUIKeyboardKey.delete.rawValue) }
         }
-        XCTAssertTrue(app.buttons["addServer.demo"].exists, "the form stays usable")
+        XCTAssertTrue(app.buttons["addServer.add"].exists, "the form stays usable")
     }
 
     /// Skips and play/pause hammered faster than anything can load: afterwards the episode still

@@ -77,8 +77,8 @@ struct OnboardingView: View {
                 }
             case .feed: AddFeedView()
             case .server: AddServerView()
-            case .signIn: AddServerView(ownAudio: true)
-            case .signUp: SignUpView()
+            case .signIn: OwnAudioAccountView(mode: .signIn)
+            case .signUp: OwnAudioAccountView(mode: .signUp)
             }
         }
     }

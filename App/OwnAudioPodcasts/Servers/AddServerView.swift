@@ -15,15 +15,6 @@ struct AddServerView: View {
     @State private var error: String?
     /// Which of Apple and Google the own.audio server at the typed address accepts.
     @State private var providers: Set<String> = []
-    @State private var offersCanary = false
-
-    /// `ownAudio`: opened from the welcome screen's Sign In, already set to own.audio's service.
-    init(ownAudio: Bool = false) {
-        if ownAudio {
-            _kind = State(initialValue: .ownAudio)
-            _address = State(initialValue: "own.audio")
-        }
-    }
 
     var body: some View {
         NavigationStack {
@@ -67,7 +58,6 @@ struct AddServerView: View {
                             .accessibilityIdentifier("addServer.password")
                     } footer: {
                         // Under the address, as in the books app, so it is on screen while typing.
-                        if offersCanary { CanaryServerButton(address: $address) }
                     }
                     if (kind == .ownAudio || kind == nil) && !providers.isEmpty {
                         Section {
@@ -82,14 +72,6 @@ struct AddServerView: View {
                         }
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                    }
-                    if kind == .ownAudio || kind == nil {
-                        Section {
-                            Button("Try the Public Demo") { Task { await addDemo() } }
-                                .accessibilityIdentifier("addServer.demo")
-                        } footer: {
-                            Text("A shared own.audio server with sample shows, to look around without an account.")
-                        }
                     }
                 }
                 if let error {
@@ -106,7 +88,6 @@ struct AddServerView: View {
                 let found = await model.ownAudioProviders(address: address)
                 if !Task.isCancelled { providers = found }
             }
-            .task { offersCanary = await TestServers.available() }
             .navigationTitle("Add a Server")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -156,16 +137,5 @@ struct AddServerView: View {
 
     private func signedIn() {
         if model.pendingTwoFactor == nil { dismiss() }
-    }
-
-    private func addDemo() async {
-        isWorking = true
-        defer { isWorking = false }
-        do {
-            try await model.addDemoServer()
-            dismiss()
-        } catch {
-            self.error = AppModel.message(for: error)
-        }
     }
 }

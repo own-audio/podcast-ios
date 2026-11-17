@@ -17,7 +17,7 @@ cs = {
  "Continue with Google": "Pokračovat přes Google",
  "Google didn't return a sign-in. Try again.": "Google nevrátil přihlášení. Zkuste to znovu.",
  "Or sign in with the Apple or Google account you use on this own.audio server.": "Nebo se přihlaste účtem Apple nebo Google, který na tomto serveru own.audio používáte.",
- "Sign in with Apple": "Přihlásit se přes Apple",
+ "Continue with Apple": "Pokračovat přes Apple",
  "Or with the Apple or Google account this server was added with.": "Nebo účtem Apple či Google, se kterým byl tento server přidán.",
  "That is %@, not the account this server was added with. Sign in with the same account, or add the server again for another one.": "Tohle je %@, ne účet, se kterým byl tento server přidán. Přihlaste se stejným účtem, nebo server přidejte znovu pro jiný účet.",
  "Summary": "Shrnutí",
@@ -425,6 +425,9 @@ cs = {
  "An own.audio account keeps your shows and where you are in them on every device.": "Účet own.audio uchová vaše pořady a místo, kde jste v nich skončili, na všech zařízeních.",
  "Sample shows on a shared own.audio server, no account needed.": "Ukázkové pořady na sdíleném serveru own.audio, bez účtu.",
  "Or listen without an account": "Nebo poslouchejte bez účtu",
+ "Or create an account with your email.": "Nebo si účet vytvořte e-mailem.",
+ "Or sign in with your email.": "Nebo se přihlaste e-mailem.",
+ "Sign In to own.audio": "Přihlásit se k own.audio",
 }
 # Plural keys: en variations (one/other) and cs (one/few/many/other).
 plurals = {

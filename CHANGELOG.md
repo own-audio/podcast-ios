@@ -8,12 +8,17 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Added
 
+- Create Account and Sign In on the welcome screen open one sheet for own.audio's hosted
+  service: **Continue with Apple** and **Continue with Google** at the top (either makes the
+  account on first use), then email and password (and a name for a new account). A fixed
+  **Server: own.audio** row shows where it goes (`https://api.own.audio`); the sheet has no
+  address field, no test server and no demo. An account with two-factor sign-in is asked for
+  its code.
 - The welcome screen starts with a card for own.audio's hosted service: **Create an own.audio
-  Account** (name, email and password, then signed in straight away), **Sign In** (opens Add
-  Server set to own.audio), and **Try the Demo Library**. The three ways in without an account
-  follow under **Or listen without an account**, and the screen scrolls. Sign-up uses
-  `POST /api/v2/auth/register` and falls back to `/api/v1/auth/register` on a server without
-  it. New strings in Czech.
+  Account** (name, email and password, then signed in straight away), **Sign In**, and **Try the
+  Demo Library**. The three ways in without an account follow under **Or listen without an
+  account**, and the screen scrolls. Sign-up uses `POST /api/v2/auth/register` and falls back to
+  `/api/v1/auth/register` on a server without it. New strings in Czech.
 - The app behaves on an Apple-silicon Mac, where it runs as the iPad app
   (`Platform.isMac`, from `ProcessInfo.isiOSAppOnMac`):
   - New Episodes refresh every 15 minutes while the app is open, on every device, and stop when
@@ -34,16 +39,21 @@ All notable changes to own.audio Podcasts. The format follows
 
 ### Changed
 
+- The Apple and Google buttons look alike everywhere they appear (welcome screen, sign-in
+  sheet, Settings): **Continue with Apple**, drawn by the app in the same font and size as
+  **Continue with Google** instead of by `SignInWithAppleButton`; the Google "G" at 17 pt like
+  the Apple logo; white with a grey outline on a light screen and near-black with a lighter
+  outline on a dark one, Google's two themes, on both buttons.
 - The wordmark's rotating word: after audio, the app's own word and family, five words of
   this app's own (episode, show, feed, talk, morning), none shared with the other two apps.
 - The own.audio mark matches the master mark on own.audio's website: two short arcs under the
   core instead of two near-full rings, the family's colors (#FABB05, #29ABE2, #FF3B30, #FFCC00,
   #34C759) on a #6E44FF core, and a 6-second spin. On the welcome screen it is larger (120 pt).
 - Wording follows the family's glossary, in American English: **Accent Color**, **App Color**,
-  **Favorite**, "catalog" (Discover's footer, the guide). The admin's listening list shows
-  **Not Shared** / *Nesdíleno* for a member who keeps their time to themselves, not "Private" (as in Music and Books).
-  Czech: *Odhlásit se všude*, *Odebrat stažení* / *Odebrat všechna stažení*, and *Odeberte
-  server* in the signed-out message.
+  **Favorite**, "catalog" (Discover's footer, the guide). The admin's listening list shows **Not
+  Shared** / *Nesdíleno* for a member who keeps their time to themselves, not "Private" (as in
+  Music and Books). Czech: *Odhlásit se všude*, *Odebrat stažení* / *Odebrat všechna stažení*,
+  and *Odeberte server* in the signed-out message.
 - The privacy policy and the Settings footer name everything the app talks to: the feeds you
   follow, Apple's podcast directory (its charts load as Discover opens, not only when you
   search) and your servers. The policy no longer mentions a Podcast Index key, which the app
@@ -58,6 +68,13 @@ All notable changes to own.audio Podcasts. The format follows
 
 - On a Mac, the full player is handed the app's state: without it, the player's keyboard
   shortcuts ended the app as it opened.
+
+### Removed
+
+- The **own.audio canary (testing)** button in Add a Server (shown only in TestFlight and
+  development builds). A test server is added by typing its address.
+- **Try the Public Demo** in Add a Server: the demo is on the welcome screen
+  (**Try the Demo Library**). The demo and misuse UI tests start from there.
 
 ## [1.0.0] - 2026-11-05
 

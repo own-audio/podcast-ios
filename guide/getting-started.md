@@ -15,12 +15,18 @@ Until you follow a show or add a server, the app opens on a welcome screen.
 At the top, **Use own.audio**: an own.audio account keeps your shows, and where you are in
 them, on every device.
 
-- **Create an own.audio Account** asks for **Your Name**, **Email** and a **Password** of at
-  least 12 characters (a few words are fine), then **Create Account**. The app signs in to the
-  new account straight away. own.audio emails you a link to confirm the address.
-- **Sign In** opens **Add Server** already set to own.audio, for an account you already have.
+- **Create an own.audio Account** opens a sheet with **Continue with Apple** and **Continue
+  with Google** at the top: either makes the account on first use. Or fill in **Your Name**,
+  **Email** and a **Password** of at least 12 characters (a few words are fine), then **Create
+  Account**. The app signs in to the new account straight away. own.audio emails you a link to
+  confirm the address.
+- **Sign In** opens the same sheet for an account you already have: Apple, Google, or your
+  **Email** and **Password**.
 - **Try the Demo Library** signs in to a shared own.audio server with sample shows, with no
   account needed.
+
+Both sheets show **Server: own.audio** and can't be pointed anywhere else; for another
+own.audio server, use **Add a Server**.
 
 Under **Or listen without an account**:
 
@@ -79,7 +85,7 @@ You only need this if you run a server or have an account on one.
 For own.audio's hosted service, set **Kind** to **own.audio** and type just `own.audio` as
 the address. A home server's address can be typed without `https://`; the app tries HTTPS
 first and then plain HTTP. If the own.audio
-server accepts them, **Sign in with Apple** and **Continue with Google** buttons appear under the
+server accepts them, **Continue with Apple** and **Continue with Google** buttons appear under the
 form; use the account you use on that server. If your account has two-factor sign-in, the form
 asks for the **Two-Factor Code** from your authenticator app, then **Verify**.
 
@@ -88,5 +94,5 @@ asks for the **Two-Factor Code** from your authenticator app, then **Verify**.
 ## Try the public demo
 
 To see what a server adds without an account, tap **Try the Demo Library** on the welcome
-screen, or open **Add a Server** and tap **Try the Public Demo**. It signs in to a shared own.audio server with sample shows. You can
+screen. It signs in to a shared own.audio server with sample shows. You can
 remove it again in [Settings](settings.md) at any time.
