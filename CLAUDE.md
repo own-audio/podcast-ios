@@ -31,6 +31,14 @@ published by own.audio. The repository is public — write everything for strang
   `scripts/make-catalog.py`; edit the table, not the JSON. Czech follows the family's glossary
   (feed = kanál, show = pořad, episode = epizoda, follow = odebírat, unsubscribe = Zrušit odběr).
 
+## API v2 first
+
+This app talks to own.audio on `/api/v2` (`Packages/OwnAudioKit`), and stays there (decided
+2026-11-17, `docs/api-v2-first.md` in the server repo (`own-audio-foss`,
+github.com/own-audio/server)). Call `/api/v1` only where v2 has nothing yet — artwork, account
+deletion, stats, podcast discovery and directory search today — with `api: "api/v1"` and a
+comment; when v2 gains the endpoint, move the call. Never add a v1 call v2 can answer.
+
 ## Build
 
 ```bash
